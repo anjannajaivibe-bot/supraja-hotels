@@ -20,17 +20,49 @@ const navLinks = [
 ];
 
 const hotelLinks = [
-  { label: "Hotel Supraja Cyber View", href: "/hotels/supraja-cyber-view" },
-  { label: "Hotel Supraja Residency", href: "/hotels/supraja-residency" },
-  { label: "Hotel Supraja Lodge", href: "/hotels/supraja-lodge" },
+  {
+    label: "Hotel Supraja Cyber View",
+    href: "/hotels/supraja-cyber-view",
+  },
+  {
+    label: "Hotel Supraja Residency",
+    href: "/hotels/supraja-residency",
+  },
+  {
+    label: "Hotel Supraja Lodge",
+    href: "/hotels/supraja-lodge",
+  },
+  {
+    label: "Saket Banquet Hall",
+    href: "/saket-banquet-hall",
+  },
 ];
 
-function getHeaderContact(pathname: string) {
+type HeaderContact = {
+  phone: string;
+  whatsapp: string;
+  label: string;
+  whatsappText: string;
+};
+
+function getHeaderContact(pathname: string): HeaderContact {
+  if (pathname.includes("/saket-banquet-hall")) {
+    return {
+      phone: "9346316161",
+      whatsapp: "9346316161",
+      label: "Saket Banquet Hall",
+      whatsappText:
+        "Hi, I would like to know about availability and booking details for Saket Banquet Hall.",
+    };
+  }
+
   if (pathname.includes("/hotels/supraja-residency")) {
     return {
       phone: "9346316161",
       whatsapp: "9346316161",
-      label: "Residency",
+      label: "Hotel Supraja Residency",
+      whatsappText:
+        "Hi, I would like to know about room availability at Hotel Supraja Residency.",
     };
   }
 
@@ -38,7 +70,9 @@ function getHeaderContact(pathname: string) {
     return {
       phone: "9348446161",
       whatsapp: "9348446161",
-      label: "Lodge",
+      label: "Hotel Supraja Lodge",
+      whatsappText:
+        "Hi, I would like to know about room availability at Hotel Supraja Lodge.",
     };
   }
 
@@ -46,7 +80,9 @@ function getHeaderContact(pathname: string) {
     return {
       phone: "9550776161",
       whatsapp: "9550776161",
-      label: "Cyber View",
+      label: "Hotel Supraja Cyber View",
+      whatsappText:
+        "Hi, I would like to know about room availability at Hotel Supraja Cyber View.",
     };
   }
 
@@ -54,6 +90,8 @@ function getHeaderContact(pathname: string) {
     phone: "9550776161",
     whatsapp: "9550776161",
     label: "Supraja Hotels",
+    whatsappText:
+      "Hi, I would like to know about room availability at Supraja Hotels.",
   };
 }
 
@@ -64,12 +102,15 @@ export default function Header() {
   const [hotelsOpen, setHotelsOpen] = useState(false);
 
   const contact = getHeaderContact(pathname);
-  const whatsappText = `Hi I would like to book a room at ${contact.label}`;
 
   const closeMenu = () => {
     setMobileOpen(false);
     setHotelsOpen(false);
   };
+
+  const isHotelsActive =
+    pathname.startsWith("/hotels") ||
+    pathname.startsWith("/saket-banquet-hall");
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
@@ -85,14 +126,18 @@ export default function Header() {
         <nav className="hidden items-center gap-7 md:flex">
           <Link
             href="/"
-            className="text-sm font-semibold text-slate-700 transition hover:text-amber-500"
+            className={`text-sm font-semibold transition hover:text-amber-500 ${
+              pathname === "/" ? "text-amber-600" : "text-slate-700"
+            }`}
           >
             Home
           </Link>
 
           <Link
             href="/about"
-            className="text-sm font-semibold text-slate-700 transition hover:text-amber-500"
+            className={`text-sm font-semibold transition hover:text-amber-500 ${
+              pathname === "/about" ? "text-amber-600" : "text-slate-700"
+            }`}
           >
             About
           </Link>
@@ -100,19 +145,35 @@ export default function Header() {
           <div className="group relative">
             <Link
               href="/hotels"
-              className="flex items-center gap-1 text-sm font-semibold text-slate-700 transition hover:text-amber-500"
+              className={`flex items-center gap-1 text-sm font-semibold transition hover:text-amber-500 ${
+                isHotelsActive ? "text-amber-600" : "text-slate-700"
+              }`}
             >
-              Hotels <ChevronDown size={15} />
+              Hotels
+              <ChevronDown size={15} />
             </Link>
 
-            <div className="invisible absolute left-0 top-full w-64 translate-y-3 rounded-2xl border border-slate-200 bg-white p-3 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:translate-y-2 group-hover:opacity-100">
-              {hotelLinks.map((hotel) => (
+            <div className="invisible absolute left-0 top-full w-72 translate-y-3 rounded-2xl border border-slate-200 bg-white p-3 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:translate-y-2 group-hover:opacity-100">
+              <Link
+                href="/hotels"
+                className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+              >
+                View All Hotels
+              </Link>
+
+              <div className="my-2 border-t border-slate-100" />
+
+              {hotelLinks.map((item) => (
                 <Link
-                  key={hotel.href}
-                  href={hotel.href}
-                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+                  key={item.href}
+                  href={item.href}
+                  className={`block rounded-xl px-4 py-3 text-sm font-semibold transition hover:bg-blue-50 hover:text-blue-800 ${
+                    pathname === item.href
+                      ? "bg-blue-50 text-blue-800"
+                      : "text-slate-700"
+                  }`}
                 >
-                  {hotel.label}
+                  {item.label}
                 </Link>
               ))}
             </div>
@@ -122,7 +183,11 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-slate-700 transition hover:text-amber-500"
+              className={`text-sm font-semibold transition hover:text-amber-500 ${
+                pathname === link.href
+                  ? "text-amber-600"
+                  : "text-slate-700"
+              }`}
             >
               {link.label}
             </Link>
@@ -132,6 +197,7 @@ export default function Header() {
         <div className="hidden items-center gap-3 md:flex">
           <a
             href={`tel:+91${contact.phone}`}
+            aria-label={`Call ${contact.label} at ${contact.phone}`}
             className="flex items-center gap-2 rounded-full bg-blue-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-900"
           >
             <Phone size={16} />
@@ -139,11 +205,12 @@ export default function Header() {
           </a>
 
           <a
-            href={`https://wa.me/91${contact.whatsapp}?text=${encodeURIComponent(
-              whatsappText
-            )}`}
+            href={`https://wa.me/91${
+              contact.whatsapp
+            }?text=${encodeURIComponent(contact.whatsappText)}`}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={`Contact ${contact.label} on WhatsApp`}
             className="flex items-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
           >
             <MessageCircle size={16} />
@@ -153,9 +220,10 @@ export default function Header() {
 
         <button
           type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
+          onClick={() => setMobileOpen((current) => !current)}
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-blue-800 md:hidden"
-          aria-label="Toggle mobile menu"
+          aria-label={mobileOpen ? "Close mobile menu" : "Open mobile menu"}
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -167,7 +235,11 @@ export default function Header() {
             <Link
               href="/"
               onClick={closeMenu}
-              className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+              className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                pathname === "/"
+                  ? "bg-blue-50 text-blue-800"
+                  : "text-slate-700"
+              }`}
             >
               Home
             </Link>
@@ -175,20 +247,31 @@ export default function Header() {
             <Link
               href="/about"
               onClick={closeMenu}
-              className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+              className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                pathname === "/about"
+                  ? "bg-blue-50 text-blue-800"
+                  : "text-slate-700"
+              }`}
             >
               About
             </Link>
 
             <button
               type="button"
-              onClick={() => setHotelsOpen(!hotelsOpen)}
-              className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+              onClick={() => setHotelsOpen((current) => !current)}
+              className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                isHotelsActive
+                  ? "bg-blue-50 text-blue-800"
+                  : "text-slate-700"
+              }`}
+              aria-expanded={hotelsOpen}
             >
               Hotels
               <ChevronDown
                 size={16}
-                className={`transition ${hotelsOpen ? "rotate-180" : ""}`}
+                className={`transition ${
+                  hotelsOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -197,19 +280,27 @@ export default function Header() {
                 <Link
                   href="/hotels"
                   onClick={closeMenu}
-                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800"
+                  className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                    pathname === "/hotels"
+                      ? "bg-blue-50 text-blue-800"
+                      : "text-slate-600"
+                  }`}
                 >
-                  All Hotels
+                  View All Hotels
                 </Link>
 
-                {hotelLinks.map((hotel) => (
+                {hotelLinks.map((item) => (
                   <Link
-                    key={hotel.href}
-                    href={hotel.href}
+                    key={item.href}
+                    href={item.href}
                     onClick={closeMenu}
-                    className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-800"
+                    className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                      pathname === item.href
+                        ? "bg-blue-50 text-blue-800"
+                        : "text-slate-600"
+                    }`}
                   >
-                    {hotel.label}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -220,7 +311,11 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 onClick={closeMenu}
-                className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
+                className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
+                  pathname === link.href
+                    ? "bg-blue-50 text-blue-800"
+                    : "text-slate-700"
+                }`}
               >
                 {link.label}
               </Link>
@@ -231,6 +326,7 @@ export default function Header() {
             <a
               href={`tel:+91${contact.phone}`}
               onClick={closeMenu}
+              aria-label={`Call ${contact.label} at ${contact.phone}`}
               className="flex items-center justify-center gap-2 rounded-full bg-blue-800 px-4 py-3 text-sm font-semibold text-white"
             >
               <Phone size={16} />
@@ -238,12 +334,13 @@ export default function Header() {
             </a>
 
             <a
-              href={`https://wa.me/91${contact.whatsapp}?text=${encodeURIComponent(
-                whatsappText
-              )}`}
+              href={`https://wa.me/91${
+                contact.whatsapp
+              }?text=${encodeURIComponent(contact.whatsappText)}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeMenu}
+              aria-label={`Contact ${contact.label} on WhatsApp`}
               className="flex items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-3 text-sm font-semibold text-white"
             >
               <MessageCircle size={16} />
