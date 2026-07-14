@@ -174,7 +174,7 @@ export default function OffersPage() {
               </span>
 
               <h1 className="mt-6 max-w-4xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-                Book Direct. Stay Better.
+                Book Direct. Stay Better. Save More.
               </h1>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
