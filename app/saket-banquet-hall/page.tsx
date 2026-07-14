@@ -13,15 +13,20 @@ import {
 
 import SmartImage from "@/components/SmartImage";
 
-const siteUrl = "https://suprajahotels.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://suprajahotels.com";
+
 const phone = "9346316161";
+const pageUrl = `${siteUrl}/saket-banquet-hall`;
+const socialImage = `${siteUrl}/images/banquet-hall/hero.webp`;
+
 const whatsappUrl =
   "https://wa.me/919346316161?text=Hi%20I%20would%20like%20to%20check%20availability%20for%20Saket%20Banquet%20Hall%20at%20Hotel%20Supraja%20Residency";
 
 export const metadata: Metadata = {
   title: "Saket Banquet Hall in Chandanagar | Supraja Hotels",
   description:
-    "Plan family celebrations, social functions and corporate gatherings at Saket Banquet Hall, located on the dedicated second floor of Hotel Supraja Residency in Chandanagar.",
+    "Plan family milestones, social soirees, corporate conclaves and private gatherings at Saket Banquet Hall on the exclusive second floor of Hotel Supraja Residency in Chandanagar.",
   keywords: [
     "Saket Banquet Hall",
     "Banquet Hall in Chandanagar",
@@ -32,17 +37,17 @@ export const metadata: Metadata = {
     "Hotel Supraja Residency Banquet Hall",
   ],
   alternates: {
-    canonical: `${siteUrl}/saket-banquet-hall`,
+    canonical: pageUrl,
   },
   openGraph: {
     title: "Saket Banquet Hall in Chandanagar | Supraja Hotels",
     description:
-      "A dedicated second-floor venue at Hotel Supraja Residency for family celebrations, social functions and corporate gatherings.",
-    url: `${siteUrl}/saket-banquet-hall`,
+      "An exquisite second-floor venue at Hotel Supraja Residency for family milestones, social soirees, corporate conclaves and private gatherings.",
+    url: pageUrl,
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/banquet-hall/hero.webp`,
+        url: socialImage,
         width: 1200,
         height: 630,
         alt: "Saket Banquet Hall at Hotel Supraja Residency in Chandanagar",
@@ -55,44 +60,47 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Saket Banquet Hall in Chandanagar | Supraja Hotels",
     description:
-      "A dedicated second-floor venue at Hotel Supraja Residency for family celebrations, social functions and corporate gatherings.",
-    images: [`${siteUrl}/images/banquet-hall/hero.webp`],
+      "An exquisite second-floor venue at Hotel Supraja Residency for family milestones, social soirees, corporate conclaves and private gatherings.",
+    images: [socialImage],
   },
 };
 
 const venueHighlights = [
   {
-    title: "Dedicated Second Floor",
+    title: "Dedicated Second-Floor Venue",
     description:
-      "A self-contained event area within Hotel Supraja Residency, offering a more focused setting for your gathering.",
+      "A self-contained event precinct within Hotel Supraja Residency, ensuring complete privacy and an uninterrupted experience for your occasion.",
     icon: Building2,
   },
   {
-    title: "Well-Connected Location",
+    title: "Prime Connectivity",
     description:
-      "Conveniently placed in Chandanagar with access from BHEL, Miyapur, Serilingampally and nearby neighbourhoods.",
+      "Strategically located in Chandanagar, with seamless access from BHEL, Miyapur, Serilingampally and adjacent neighbourhoods.",
     icon: MapPin,
   },
   {
-    title: "Flexible Event Use",
+    title: "Versatile Event Capabilities",
     description:
-      "Suitable for family celebrations, social occasions, business meetings, training sessions and private functions.",
+      "Ideally suited for engagements, birthday galas, anniversary celebrations, naming ceremonies, corporate seminars, training workshops and private festivities.",
     icon: CalendarDays,
   },
   {
-    title: "Rooms in the Same Property",
+    title: "Luxury Accommodation On-Site",
     description:
-      "Guests travelling from outside the city can stay at Hotel Supraja Residency without arranging a separate hotel.",
+      "For guests travelling from outside the city, Hotel Supraja Residency offers elegant, well-appointed rooms available at a separate tariff, eliminating the need to coordinate external hotel arrangements.",
     icon: Users,
   },
 ];
 
-const eventTypes = [
+const socialCelebrations = [
   "Engagements",
   "Birthday Celebrations",
   "Anniversary Functions",
   "Naming Ceremonies",
   "Family Gatherings",
+];
+
+const professionalEvents = [
   "Corporate Meetings",
   "Training Sessions",
   "Private Celebrations",
@@ -133,29 +141,29 @@ const galleryImages = [
   },
 ];
 
-const practicalBenefits = [
-  "Private event space on the second floor",
-  "Direct access from key Chandanagar areas",
-  "Guest rooms available within the property",
-  "Suitable for social and professional occasions",
-  "Personal booking assistance from the hotel team",
-  "Arrangements discussed according to your event needs",
+const curatedConveniences = [
+  "Private, exclusive event floor with controlled access",
+  "Excellent connectivity from all major Chandanagar thoroughfares",
+  "Premium guest rooms available within the same premises, chargeable separately",
+  "Equally suited for social festivities and professional engagements",
+  "Personalised event coordination from our experienced hospitality team",
+  "Bespoke arrangements crafted to align with your specific programme requirements",
 ];
 
 export default function SaketBanquetHallPage() {
   const banquetSchema = {
     "@context": "https://schema.org",
     "@type": "EventVenue",
-    "@id": `${siteUrl}/saket-banquet-hall#venue`,
+    "@id": `${pageUrl}#venue`,
     name: "Saket Banquet Hall",
-    url: `${siteUrl}/saket-banquet-hall`,
+    url: pageUrl,
     image: [
-      `${siteUrl}/images/banquet-hall/hero.webp`,
+      socialImage,
       `${siteUrl}/images/banquet-hall/banquet-hall-seating.webp`,
       `${siteUrl}/images/banquet-hall/banquet-hall-stage.webp`,
     ],
     description:
-      "Saket Banquet Hall is a dedicated second-floor event venue inside Hotel Supraja Residency in Chandanagar, Hyderabad.",
+      "Saket Banquet Hall is an exclusive second-floor event venue inside Hotel Supraja Residency in Chandanagar, Hyderabad.",
     telephone: `+91${phone}`,
     address: {
       "@type": "PostalAddress",
@@ -198,31 +206,15 @@ export default function SaketBanquetHallPage() {
             </p>
 
             <h1 className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
-              A Welcoming Venue for Meaningful Celebrations
+              An Exquisite Venue for Life&apos;s Most Meaningful Celebrations
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
-              Located on the dedicated second floor of Hotel Supraja Residency,
-              Saket Banquet Hall offers a comfortable setting for family
-              occasions, social functions, corporate meetings and private
-              gatherings.
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">
+              Perched on the exclusive second floor of Hotel Supraja Residency,
+              our banquet hall provides a refined and versatile setting for
+              family milestones, social soirees, corporate conclaves and
+              intimate private gatherings.
             </p>
-
-            <div className="mt-7 flex flex-wrap gap-3 text-xs font-semibold text-slate-100">
-              {[
-                "Dedicated Event Floor",
-                "Inside Hotel Supraja Residency",
-                "Chandanagar Location",
-                "Direct Booking Support",
-              ].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm"
-                >
-                  ✓ {item}
-                </span>
-              ))}
-            </div>
 
             <div className="mt-9 flex flex-wrap gap-4">
               <a
@@ -249,22 +241,32 @@ export default function SaketBanquetHallPage() {
 
       <section className="bg-white px-4 py-14 md:py-16">
         <div className="container-custom">
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
+              Venue Distinction
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-5xl">
+              An Exclusive Enclave, Strategically Positioned
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {venueHighlights.map((item) => {
               const Icon = item.icon;
 
               return (
                 <div
                   key={item.title}
-                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
                     <Icon className="h-5 w-5" />
                   </div>
 
-                  <h2 className="mt-4 text-lg font-bold text-slate-950">
+                  <h3 className="mt-4 text-lg font-bold text-slate-950">
                     {item.title}
-                  </h2>
+                  </h3>
 
                   <p className="mt-2 leading-7 text-slate-600">
                     {item.description}
@@ -280,26 +282,28 @@ export default function SaketBanquetHallPage() {
         <div className="container-custom grid gap-10 lg:grid-cols-[44%_56%] lg:items-center">
           <div>
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
-              About the Hall
+              Premium Hospitality
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-5xl">
-              A Practical Setting with the Convenience of a Hotel
+              The Perfect Synergy of Event Space and Premium Hospitality
             </h2>
           </div>
 
           <div>
             <p className="text-lg leading-8 text-slate-600">
-              Saket Banquet Hall brings together an event venue and hotel
-              accommodation in one address. The hall provides a dedicated area
-              for your occasion, while Hotel Supraja Residency offers a
-              convenient stay option for visiting relatives, colleagues and
-              other guests.
+              Saket Banquet Hall seamlessly integrates a distinguished event
+              venue with the world-class hospitality of Hotel Supraja
+              Residency. While the hall serves as the centrepiece of your
+              celebration, the hotel offers discerning guests the option to
+              retire to luxurious rooms, ensuring their comfort and convenience
+              throughout their stay.
             </p>
 
             <p className="mt-5 leading-8 text-slate-600">
-              Our team can help you check date availability and discuss the
-              arrangements needed for your programme.
+              Our dedicated team is on hand to assist with availability checks,
+              customised layouts, catering selections and every nuanced detail
+              that elevates your event from memorable to extraordinary.
             </p>
           </div>
         </div>
@@ -313,12 +317,12 @@ export default function SaketBanquetHallPage() {
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-5xl">
-              See the Hall Before You Plan
+              Explore Saket Banquet Hall
             </h2>
 
             <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-600">
-              Explore the stage, seating arrangements and open floor areas to
-              understand how the venue can suit your occasion.
+              View the stage, seating arrangements and open event areas before
+              planning your celebration.
             </p>
           </div>
 
@@ -358,32 +362,54 @@ export default function SaketBanquetHallPage() {
       </section>
 
       <section className="bg-slate-50 px-4 py-14 md:py-16">
-        <div className="container-custom grid gap-10 lg:grid-cols-[42%_58%] lg:items-start">
-          <div>
+        <div className="container-custom">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
-              Suitable Occasions
+              Occasion Planning
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-5xl">
-              A Versatile Space for Different Gatherings
+              A Curated Space for Every Occasion
             </h2>
 
-            <p className="mt-5 leading-8 text-slate-600">
-              The hall can be arranged according to the nature of your
-              programme, guest profile and preferred seating style.
+            <p className="mx-auto mt-5 max-w-3xl leading-8 text-slate-600">
+              The hall is meticulously adapted to reflect the nature of your
+              programme, guest profile and preferred ambience. Whether formal
+              or festive, we tailor the environment to your exact
+              specifications.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {eventTypes.map((event) => (
-              <div
-                key={event}
-                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5"
-              >
-                <Sparkles className="h-5 w-5 shrink-0 text-amber-600" />
-                <span className="font-semibold text-slate-800">{event}</span>
+          <div className="mx-auto mt-10 grid max-w-5xl gap-6 md:grid-cols-2">
+            <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+              <h3 className="text-2xl font-bold text-slate-950">
+                Social Celebrations
+              </h3>
+
+              <div className="mt-6 space-y-4">
+                {socialCelebrations.map((event) => (
+                  <div key={event} className="flex items-center gap-3">
+                    <Sparkles className="h-5 w-5 shrink-0 text-amber-600" />
+                    <span className="font-semibold text-slate-700">{event}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+              <h3 className="text-2xl font-bold text-slate-950">
+                Professional Events
+              </h3>
+
+              <div className="mt-6 space-y-4">
+                {professionalEvents.map((event) => (
+                  <div key={event} className="flex items-center gap-3">
+                    <Sparkles className="h-5 w-5 shrink-0 text-amber-600" />
+                    <span className="font-semibold text-slate-700">{event}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -392,15 +418,15 @@ export default function SaketBanquetHallPage() {
         <div className="container-custom grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-8 md:p-10">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
-              Practical Advantages
+              Guest Convenience
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-4xl">
-              Thoughtful Convenience for Hosts and Guests
+              Curated Conveniences for Hosts and Guests Alike
             </h2>
 
             <div className="mt-8 space-y-4">
-              {practicalBenefits.map((benefit) => (
+              {curatedConveniences.map((benefit) => (
                 <div key={benefit} className="flex items-start gap-3">
                   <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-green-600" />
                   <p className="leading-7 text-slate-600">{benefit}</p>
@@ -419,12 +445,12 @@ export default function SaketBanquetHallPage() {
             </h2>
 
             <p className="mt-5 leading-8 text-slate-300">
-              Saket Banquet Hall is on the dedicated second floor of Hotel
+              Saket Banquet Hall occupies the dedicated second floor of Hotel
               Supraja Residency in Chandanagar, Hyderabad.
             </p>
 
             <p className="mt-5 leading-8 text-slate-300">
-              The property is accessible from BHEL, Gangaram, Miyapur,
+              The property is conveniently accessible from BHEL, Miyapur,
               Serilingampally, Nallagandla and surrounding localities.
             </p>
 
@@ -442,12 +468,15 @@ export default function SaketBanquetHallPage() {
         <div className="container-custom">
           <div className="rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Check Your Preferred Date
+              Reserve Your Date Today
             </h2>
 
-            <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-300">
-              Speak with our team for availability, event requirements and
-              booking assistance.
+            <p className="mx-auto mt-5 max-w-3xl leading-8 text-slate-300">
+              Your preferred date is just a conversation away. Reach out to our
+              team to check availability, discuss your event vision and begin
+              the booking process. No site visit is required. We&apos;ll guide
+              you through every detail, from seating to catering, so your
+              celebration is seamless from start to finish.
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
