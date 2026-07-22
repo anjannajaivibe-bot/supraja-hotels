@@ -22,6 +22,15 @@ import FAQSchema from "@/components/schema/FAQSchema";
 
 const siteUrl = "https://suprajahotels.com";
 
+const hotelHeroVideos: Record<string, string> = {
+  "supraja-cyber-view":
+    "/images/hero-vids/hotel-supraja-cyber-view-hero-video.webm",
+  "supraja-residency":
+    "/images/hero-vids/sri-supraja-residency-hero-video.webm",
+  "supraja-lodge":
+    "/images/hero-vids/hotel-supraja-lodge-hero-video.webm",
+};
+
 type Props = {
   params: Promise<{
     slug: string;
@@ -196,6 +205,23 @@ export default async function HotelPage({ params }: Props) {
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 48vw"
               />
+
+              {hotelHeroVideos[hotel.slug] ? (
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover"
+                >
+                  <source
+                    src={hotelHeroVideos[hotel.slug]}
+                    type="video/webm"
+                  />
+                </video>
+              ) : null}
 
               <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-white/90 p-5 text-slate-950 shadow-xl backdrop-blur">
                 <p className="flex items-center gap-2 text-sm font-semibold text-slate-500">

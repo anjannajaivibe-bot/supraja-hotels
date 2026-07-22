@@ -197,6 +197,21 @@ export default function SaketBanquetHallPage() {
           sizes="100vw"
         />
 
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source
+            src="/images/hero-vids/saket-banquet-hall-hero-video.webm"
+            type="video/webm"
+          />
+        </video>
+
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20" />
 
         <div className="container-custom relative flex min-h-[620px] items-center px-4 py-20">
