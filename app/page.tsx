@@ -237,7 +237,7 @@ export default function HomePage() {
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-5xl">
-              Find the Perfect Stay for Your Visit
+              Find the Perfect Stay
             </h2>
 
             <p className="mt-5 leading-8 text-slate-600">
