@@ -216,18 +216,44 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative h-[340px] overflow-hidden bg-slate-100 md:h-[650px]">
-            <SmartImage
-              src="/images/homepage/hero.webp"
-              alt="Comfortable Supraja Hotels in Hyderabad"
-              fill
-              isHero
-              className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 54vw"
-            />
-          </div>
-        </div>
-      </section>
+          <div
+  className="relative h-[340px] overflow-hidden bg-slate-950 bg-cover bg-center md:h-[650px]"
+  style={{
+    backgroundImage:
+      "url('/media/home-hero/supraja-hotels-home-hero-poster.webp')",
+  }}
+>
+  <video
+  className="absolute inset-0 h-full w-full object-cover object-center"
+  autoPlay
+  muted
+  loop
+  playsInline
+  preload="auto"
+  poster="/media/home-hero/supraja-hotels-home-hero-poster.webp"
+  aria-hidden="true"
+  disablePictureInPicture
+>
+  <source
+    src="/media/home-hero/supraja-hotels-home-hero-mobile.webm"
+    type="video/webm"
+    media="(max-width: 767px)"
+  />
+
+  <source
+    src="/media/home-hero/supraja-hotels-home-hero.webm"
+    type="video/webm"
+    media="(min-width: 768px)"
+  />
+
+  <source
+    src="/media/home-hero/supraja-hotels-home-hero.mp4"
+    type="video/mp4"
+  />
+  </video>
+</div>
+</div>
+</section>
 
       <section className="bg-white px-4 py-20">
         <div className="container-custom">
