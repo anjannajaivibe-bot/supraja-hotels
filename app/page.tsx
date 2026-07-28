@@ -150,110 +150,115 @@ export default function HomePage() {
         }}
       />
 
-      <section className="bg-white">
-        <div className="grid md:grid-cols-[46%_54%]">
-          <div className="flex min-h-[650px] items-center bg-slate-950 px-6 py-16 text-white md:px-16">
-            <div>
-              <p className="mb-5 text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                Supraja Hotels | Hyderabad
-              </p>
+      <section
+        className="relative isolate flex min-h-[680px] items-center overflow-hidden bg-slate-950 text-white md:min-h-[760px]"
+        style={{
+          backgroundImage:
+            "url('/media/home-hero/supraja-hotels-home-hero-poster.webp')",
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+      >
+        <video
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/media/home-hero/supraja-hotels-home-hero-poster.webp"
+          aria-hidden="true"
+          disablePictureInPicture
+        >
+          <source
+            src="/media/home-hero/supraja-hotels-home-hero-mobile.webm"
+            type="video/webm"
+            media="(max-width: 767px)"
+          />
+          <source
+            src="/media/home-hero/supraja-hotels-home-hero.webm"
+            type="video/webm"
+            media="(min-width: 768px)"
+          />
+          <source
+            src="/media/home-hero/supraja-hotels-home-hero.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-              <h1 className="mt-6 max-w-4xl text-4xl font-medium leading-tight tracking-tight md:text-6xl">
-                Comfortable Stays Across Hyderabad
-              </h1>
+        <div
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/75 via-transparent to-slate-950/20"
+          aria-hidden="true"
+        />
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-                Whether you are travelling for work, visiting family, attending
-                a medical appointment or exploring the city, Supraja Hotels
-                offers clean rooms, convenient locations and warm hospitality.
-                Stay close to <strong>Hitech City</strong>,{" "}
-                <strong>Madhapur</strong>, <strong>Chandanagar</strong>,{" "}
-                <strong>BHEL</strong> and <strong>Miyapur</strong>.
-              </p>
+        <div className="container-custom w-full px-5 py-20 sm:px-6 md:py-24">
+          <div className="max-w-4xl">
+            <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300 sm:text-base">
+              Supraja Hotels | Hyderabad
+            </p>
 
-              <div className="mt-7 flex flex-wrap gap-3 text-xs font-semibold text-slate-200">
-                {[
-                  "Best Direct Rates",
-                  "Prime Locations",
-                  "Free WiFi",
-                  "24x7 Guest Support",
-                ].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/15 bg-white/10 px-4 py-2"
-                  >
-                    ✓ {item}
-                  </span>
-                ))}
-              </div>
+            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+              Comfortable Stays Across Hyderabad
+            </h1>
 
-              <div className="mt-9 flex flex-wrap gap-4">
-                <Link
-                  href="/hotels"
-                  className="rounded-full bg-blue-700 px-7 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+            <p className="mt-6 max-w-3xl text-base leading-7 text-slate-100 sm:text-lg sm:leading-8">
+              Whether you are travelling for work, visiting family, attending a
+              medical appointment or exploring the city, Supraja Hotels offers
+              clean rooms, convenient locations and warm hospitality. Stay close
+              to <strong>Hitech City</strong>, <strong>Madhapur</strong>,{" "}
+              <strong>Chandanagar</strong>, <strong>BHEL</strong> and{" "}
+              <strong>Miyapur</strong>.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-2.5 text-xs font-semibold text-white sm:text-sm">
+              {[
+                "Best Direct Rates",
+                "Prime Locations",
+                "Free WiFi",
+                "24x7 Guest Support",
+              ].map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-white/25 bg-slate-950/35 px-4 py-2 backdrop-blur-sm"
                 >
-                  Explore Hotels
-                </Link>
+                  ✓ {item}
+                </span>
+              ))}
+            </div>
 
-                <a
-                  href="https://wa.me/919550776161?text=Hi%20I%20would%20like%20to%20know%20room%20availability%20at%20Supraja%20Hotels"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-green-600 px-7 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
-                >
-                  <MessageCircle size={18} />
-                  Book on WhatsApp
-                </a>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/hotels"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-blue-700 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/25 transition hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Explore Hotels
+              </Link>
 
-                <a
-                  href="tel:+919550776161"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-slate-950"
-                >
-                  <Phone size={18} />
-                  Call Now
-                </a>
-              </div>
+              <a
+                href="https://wa.me/919550776161?text=Hi%20I%20would%20like%20to%20know%20room%20availability%20at%20Supraja%20Hotels"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-green-950/25 transition hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <MessageCircle size={18} aria-hidden="true" />
+                Book on WhatsApp
+              </a>
+
+              <a
+                href="tel:+919550776161"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/60 bg-slate-950/25 px-7 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <Phone size={18} aria-hidden="true" />
+                Call 9550776161
+              </a>
             </div>
           </div>
-
-          <div
-  className="relative h-[340px] overflow-hidden bg-slate-950 bg-cover bg-center md:h-[650px]"
-  style={{
-    backgroundImage:
-      "url('/media/home-hero/supraja-hotels-home-hero-poster.webp')",
-  }}
->
-  <video
-  className="absolute inset-0 h-full w-full object-cover object-center"
-  autoPlay
-  muted
-  loop
-  playsInline
-  preload="auto"
-  poster="/media/home-hero/supraja-hotels-home-hero-poster.webp"
-  aria-hidden="true"
-  disablePictureInPicture
->
-  <source
-    src="/media/home-hero/supraja-hotels-home-hero-mobile.webm"
-    type="video/webm"
-    media="(max-width: 767px)"
-  />
-
-  <source
-    src="/media/home-hero/supraja-hotels-home-hero.webm"
-    type="video/webm"
-    media="(min-width: 768px)"
-  />
-
-  <source
-    src="/media/home-hero/supraja-hotels-home-hero.mp4"
-    type="video/mp4"
-  />
-  </video>
-</div>
-</div>
-</section>
+        </div>
+      </section>
 
       <section className="bg-white px-4 py-20">
         <div className="container-custom">
@@ -472,8 +477,8 @@ export default function HomePage() {
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300">
             Get the best available rates, quick room confirmation and friendly
-            assistance by booking directly with Supraja Hotels. Our team is
-            just a phone call or WhatsApp message away.
+            assistance by booking directly with Supraja Hotels. Our team is just
+            a phone call or WhatsApp message away.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
