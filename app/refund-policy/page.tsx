@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | Supraja Hotels",
+  title: "Refund Policy",
   description:
     "Refund and cancellation policy for direct bookings at Supraja Hotels.",
 };

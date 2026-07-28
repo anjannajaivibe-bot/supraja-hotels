@@ -18,7 +18,7 @@ import { hotels } from "@/data/hotels";
 const siteUrl = "https://suprajahotels.com";
 
 export const metadata: Metadata = {
-  title: "Hotels in Hyderabad | Supraja Hotels",
+  title: "Hotels in Hyderabad",
   description:
     "Explore Supraja Hotels in Hyderabad including Hotel Supraja Cyber View, Hotel Supraja Residency and Hotel Supraja Lodge. Book directly.",
   keywords: [
@@ -34,17 +34,17 @@ export const metadata: Metadata = {
     "Supraja Hotels",
   ],
   alternates: {
-    canonical: `${siteUrl}/hotels`,
+    canonical: "/hotels",
   },
   openGraph: {
     title: "Hotels in Hyderabad | Supraja Hotels",
     description:
       "Explore Supraja Hotels in Hyderabad for comfortable rooms, prime locations and direct booking support.",
-    url: `${siteUrl}/hotels`,
+    url: "/hotels",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/homepage/hero.webp`,
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Hotels in Hyderabad by Supraja Hotels",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     title: "Hotels in Hyderabad | Supraja Hotels",
     description:
       "Explore Supraja Hotels in Hyderabad with direct booking support across Madhapur and Chandanagar.",
-    images: [`${siteUrl}/images/homepage/hero.webp`],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 

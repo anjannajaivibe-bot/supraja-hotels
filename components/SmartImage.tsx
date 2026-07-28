@@ -8,11 +8,13 @@ export default function SmartImage({
   isHero = false,
   sizes,
   quality,
+  alt,
   ...props
 }: Props) {
   return (
     <Image
       {...props}
+      alt={alt}
       priority={isHero}
       loading={isHero ? "eager" : "lazy"}
       quality={quality ?? (isHero ? 70 : 60)}

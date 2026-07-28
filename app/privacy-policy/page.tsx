@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Supraja Hotels",
+  title: "Privacy Policy",
   description:
     "Privacy Policy for Supraja Hotels regarding guest information and website usage.",
 };

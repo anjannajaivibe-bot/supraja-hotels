@@ -50,3 +50,22 @@ a {
 .blue-gradient {
   background: linear-gradient(135deg, #0f172a, #1e3a8a, #1e40af);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  video[autoplay] {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -17,7 +17,9 @@ import AmenitiesSection from "@/components/AmenitiesSection";
 import { hotels } from "@/data/hotels";
 
 export const metadata: Metadata = {
-  title: "Supraja Hotels | Comfortable Hotels in Hyderabad",
+  title: {
+    absolute: "Supraja Hotels | Comfortable Hotels in Hyderabad",
+  },
   description:
     "Book clean and comfortable hotels in Hyderabad near Hitech City, Madhapur, Chandanagar, BHEL and Miyapur with direct booking support from Supraja Hotels.",
   keywords: [
@@ -33,17 +35,17 @@ export const metadata: Metadata = {
     "Supraja Hotels",
   ],
   alternates: {
-    canonical: "https://suprajahotels.com",
+    canonical: "/",
   },
   openGraph: {
     title: "Supraja Hotels | Comfortable Hotels in Hyderabad",
     description:
       "Clean rooms, convenient Hyderabad locations and friendly direct booking support at Supraja Hotels.",
-    url: "https://suprajahotels.com",
+    url: "/",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: "https://suprajahotels.com/images/homepage/hero.webp",
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Supraja Hotels in Hyderabad",
@@ -57,7 +59,7 @@ export const metadata: Metadata = {
     title: "Supraja Hotels | Comfortable Hotels in Hyderabad",
     description:
       "Clean rooms, convenient Hyderabad locations and friendly direct booking support at Supraja Hotels.",
-    images: ["https://suprajahotels.com/images/homepage/hero.webp"],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 
@@ -418,7 +420,7 @@ export default function HomePage() {
                 </p>
 
                 <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-4xl">
-                  Stay Near Hyderabad's Most Important Destinations
+                  Stay Near Hyderabad&apos;s Most Important Destinations
                 </h2>
 
                 <p className="mt-5 max-w-4xl leading-8 text-slate-600">

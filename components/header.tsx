@@ -123,7 +123,7 @@ export default function Header() {
           Supraja Hotels
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-7 lg:flex">
           <Link
             href="/"
             className={`text-sm font-semibold transition hover:text-amber-500 ${
@@ -153,7 +153,7 @@ export default function Header() {
               <ChevronDown size={15} />
             </Link>
 
-            <div className="invisible absolute left-0 top-full w-72 translate-y-3 rounded-2xl border border-slate-200 bg-white p-3 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:translate-y-2 group-hover:opacity-100">
+            <div className="invisible absolute left-0 top-full w-72 translate-y-3 rounded-2xl border border-slate-200 bg-white p-3 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:translate-y-2 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-2 group-focus-within:opacity-100">
               <Link
                 href="/hotels"
                 className="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-800"
@@ -194,7 +194,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <a
             href={`tel:+91${contact.phone}`}
             aria-label={`Call ${contact.label} at ${contact.phone}`}
@@ -221,7 +221,7 @@ export default function Header() {
         <button
           type="button"
           onClick={() => setMobileOpen((current) => !current)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-blue-800 md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-blue-800 lg:hidden"
           aria-label={mobileOpen ? "Close mobile menu" : "Open mobile menu"}
           aria-expanded={mobileOpen}
         >
@@ -230,7 +230,7 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 pb-5 pt-2 shadow-lg md:hidden">
+        <div className="border-t border-slate-200 bg-white px-4 pb-5 pt-2 shadow-lg lg:hidden">
           <nav className="space-y-1">
             <Link
               href="/"

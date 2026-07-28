@@ -21,7 +21,7 @@ import { hotels } from "@/data/hotels";
 const siteUrl = "https://suprajahotels.com";
 
 export const metadata: Metadata = {
-  title: "Hotel Offers in Hyderabad | Supraja Hotels",
+  title: "Hotel Offers in Hyderabad",
   description:
     "Book direct with Supraja Hotels for best available rates, corporate stays, group bookings and long stay support in Hyderabad.",
   keywords: [
@@ -36,17 +36,17 @@ export const metadata: Metadata = {
     "Supraja Hotels offers",
   ],
   alternates: {
-    canonical: `${siteUrl}/offers`,
+    canonical: "/offers",
   },
   openGraph: {
     title: "Hotel Offers in Hyderabad | Supraja Hotels",
     description:
       "Direct booking benefits, best available rates and quick reservation support across Supraja Hotels in Hyderabad.",
-    url: `${siteUrl}/offers`,
+    url: "/offers",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/homepage/hero.webp`,
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Hotel Offers in Hyderabad by Supraja Hotels",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: "Hotel Offers in Hyderabad | Supraja Hotels",
     description:
       "Book direct with Supraja Hotels for best available rates and quick booking support.",
-    images: [`${siteUrl}/images/homepage/hero.webp`],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 

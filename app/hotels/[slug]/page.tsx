@@ -20,7 +20,14 @@ import HotelSchema from "@/components/schema/HotelSchema";
 import BreadcrumbSchema from "@/components/schema/BreadcrumbSchema";
 import FAQSchema from "@/components/schema/FAQSchema";
 
-const siteUrl = "https://suprajahotels.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://suprajahotels.com";
+
+const hotelOgImages: Record<string, string> = {
+  "supraja-cyber-view": "/images/social/supraja-cyber-view-og.jpg",
+  "supraja-residency": "/images/social/supraja-residency-og.jpg",
+  "supraja-lodge": "/images/social/supraja-lodge-og.jpg",
+};
 
 const hotelHeroVideos: Record<string, string> = {
   "supraja-cyber-view":
@@ -42,13 +49,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!hotel) {
     return {
-      title: "Hotel Not Found | Supraja Hotels",
+      title: "Hotel Not Found",
       description: "The requested hotel page could not be found.",
     };
   }
 
   const canonicalUrl = `${siteUrl}/hotels/${hotel.slug}`;
-  const ogImageUrl = `${siteUrl}${hotel.seo.ogImage}`;
+  const ogImageUrl = `${siteUrl}${
+    hotelOgImages[hotel.slug] || "/images/social/supraja-hotels-og.jpg"
+  }`;
 
   return {
     title: hotel.seo.metaTitle,

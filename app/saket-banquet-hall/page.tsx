@@ -18,13 +18,13 @@ const siteUrl =
 
 const phone = "9346316161";
 const pageUrl = `${siteUrl}/saket-banquet-hall`;
-const socialImage = `${siteUrl}/images/banquet-hall/hero.webp`;
+const socialImage = `${siteUrl}/images/social/saket-banquet-hall-og.jpg`;
 
 const whatsappUrl =
   "https://wa.me/919346316161?text=Hi%20I%20would%20like%20to%20check%20availability%20for%20Saket%20Banquet%20Hall%20at%20Hotel%20Supraja%20Residency";
 
 export const metadata: Metadata = {
-  title: "Saket Banquet Hall in Chandanagar | Supraja Hotels",
+  title: "Saket Banquet Hall in Chandanagar",
   description:
     "Plan family milestones, social soirees, corporate conclaves and private gatherings at Saket Banquet Hall on the exclusive second floor of Hotel Supraja Residency in Chandanagar.",
   keywords: [

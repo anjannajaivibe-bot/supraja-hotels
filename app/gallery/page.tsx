@@ -19,7 +19,7 @@ import { hotels } from "@/data/hotels";
 const siteUrl = "https://suprajahotels.com";
 
 export const metadata: Metadata = {
-  title: "Hotel Gallery | Supraja Hotels Hyderabad",
+  title: "Hotel Gallery | Hyderabad",
   description:
     "View Supraja Hotels photos including rooms, hotel exteriors and stay spaces near Hitech City, Madhapur and Chandanagar.",
   keywords: [
@@ -33,17 +33,17 @@ export const metadata: Metadata = {
     "rooms in Chandanagar Hyderabad",
   ],
   alternates: {
-    canonical: `${siteUrl}/gallery`,
+    canonical: "/gallery",
   },
   openGraph: {
     title: "Hotel Gallery | Supraja Hotels Hyderabad",
     description:
       "Explore room photos, hotel exteriors and stay spaces across Supraja Hotels in Hyderabad.",
-    url: `${siteUrl}/gallery`,
+    url: "/gallery",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/homepage/hero.webp`,
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Hotel Gallery of Supraja Hotels Hyderabad",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     title: "Hotel Gallery | Supraja Hotels Hyderabad",
     description:
       "View Supraja Hotels photos including rooms, exteriors and stay spaces in Hyderabad.",
-    images: [`${siteUrl}/images/homepage/hero.webp`],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 

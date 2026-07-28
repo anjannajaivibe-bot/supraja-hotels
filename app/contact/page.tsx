@@ -13,10 +13,11 @@ import {
 import SmartImage from "@/components/SmartImage";
 import { hotels } from "@/data/hotels";
 
-const siteUrl = "https://suprajahotels.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://suprajahotels.com";
 
 export const metadata: Metadata = {
-  title: "Contact Supraja Hotels | Hotel Booking in Hyderabad",
+  title: "Contact Us | Hotel Booking in Hyderabad",
   description:
     "Contact Supraja Hotels for direct hotel booking in Hyderabad near Hitech City, Madhapur, Chandanagar, BHEL and Miyapur.",
   keywords: [
@@ -30,17 +31,17 @@ export const metadata: Metadata = {
     "Hotels near Miyapur",
   ],
   alternates: {
-    canonical: `${siteUrl}/contact`,
+    canonical: "/contact",
   },
   openGraph: {
     title: "Contact Supraja Hotels | Hotel Booking in Hyderabad",
     description:
       "Call or WhatsApp Supraja Hotels for clean rooms, prime locations and direct booking support in Hyderabad.",
-    url: `${siteUrl}/contact`,
+    url: "/contact",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/homepage/hero.webp`,
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Contact Supraja Hotels for Hotel Booking in Hyderabad",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     title: "Contact Supraja Hotels | Hotel Booking in Hyderabad",
     description:
       "Direct hotel booking support near Hitech City, Madhapur and Chandanagar.",
-    images: [`${siteUrl}/images/homepage/hero.webp`],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 

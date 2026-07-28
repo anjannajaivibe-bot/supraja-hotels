@@ -47,6 +47,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
 
     {
+      url: `${baseUrl}/saket-banquet-hall`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+
+    {
       url: `${baseUrl}/gallery`,
       lastModified: new Date(),
       changeFrequency: "monthly",

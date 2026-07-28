@@ -10,8 +10,11 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://suprajahotels.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://suprajahotels.com"),
+  metadataBase: new URL(siteUrl),
 
   title: {
     default: "Supraja Hotels Hyderabad",
@@ -54,14 +57,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://suprajahotels.com",
+    url: "/",
     siteName: "Supraja Hotels",
     title: "Supraja Hotels Hyderabad",
     description:
       "Comfortable stays in Hyderabad with Hotel Supraja Cyber View, Hotel Supraja Residency and Hotel Supraja Lodge.",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "Supraja Hotels Hyderabad comfortable hotel rooms",
@@ -73,7 +76,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Supraja Hotels Hyderabad",
     description: "Comfortable stays in Hyderabad with direct booking support.",
-    images: ["/og-image.jpg"],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 
   robots: {

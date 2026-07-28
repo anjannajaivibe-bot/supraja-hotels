@@ -6,21 +6,21 @@ import SmartImage from "@/components/SmartImage";
 const siteUrl = "https://suprajahotels.com";
 
 export const metadata: Metadata = {
-  title: "About Supraja Hotels | Comfortable Hotels in Hyderabad",
+  title: "About Us | Comfortable Hotels in Hyderabad",
   description:
     "Learn about Supraja Hotels, offering clean rooms, convenient locations and friendly direct booking support across Hyderabad.",
   alternates: {
-    canonical: `${siteUrl}/about`,
+    canonical: "/about",
   },
   openGraph: {
     title: "About Supraja Hotels | Comfortable Hotels in Hyderabad",
     description:
       "Discover Supraja Hotels and our commitment to clean rooms, convenient locations, warm hospitality and easy direct booking.",
-    url: `${siteUrl}/about`,
+    url: "/about",
     siteName: "Supraja Hotels",
     images: [
       {
-        url: `${siteUrl}/images/homepage/hero.webp`,
+        url: "/images/social/supraja-hotels-og.jpg",
         width: 1200,
         height: 630,
         alt: "About Supraja Hotels in Hyderabad",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "About Supraja Hotels | Comfortable Hotels in Hyderabad",
     description:
       "Discover Supraja Hotels and our commitment to clean rooms, convenient locations, warm hospitality and easy direct booking.",
-    images: [`${siteUrl}/images/homepage/hero.webp`],
+    images: ["/images/social/supraja-hotels-og.jpg"],
   },
 };
 
