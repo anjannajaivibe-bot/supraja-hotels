@@ -121,7 +121,7 @@ export default async function HotelPage({ params }: Props) {
       />
 
       <main className="bg-white text-slate-900">
-        <section className="relative isolate flex min-h-[680px] items-end overflow-hidden bg-slate-950 text-white md:min-h-[760px]">
+        <section className="relative isolate flex min-h-[620px] items-center overflow-hidden bg-slate-950 text-white sm:min-h-[640px] lg:min-h-[660px]">
           <SmartImage
             src={hotel.images.hero}
             alt={hotel.seo.featuredImageAlt}
@@ -149,7 +149,7 @@ export default async function HotelPage({ params }: Props) {
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/20" />
 
-          <div className="container-custom relative z-10 w-full px-4 pb-14 pt-32 md:pb-20 lg:pb-24">
+          <div className="container-custom relative z-10 w-full px-4 py-10 sm:py-12 lg:py-14">
             <div className="max-w-4xl">
               <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-300 backdrop-blur-sm sm:text-sm">
                 <MapPin size={16} aria-hidden="true" />
