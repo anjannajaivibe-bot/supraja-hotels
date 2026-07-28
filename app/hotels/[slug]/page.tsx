@@ -27,8 +27,7 @@ const hotelHeroVideos: Record<string, string> = {
     "/images/hero-vids/hotel-supraja-cyber-view-hero-video.webm",
   "supraja-residency":
     "/images/hero-vids/sri-supraja-residency-hero-video.webm",
-  "supraja-lodge":
-    "/images/hero-vids/hotel-supraja-lodge-hero-video.webm",
+  "supraja-lodge": "/images/hero-vids/hotel-supraja-lodge-hero-video.webm",
 };
 
 type Props = {
@@ -37,9 +36,7 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const hotel = hotels.find((item) => item.slug === slug);
 
@@ -124,28 +121,59 @@ export default async function HotelPage({ params }: Props) {
       />
 
       <main className="bg-white text-slate-900">
-        <section className="relative overflow-hidden bg-slate-950 px-4 py-20 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.2),transparent_34%)]" />
+        <section className="relative isolate flex min-h-[680px] items-end overflow-hidden bg-slate-950 text-white md:min-h-[760px]">
+          <SmartImage
+            src={hotel.images.hero}
+            alt={hotel.seo.featuredImageAlt}
+            fill
+            isHero
+            className="object-cover"
+            sizes="100vw"
+          />
 
-          <div className="container-custom relative grid gap-12 lg:grid-cols-[52%_48%] lg:items-center">
-            <div>
-              <p className="inline-flex rounded-full bg-amber-400 px-5 py-2 text-sm font-bold text-slate-950">
-                Supraja Hotels / {hotel.location}
+          {hotelHeroVideos[hotel.slug] ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={hotel.images.hero}
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={hotelHeroVideos[hotel.slug]} type="video/webm" />
+            </video>
+          ) : null}
+
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/20" />
+
+          <div className="container-custom relative z-10 w-full px-4 pb-14 pt-32 md:pb-20 lg:pb-24">
+            <div className="max-w-4xl">
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-300 backdrop-blur-sm sm:text-sm">
+                <MapPin size={16} aria-hidden="true" />
+                Supraja Hotels · {hotel.location}
               </p>
 
-              <h1 className="mt-6 max-w-4xl text-4xl font-medium leading-tight tracking-tight md:text-6xl">
-                {hotel.name} | {hotel.seo.focusKeyword}
+              <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl">
+                {hotel.name}
               </h1>
 
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                <strong>{hotel.seo.focusKeyword}</strong> offering refined
-                accommodation, clean rooms, direct booking support and convenient
-                access to{" "}
-                <strong>{hotel.seo.targetLocations.slice(0, 4).join(", ")}</strong>
+              <p className="mt-4 text-xl font-medium text-amber-300 sm:text-2xl">
+                {hotel.seo.focusKeyword}
+              </p>
+
+              <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 drop-shadow md:text-lg md:leading-8">
+                Clean, comfortable accommodation with direct booking support and
+                convenient access to{" "}
+                <strong className="font-semibold text-white">
+                  {hotel.seo.targetLocations.slice(0, 4).join(", ")}
+                </strong>
                 . {hotel.description}
               </p>
 
-              <div className="mt-7 flex flex-wrap gap-3 text-xs font-semibold text-slate-200">
+              <div className="mt-6 flex flex-wrap gap-2.5 text-xs font-semibold text-white sm:text-sm">
                 {[
                   "Direct Reservations",
                   "Clean Rooms",
@@ -154,31 +182,31 @@ export default async function HotelPage({ params }: Props) {
                 ].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-white/15 bg-white/10 px-4 py-2"
+                    className="rounded-full border border-white/20 bg-slate-950/40 px-4 py-2 backdrop-blur-sm"
                   >
                     ✓ {item}
                   </span>
                 ))}
               </div>
 
-              <div className="mt-9 flex flex-wrap gap-4">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
                   href={`tel:+91${hotel.phone}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-7 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-700 px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
-                  <Phone size={18} />
-                  Call Now
+                  <Phone size={18} aria-hidden="true" />
+                  Call {hotel.phone}
                 </a>
 
                 <a
                   href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
-                    hotel.name
+                    hotel.name,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-green-600 px-7 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
-                  <MessageCircle size={18} />
+                  <MessageCircle size={18} aria-hidden="true" />
                   WhatsApp Booking
                 </a>
 
@@ -187,49 +215,12 @@ export default async function HotelPage({ params }: Props) {
                     href={hotel.googleBusinessUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-slate-950"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/50 bg-slate-950/35 px-7 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
-                    <Navigation size={18} />
+                    <Navigation size={18} aria-hidden="true" />
                     View on Google
                   </a>
                 ) : null}
-              </div>
-            </div>
-
-            <div className="relative h-[360px] overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl lg:h-[500px]">
-              <SmartImage
-                src={hotel.images.hero}
-                alt={hotel.seo.featuredImageAlt}
-                fill
-                isHero
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 48vw"
-              />
-
-              {hotelHeroVideos[hotel.slug] ? (
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full object-cover"
-                >
-                  <source
-                    src={hotelHeroVideos[hotel.slug]}
-                    type="video/webm"
-                  />
-                </video>
-              ) : null}
-
-              <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-white/90 p-5 text-slate-950 shadow-xl backdrop-blur">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-                  <MapPin size={16} />
-                  {hotel.location}
-                </p>
-
-                <p className="mt-2 text-2xl font-bold">{hotel.phone}</p>
               </div>
             </div>
           </div>
@@ -260,9 +251,9 @@ export default async function HotelPage({ params }: Props) {
                 <p className="mt-5 leading-8 text-slate-600">
                   <strong>{hotel.seo.focusKeyword}</strong> is a practical
                   choice for guests looking for clean rooms, easy access,
-                  helpful service and direct booking convenience. {hotel.name} is
-                  designed for business guests, families, visitors and travelers
-                  who want a dependable stay in Hyderabad.
+                  helpful service and direct booking convenience. {hotel.name}{" "}
+                  is designed for business guests, families, visitors and
+                  travelers who want a dependable stay in Hyderabad.
                 </p>
 
                 <p className="mt-4 leading-8 text-slate-600">
@@ -370,7 +361,7 @@ export default async function HotelPage({ params }: Props) {
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   {hotel.amenities.map((amenity) => {
                     const amenityData = amenities.find(
-                      (item) => item.title === amenity
+                      (item) => item.title === amenity,
                     );
 
                     return (
@@ -421,19 +412,31 @@ export default async function HotelPage({ params }: Props) {
                 </h3>
 
                 <div className="mt-4 flex flex-wrap gap-4 text-sm">
-                  <Link href="/hotels" className="text-blue-700 hover:underline">
+                  <Link
+                    href="/hotels"
+                    className="text-blue-700 hover:underline"
+                  >
                     Explore all Supraja Hotels
                   </Link>
 
-                  <Link href="/offers" className="text-blue-700 hover:underline">
+                  <Link
+                    href="/offers"
+                    className="text-blue-700 hover:underline"
+                  >
                     View current stay offers
                   </Link>
 
-                  <Link href="/gallery" className="text-blue-700 hover:underline">
+                  <Link
+                    href="/gallery"
+                    className="text-blue-700 hover:underline"
+                  >
                     See hotel photos
                   </Link>
 
-                  <Link href="/contact" className="text-blue-700 hover:underline">
+                  <Link
+                    href="/contact"
+                    className="text-blue-700 hover:underline"
+                  >
                     Contact our booking team
                   </Link>
 
@@ -497,7 +500,7 @@ export default async function HotelPage({ params }: Props) {
 
               <a
                 href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
-                  hotel.name
+                  hotel.name,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -558,7 +561,7 @@ export default async function HotelPage({ params }: Props) {
 
             <a
               href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
-                hotel.name
+                hotel.name,
               )}`}
               target="_blank"
               rel="noopener noreferrer"
