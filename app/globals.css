@@ -56,10 +56,6 @@ a {
     scroll-behavior: auto;
   }
 
-  video[autoplay] {
-    display: none;
-  }
-
   *,
   *::before,
   *::after {
@@ -69,3 +65,4 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
