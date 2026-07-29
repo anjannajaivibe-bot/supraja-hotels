@@ -1,0 +1,1269 @@
+From 6d8a24d45e36ccc2ba6cf4f7e1f23631b4b3870e Mon Sep 17 00:00:00 2001
+From: Codex <codex@openai.com>
+Date: Wed, 29 Jul 2026 11:33:49 -0300
+Subject: [PATCH] Add visitor and click tracking dashboard
+
+---
+ .env.example                        |   9 +
+ app/admin/clicks/page.tsx           | 337 ++++++++++++++++++++++++++++
+ app/admin/login/page.tsx            |  98 ++++++++
+ app/admin/page.tsx                  |   5 +
+ app/api/admin-login/route.ts        |  47 ++++
+ app/api/admin-logout/route.ts       |  11 +
+ app/api/admin/click-events/route.ts |  45 ++++
+ app/api/click-events/route.ts       |  88 ++++++++
+ app/layout.tsx                      |  12 +-
+ app/privacy-policy/page.tsx         |   8 +
+ components/SiteShell.tsx            |  28 +++
+ components/VisitorClickTracker.tsx  | 147 ++++++++++++
+ database/supabase-click-events.sql  |  48 ++++
+ lib/admin-auth.ts                   |  58 +++++
+ lib/click-events.ts                 |  79 +++++++
+ lib/supabase-rest.ts                |  31 +++
+ proxy.ts                            |  56 +++++
+ 17 files changed, 1097 insertions(+), 10 deletions(-)
+ create mode 100644 .env.example
+ create mode 100644 app/admin/clicks/page.tsx
+ create mode 100644 app/admin/login/page.tsx
+ create mode 100644 app/admin/page.tsx
+ create mode 100644 app/api/admin-login/route.ts
+ create mode 100644 app/api/admin-logout/route.ts
+ create mode 100644 app/api/admin/click-events/route.ts
+ create mode 100644 app/api/click-events/route.ts
+ create mode 100644 components/SiteShell.tsx
+ create mode 100644 components/VisitorClickTracker.tsx
+ create mode 100644 database/supabase-click-events.sql
+ create mode 100644 lib/admin-auth.ts
+ create mode 100644 lib/click-events.ts
+ create mode 100644 lib/supabase-rest.ts
+ create mode 100644 proxy.ts
+
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..b66f91f
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,9 @@
++NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
++SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVER_ONLY_SERVICE_ROLE_KEY
++
++ADMIN_USERNAME=admin
++ADMIN_PASSWORD=USE_A_STRONG_UNIQUE_PASSWORD
++ADMIN_SESSION_SECRET=GENERATE_AT_LEAST_32_RANDOM_CHARACTERS
++
++# Comma-separated. Localhost is excluded in the browser automatically.
++TRACKING_EXCLUDED_IPS=115.98.88.203
+diff --git a/app/admin/clicks/page.tsx b/app/admin/clicks/page.tsx
+new file mode 100644
+index 0000000..732cd5b
+--- /dev/null
++++ b/app/admin/clicks/page.tsx
+@@ -0,0 +1,337 @@
++"use client";
++
++import { useCallback, useEffect, useMemo, useState } from "react";
++import {
++  Activity,
++  CalendarDays,
++  ExternalLink,
++  LogOut,
++  MessageCircle,
++  MousePointerClick,
++  Phone,
++  RefreshCw,
++  Users,
++} from "lucide-react";
++import type { ClickEventType, StoredClickEvent } from "@/lib/click-events";
++
++type Period = 1 | 7 | 30 | 90;
++
++const EVENT_LABELS: Record<ClickEventType, string> = {
++  page_view: "Page view",
++  call_click: "Call",
++  whatsapp_click: "WhatsApp",
++  email_click: "Email",
++  booking_click: "Booking",
++  navigation_click: "Navigation",
++};
++
++function formatDate(value: string) {
++  return new Intl.DateTimeFormat("en-IN", {
++    dateStyle: "medium",
++    timeStyle: "short",
++    timeZone: "Asia/Kolkata",
++  }).format(new Date(value));
++}
++
++function getSource(referrer: string | null, utmSource: string | null) {
++  if (utmSource) return utmSource;
++  if (!referrer) return "Direct";
++
++  try {
++    return new URL(referrer).hostname.replace(/^www\./, "");
++  } catch {
++    return referrer;
++  }
++}
++
++function getEventBadge(eventType: ClickEventType) {
++  const styles: Record<ClickEventType, string> = {
++    page_view: "bg-slate-100 text-slate-700",
++    call_click: "bg-blue-100 text-blue-800",
++    whatsapp_click: "bg-green-100 text-green-800",
++    email_click: "bg-purple-100 text-purple-800",
++    booking_click: "bg-amber-100 text-amber-900",
++    navigation_click: "bg-cyan-100 text-cyan-800",
++  };
++
++  return styles[eventType];
++}
++
++export default function AdminClicksPage() {
++  const [events, setEvents] = useState<StoredClickEvent[]>([]);
++  const [period, setPeriod] = useState<Period>(30);
++  const [eventType, setEventType] = useState("all");
++  const [pageFilter, setPageFilter] = useState("");
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState("");
++
++  const loadEvents = useCallback(async () => {
++    setLoading(true);
++    setError("");
++
++    const params = new URLSearchParams({
++      days: String(period),
++      eventType,
++    });
++    if (pageFilter.trim()) params.set("page", pageFilter.trim());
++
++    try {
++      const response = await fetch(`/api/admin/click-events?${params}`, {
++        cache: "no-store",
++      });
++
++      if (response.status === 401) {
++        location.href = "/admin/login";
++        return;
++      }
++
++      const result = (await response.json()) as {
++        events?: StoredClickEvent[];
++        error?: string;
++      };
++
++      if (!response.ok) {
++        setError(result.error ?? "Unable to load tracking data.");
++        return;
++      }
++
++      setEvents(result.events ?? []);
++    } catch {
++      setError("Unable to load tracking data.");
++    } finally {
++      setLoading(false);
++    }
++  }, [period, eventType, pageFilter]);
++
++  useEffect(() => {
++    const timeout = setTimeout(() => void loadEvents(), 250);
++    return () => clearTimeout(timeout);
++  }, [loadEvents]);
++
++  const metrics = useMemo(() => {
++    const pageViews = events.filter((event) => event.event_type === "page_view");
++    const visitors = new Set(pageViews.map((event) => event.visitor_id)).size;
++    const sessions = new Set(pageViews.map((event) => event.session_id)).size;
++    const calls = events.filter((event) => event.event_type === "call_click").length;
++    const whatsapp = events.filter(
++      (event) => event.event_type === "whatsapp_click"
++    ).length;
++    const actionClicks = events.filter((event) =>
++      ["call_click", "whatsapp_click", "email_click", "booking_click"].includes(
++        event.event_type
++      )
++    ).length;
++
++    return { pageViews: pageViews.length, visitors, sessions, calls, whatsapp, actionClicks };
++  }, [events]);
++
++  const topPages = useMemo(() => {
++    const counts = new Map<string, number>();
++    events
++      .filter((event) => event.event_type === "page_view")
++      .forEach((event) => counts.set(event.page_path, (counts.get(event.page_path) ?? 0) + 1));
++
++    return [...counts.entries()]
++      .sort((a, b) => b[1] - a[1])
++      .slice(0, 5);
++  }, [events]);
++
++  async function logout() {
++    await fetch("/api/admin-logout", { method: "POST" });
++    location.href = "/admin/login";
++  }
++
++  const cards = [
++    { label: "Visitors", value: metrics.visitors, icon: Users, color: "text-blue-700" },
++    { label: "Sessions", value: metrics.sessions, icon: Activity, color: "text-indigo-700" },
++    { label: "Page views", value: metrics.pageViews, icon: MousePointerClick, color: "text-slate-700" },
++    { label: "Call clicks", value: metrics.calls, icon: Phone, color: "text-blue-700" },
++    { label: "WhatsApp clicks", value: metrics.whatsapp, icon: MessageCircle, color: "text-green-700" },
++    { label: "Lead-action clicks", value: metrics.actionClicks, icon: ExternalLink, color: "text-amber-700" },
++  ];
++
++  return (
++    <main className="min-h-screen bg-slate-100 text-slate-950">
++      <header className="border-b border-slate-200 bg-slate-950 text-white">
++        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
++          <div>
++            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
++              Supraja Hotels Admin
++            </p>
++            <h1 className="mt-1 text-2xl font-bold">Website clicks</h1>
++          </div>
++          <button
++            type="button"
++            onClick={logout}
++            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10"
++          >
++            <LogOut size={17} />
++            Logout
++          </button>
++        </div>
++      </header>
++
++      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
++        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
++          <div className="grid gap-4 md:grid-cols-[180px_220px_1fr_auto]">
++            <label>
++              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Period</span>
++              <select
++                value={period}
++                onChange={(event) => setPeriod(Number(event.target.value) as Period)}
++                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
++              >
++                <option value={1}>Today</option>
++                <option value={7}>Last 7 days</option>
++                <option value={30}>Last 30 days</option>
++                <option value={90}>Last 90 days</option>
++              </select>
++            </label>
++
++            <label>
++              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Activity</span>
++              <select
++                value={eventType}
++                onChange={(event) => setEventType(event.target.value)}
++                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
++              >
++                <option value="all">All activity</option>
++                {Object.entries(EVENT_LABELS).map(([value, label]) => (
++                  <option key={value} value={value}>{label}</option>
++                ))}
++              </select>
++            </label>
++
++            <label>
++              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Page contains</span>
++              <input
++                value={pageFilter}
++                onChange={(event) => setPageFilter(event.target.value)}
++                placeholder="/hotels/supraja-cyber-view"
++                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
++              />
++            </label>
++
++            <button
++              type="button"
++              onClick={() => void loadEvents()}
++              className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-800 px-4 py-2.5 font-semibold text-white hover:bg-blue-900"
++            >
++              <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
++              Refresh
++            </button>
++          </div>
++        </section>
++
++        {error && (
++          <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800">
++            {error}
++          </p>
++        )}
++
++        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
++          {cards.map(({ label, value, icon: Icon, color }) => (
++            <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
++              <Icon size={22} className={color} />
++              <p className="mt-5 text-3xl font-bold">{loading ? "…" : value}</p>
++              <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
++            </article>
++          ))}
++        </section>
++
++        <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
++          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
++            <h2 className="text-lg font-bold">Top pages</h2>
++            <p className="mt-1 text-sm text-slate-500">Ranked by page views</p>
++            <div className="mt-5 space-y-4">
++              {topPages.length === 0 && !loading && (
++                <p className="text-sm text-slate-500">No page views in this period.</p>
++              )}
++              {topPages.map(([page, views]) => (
++                <div key={page}>
++                  <div className="flex items-start justify-between gap-4 text-sm">
++                    <span className="break-all font-medium text-slate-700">{page}</span>
++                    <span className="font-bold">{views}</span>
++                  </div>
++                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
++                    <div
++                      className="h-full rounded-full bg-blue-700"
++                      style={{
++                        width: `${Math.max(
++                          8,
++                          (views / Math.max(topPages[0]?.[1] ?? 1, 1)) * 100
++                        )}%`,
++                      }}
++                    />
++                  </div>
++                </div>
++              ))}
++            </div>
++          </article>
++
++          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
++            <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
++              <div>
++                <h2 className="text-lg font-bold">Recent activity</h2>
++                <p className="mt-1 text-sm text-slate-500">Latest 1,000 matching events</p>
++              </div>
++              <CalendarDays className="text-blue-700" />
++            </div>
++
++            <div className="overflow-x-auto">
++              <table className="min-w-full text-left text-sm">
++                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
++                  <tr>
++                    <th className="px-5 py-3">Date and time</th>
++                    <th className="px-5 py-3">Activity</th>
++                    <th className="px-5 py-3">Page / target</th>
++                    <th className="px-5 py-3">Source</th>
++                    <th className="px-5 py-3">Device</th>
++                  </tr>
++                </thead>
++                <tbody className="divide-y divide-slate-100">
++                  {!loading && events.length === 0 && (
++                    <tr>
++                      <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
++                        No activity found for these filters.
++                      </td>
++                    </tr>
++                  )}
++                  {events.map((event) => (
++                    <tr key={event.id} className="align-top hover:bg-slate-50">
++                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
++                        {formatDate(event.created_at)}
++                      </td>
++                      <td className="px-5 py-4">
++                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${getEventBadge(event.event_type)}`}>
++                          {EVENT_LABELS[event.event_type]}
++                        </span>
++                      </td>
++                      <td className="max-w-sm px-5 py-4">
++                        <p className="break-all font-semibold text-slate-800">{event.page_path}</p>
++                        {event.target_label && (
++                          <p className="mt-1 break-all text-xs text-slate-500">{event.target_label}</p>
++                        )}
++                      </td>
++                      <td className="px-5 py-4 text-slate-600">
++                        {getSource(event.referrer, event.utm_source)}
++                      </td>
++                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
++                        {event.device_type}
++                        <span className="block text-xs text-slate-400">{event.browser}</span>
++                      </td>
++                    </tr>
++                  ))}
++                </tbody>
++              </table>
++            </div>
++          </article>
++        </section>
++
++        <p className="text-center text-xs text-slate-500">
++          Your excluded IP and localhost visits are not counted. Raw IP addresses are not stored.
++        </p>
++      </div>
++    </main>
++  );
++}
+diff --git a/app/admin/login/page.tsx b/app/admin/login/page.tsx
+new file mode 100644
+index 0000000..d3afc45
+--- /dev/null
++++ b/app/admin/login/page.tsx
+@@ -0,0 +1,98 @@
++"use client";
++
++import { FormEvent, useState } from "react";
++import { useRouter } from "next/navigation";
++import { LockKeyhole } from "lucide-react";
++
++export default function AdminLoginPage() {
++  const router = useRouter();
++  const [username, setUsername] = useState("");
++  const [password, setPassword] = useState("");
++  const [error, setError] = useState("");
++  const [loading, setLoading] = useState(false);
++
++  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
++    event.preventDefault();
++    setError("");
++    setLoading(true);
++
++    try {
++      const response = await fetch("/api/admin-login", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ username, password }),
++      });
++      const result = (await response.json()) as { error?: string };
++
++      if (!response.ok) {
++        setError(result.error ?? "Login failed.");
++        return;
++      }
++
++      router.replace("/admin/clicks");
++      router.refresh();
++    } catch {
++      setError("Unable to connect. Please try again.");
++    } finally {
++      setLoading(false);
++    }
++  }
++
++  return (
++    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-16">
++      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white p-8 shadow-2xl sm:p-10">
++        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-800 text-white">
++          <LockKeyhole size={26} />
++        </div>
++
++        <p className="mt-7 text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
++          Supraja Hotels
++        </p>
++        <h1 className="mt-2 text-3xl font-bold text-slate-950">Admin login</h1>
++        <p className="mt-3 text-sm leading-6 text-slate-600">
++          Sign in to view website visitors and click activity.
++        </p>
++
++        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
++          <label className="block">
++            <span className="text-sm font-semibold text-slate-800">Username</span>
++            <input
++              type="text"
++              autoComplete="username"
++              required
++              value={username}
++              onChange={(event) => setUsername(event.target.value)}
++              className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-950 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-100"
++            />
++          </label>
++
++          <label className="block">
++            <span className="text-sm font-semibold text-slate-800">Password</span>
++            <input
++              type="password"
++              autoComplete="current-password"
++              required
++              value={password}
++              onChange={(event) => setPassword(event.target.value)}
++              className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-950 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-100"
++            />
++          </label>
++
++          {error && (
++            <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
++              {error}
++            </p>
++          )}
++
++          <button
++            type="submit"
++            disabled={loading}
++            className="w-full rounded-xl bg-blue-800 px-5 py-3.5 font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
++          >
++            {loading ? "Signing in..." : "Sign in"}
++          </button>
++        </form>
++      </div>
++    </main>
++  );
++}
+diff --git a/app/admin/page.tsx b/app/admin/page.tsx
+new file mode 100644
+index 0000000..368c836
+--- /dev/null
++++ b/app/admin/page.tsx
+@@ -0,0 +1,5 @@
++import { redirect } from "next/navigation";
++
++export default function AdminPage() {
++  redirect("/admin/clicks");
++}
+diff --git a/app/api/admin-login/route.ts b/app/api/admin-login/route.ts
+new file mode 100644
+index 0000000..40abcb0
+--- /dev/null
++++ b/app/api/admin-login/route.ts
+@@ -0,0 +1,47 @@
++import { NextResponse, type NextRequest } from "next/server";
++import {
++  ADMIN_COOKIE_NAME,
++  adminCookieOptions,
++  createAdminSessionValue,
++} from "@/lib/admin-auth";
++
++export async function POST(request: NextRequest) {
++  let credentials: { username?: string; password?: string };
++
++  try {
++    credentials = (await request.json()) as {
++      username?: string;
++      password?: string;
++    };
++  } catch {
++    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
++  }
++
++  const expectedUsername = process.env.ADMIN_USERNAME;
++  const expectedPassword = process.env.ADMIN_PASSWORD;
++
++  if (!expectedUsername || !expectedPassword) {
++    return NextResponse.json(
++      { error: "Admin login is not configured." },
++      { status: 503 }
++    );
++  }
++
++  if (
++    credentials.username !== expectedUsername ||
++    credentials.password !== expectedPassword
++  ) {
++    return NextResponse.json(
++      { error: "Incorrect username or password." },
++      { status: 401 }
++    );
++  }
++
++  const response = NextResponse.json({ success: true });
++  response.cookies.set(
++    ADMIN_COOKIE_NAME,
++    createAdminSessionValue(),
++    adminCookieOptions
++  );
++  return response;
++}
+diff --git a/app/api/admin-logout/route.ts b/app/api/admin-logout/route.ts
+new file mode 100644
+index 0000000..18692e4
+--- /dev/null
++++ b/app/api/admin-logout/route.ts
+@@ -0,0 +1,11 @@
++import { NextResponse } from "next/server";
++import { ADMIN_COOKIE_NAME, adminCookieOptions } from "@/lib/admin-auth";
++
++export async function POST() {
++  const response = NextResponse.json({ success: true });
++  response.cookies.set(ADMIN_COOKIE_NAME, "", {
++    ...adminCookieOptions,
++    maxAge: 0,
++  });
++  return response;
++}
+diff --git a/app/api/admin/click-events/route.ts b/app/api/admin/click-events/route.ts
+new file mode 100644
+index 0000000..f6af810
+--- /dev/null
++++ b/app/api/admin/click-events/route.ts
+@@ -0,0 +1,45 @@
++import { NextResponse, type NextRequest } from "next/server";
++import { isAdminRequest } from "@/lib/admin-auth";
++import type { StoredClickEvent } from "@/lib/click-events";
++import { supabaseRequest } from "@/lib/supabase-rest";
++
++export const runtime = "nodejs";
++
++export async function GET(request: NextRequest) {
++  if (!isAdminRequest(request)) {
++    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
++  }
++
++  const url = new URL(request.url);
++  const requestedDays = Number(url.searchParams.get("days") ?? "30");
++  const days = [1, 7, 30, 90].includes(requestedDays) ? requestedDays : 30;
++  const eventType = url.searchParams.get("eventType") ?? "all";
++  const page = url.searchParams.get("page")?.trim() ?? "";
++  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
++
++  const filters = new URLSearchParams({
++    select:
++      "id,created_at,event_type,page_path,page_title,target_url,target_label,visitor_id,session_id,referrer,device_type,browser,utm_source,utm_medium,utm_campaign",
++    created_at: `gte.${since}`,
++    order: "created_at.desc",
++    limit: "1000",
++  });
++
++  if (eventType !== "all") filters.set("event_type", `eq.${eventType}`);
++  if (page) filters.set("page_path", `ilike.*${page.replace(/[%*,]/g, "")}*`);
++
++  try {
++    const response = await supabaseRequest(`?${filters.toString()}`);
++
++    if (!response.ok) {
++      console.error("Click event query failed:", response.status);
++      return NextResponse.json({ error: "Unable to load events." }, { status: 500 });
++    }
++
++    const events = (await response.json()) as StoredClickEvent[];
++    return NextResponse.json({ events, days });
++  } catch (error) {
++    console.error("Click event query error:", error);
++    return NextResponse.json({ error: "Unable to load events." }, { status: 500 });
++  }
++}
+diff --git a/app/api/click-events/route.ts b/app/api/click-events/route.ts
+new file mode 100644
+index 0000000..eb19dac
+--- /dev/null
++++ b/app/api/click-events/route.ts
+@@ -0,0 +1,88 @@
++import { NextResponse, type NextRequest } from "next/server";
++import {
++  cleanText,
++  getBrowser,
++  getDeviceType,
++  isClickEventType,
++  type ClickEventInput,
++} from "@/lib/click-events";
++import { supabaseRequest } from "@/lib/supabase-rest";
++
++export const runtime = "nodejs";
++
++const EXCLUDED_IPS = new Set(
++  (process.env.TRACKING_EXCLUDED_IPS ?? "115.98.88.203")
++    .split(",")
++    .map((ip) => ip.trim())
++    .filter(Boolean)
++);
++
++function getClientIp(request: NextRequest) {
++  return (
++    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
++    request.headers.get("x-real-ip")?.trim() ||
++    ""
++  );
++}
++
++export async function POST(request: NextRequest) {
++  const ip = getClientIp(request);
++  if (EXCLUDED_IPS.has(ip)) {
++    return new NextResponse(null, { status: 204 });
++  }
++
++  let body: ClickEventInput;
++
++  try {
++    body = (await request.json()) as ClickEventInput;
++  } catch {
++    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
++  }
++
++  if (
++    !isClickEventType(body.eventType) ||
++    !cleanText(body.pagePath, 500) ||
++    !cleanText(body.visitorId, 100) ||
++    !cleanText(body.sessionId, 100)
++  ) {
++    return NextResponse.json({ error: "Invalid event." }, { status: 400 });
++  }
++
++  const userAgent = cleanText(request.headers.get("user-agent"), 500);
++  const screenWidth =
++    typeof body.screenWidth === "number" ? body.screenWidth : undefined;
++
++  const event = {
++    event_type: body.eventType,
++    page_path: cleanText(body.pagePath, 500),
++    page_title: cleanText(body.pageTitle, 300) || null,
++    target_url: cleanText(body.targetUrl, 1000) || null,
++    target_label: cleanText(body.targetLabel, 200) || null,
++    visitor_id: cleanText(body.visitorId, 100),
++    session_id: cleanText(body.sessionId, 100),
++    referrer: cleanText(body.referrer, 1000) || null,
++    device_type: getDeviceType(userAgent, screenWidth),
++    browser: getBrowser(userAgent),
++    utm_source: cleanText(body.utmSource, 200) || null,
++    utm_medium: cleanText(body.utmMedium, 200) || null,
++    utm_campaign: cleanText(body.utmCampaign, 200) || null,
++  };
++
++  try {
++    const response = await supabaseRequest("", {
++      method: "POST",
++      headers: { Prefer: "return=minimal" },
++      body: JSON.stringify(event),
++    });
++
++    if (!response.ok) {
++      console.error("Click event insert failed:", response.status);
++      return NextResponse.json({ error: "Unable to record event." }, { status: 500 });
++    }
++  } catch (error) {
++    console.error("Click event storage error:", error);
++    return NextResponse.json({ error: "Unable to record event." }, { status: 500 });
++  }
++
++  return new NextResponse(null, { status: 204 });
++}
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 3cca76c..35b1ab9 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -2,9 +2,7 @@ import type { Metadata } from "next";
+ import { Geist } from "next/font/google";
+ import Script from "next/script";
+ import "./globals.css";
+-import Header from "@/components/header";
+-import Footer from "@/components/footer";
+-import FloatingCTA from "@/components/FloatingCTA";
++import SiteShell from "@/components/SiteShell";
+ 
+ const geistSans = Geist({
+   variable: "--font-geist-sans",
+@@ -238,13 +236,7 @@ export default function RootLayout({
+           }}
+         />
+ 
+-        <Header />
+-
+-        <main>{children}</main>
+-
+-        <Footer />
+-
+-        <FloatingCTA />
++        <SiteShell>{children}</SiteShell>
+       </body>
+     </html>
+   );
+diff --git a/app/privacy-policy/page.tsx b/app/privacy-policy/page.tsx
+index fcf918a..e04147e 100644
+--- a/app/privacy-policy/page.tsx
++++ b/app/privacy-policy/page.tsx
+@@ -25,6 +25,14 @@ export default function PrivacyPolicyPage() {
+           reservation management, guest communication and service improvement.
+         </p>
+ 
++        <p>
++          We use analytics and first-party website activity tracking to
++          understand page visits, traffic sources, device categories and
++          interactions such as call or WhatsApp button clicks. A random browser
++          identifier may be stored locally to distinguish visits and sessions.
++          Our website activity dashboard does not store raw IP addresses.
++        </p>
++
+         <p>
+           Personal information will not be sold, rented or shared with
+           third parties except where required by law.
+diff --git a/components/SiteShell.tsx b/components/SiteShell.tsx
+new file mode 100644
+index 0000000..2d3930a
+--- /dev/null
++++ b/components/SiteShell.tsx
+@@ -0,0 +1,28 @@
++"use client";
++
++import { Suspense } from "react";
++import { usePathname } from "next/navigation";
++import Header from "@/components/header";
++import Footer from "@/components/footer";
++import FloatingCTA from "@/components/FloatingCTA";
++import VisitorClickTracker from "@/components/VisitorClickTracker";
++
++export default function SiteShell({ children }: { children: React.ReactNode }) {
++  const pathname = usePathname();
++
++  if (pathname.startsWith("/admin")) {
++    return children;
++  }
++
++  return (
++    <>
++      <Header />
++      <main>{children}</main>
++      <Footer />
++      <FloatingCTA />
++      <Suspense fallback={null}>
++        <VisitorClickTracker />
++      </Suspense>
++    </>
++  );
++}
+diff --git a/components/VisitorClickTracker.tsx b/components/VisitorClickTracker.tsx
+new file mode 100644
+index 0000000..39508b6
+--- /dev/null
++++ b/components/VisitorClickTracker.tsx
+@@ -0,0 +1,147 @@
++"use client";
++
++import { useEffect } from "react";
++import { usePathname, useSearchParams } from "next/navigation";
++import type { ClickEventInput, ClickEventType } from "@/lib/click-events";
++
++const VISITOR_KEY = "supraja_hotels_visitor_id";
++const SESSION_KEY = "supraja_hotels_session";
++const SESSION_LENGTH_MS = 30 * 60 * 1000;
++
++type SessionRecord = {
++  id: string;
++  expiresAt: number;
++};
++
++function randomId() {
++  return globalThis.crypto?.randomUUID?.() ??
++    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
++}
++
++function getVisitorId() {
++  const existing = localStorage.getItem(VISITOR_KEY);
++  if (existing) return existing;
++
++  const id = randomId();
++  localStorage.setItem(VISITOR_KEY, id);
++  return id;
++}
++
++function getSessionId() {
++  const now = Date.now();
++
++  try {
++    const existing = JSON.parse(
++      sessionStorage.getItem(SESSION_KEY) ?? "null"
++    ) as SessionRecord | null;
++
++    if (existing?.id && existing.expiresAt > now) {
++      sessionStorage.setItem(
++        SESSION_KEY,
++        JSON.stringify({ id: existing.id, expiresAt: now + SESSION_LENGTH_MS })
++      );
++      return existing.id;
++    }
++  } catch {
++    sessionStorage.removeItem(SESSION_KEY);
++  }
++
++  const session = { id: randomId(), expiresAt: now + SESSION_LENGTH_MS };
++  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
++  return session.id;
++}
++
++function sendEvent(event: Omit<ClickEventInput, "visitorId" | "sessionId">) {
++  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
++    return;
++  }
++
++  const payload: ClickEventInput = {
++    ...event,
++    visitorId: getVisitorId(),
++    sessionId: getSessionId(),
++    pageTitle: document.title,
++    referrer: document.referrer,
++    screenWidth: window.innerWidth,
++  };
++
++  const body = JSON.stringify(payload);
++
++  if (navigator.sendBeacon) {
++    navigator.sendBeacon(
++      "/api/click-events",
++      new Blob([body], { type: "application/json" })
++    );
++    return;
++  }
++
++  void fetch("/api/click-events", {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body,
++    keepalive: true,
++  });
++}
++
++function classifyLink(anchor: HTMLAnchorElement): ClickEventType {
++  const href = anchor.href;
++  const trackingType = anchor.dataset.trackType;
++
++  if (trackingType === "booking") return "booking_click";
++  if (href.startsWith("tel:")) return "call_click";
++  if (href.startsWith("mailto:")) return "email_click";
++  if (href.includes("wa.me") || href.includes("whatsapp.com")) {
++    return "whatsapp_click";
++  }
++
++  return "navigation_click";
++}
++
++export default function VisitorClickTracker() {
++  const pathname = usePathname();
++  const searchParams = useSearchParams();
++  const query = searchParams.toString();
++
++  useEffect(() => {
++    if (pathname.startsWith("/admin")) return;
++
++    const params = new URLSearchParams(query);
++
++    sendEvent({
++      eventType: "page_view",
++      pagePath: query ? `${pathname}?${query}` : pathname,
++      utmSource: params.get("utm_source") ?? undefined,
++      utmMedium: params.get("utm_medium") ?? undefined,
++      utmCampaign: params.get("utm_campaign") ?? undefined,
++    });
++  }, [pathname, query]);
++
++  useEffect(() => {
++    const trackClick = (event: MouseEvent) => {
++      const target = event.target;
++      if (!(target instanceof Element)) return;
++
++      const anchor = target.closest("a");
++      if (!(anchor instanceof HTMLAnchorElement)) return;
++      if (anchor.dataset.noTrack === "true") return;
++
++      const label =
++        anchor.dataset.trackLabel ||
++        anchor.getAttribute("aria-label") ||
++        anchor.textContent?.replace(/\s+/g, " ").trim() ||
++        "Link";
++
++      sendEvent({
++        eventType: classifyLink(anchor),
++        pagePath: `${location.pathname}${location.search}`,
++        targetUrl: anchor.href,
++        targetLabel: label,
++      });
++    };
++
++    document.addEventListener("click", trackClick, { capture: true });
++    return () => document.removeEventListener("click", trackClick, { capture: true });
++  }, []);
++
++  return null;
++}
+diff --git a/database/supabase-click-events.sql b/database/supabase-click-events.sql
+new file mode 100644
+index 0000000..0b88f7b
+--- /dev/null
++++ b/database/supabase-click-events.sql
+@@ -0,0 +1,48 @@
++create table if not exists public.hotel_click_events (
++  id bigint generated by default as identity primary key,
++  created_at timestamptz not null default now(),
++  event_type text not null check (
++    event_type in (
++      'page_view',
++      'call_click',
++      'whatsapp_click',
++      'email_click',
++      'booking_click',
++      'navigation_click'
++    )
++  ),
++  page_path text not null,
++  page_title text,
++  target_url text,
++  target_label text,
++  visitor_id text not null,
++  session_id text not null,
++  referrer text,
++  device_type text not null default 'Other',
++  browser text not null default 'Other',
++  utm_source text,
++  utm_medium text,
++  utm_campaign text
++);
++
++create index if not exists hotel_click_events_created_at_idx
++  on public.hotel_click_events (created_at desc);
++
++create index if not exists hotel_click_events_event_type_created_at_idx
++  on public.hotel_click_events (event_type, created_at desc);
++
++create index if not exists hotel_click_events_page_path_created_at_idx
++  on public.hotel_click_events (page_path, created_at desc);
++
++create index if not exists hotel_click_events_visitor_id_idx
++  on public.hotel_click_events (visitor_id);
++
++create index if not exists hotel_click_events_session_id_idx
++  on public.hotel_click_events (session_id);
++
++alter table public.hotel_click_events enable row level security;
++
++revoke all on table public.hotel_click_events from anon, authenticated;
++
++comment on table public.hotel_click_events is
++  'Server-only Supraja Hotels visitor and click events. Raw IP addresses are not stored.';
+diff --git a/lib/admin-auth.ts b/lib/admin-auth.ts
+new file mode 100644
+index 0000000..f3b3a66
+--- /dev/null
++++ b/lib/admin-auth.ts
+@@ -0,0 +1,58 @@
++import { createHmac, timingSafeEqual } from "node:crypto";
++import type { NextRequest } from "next/server";
++
++export const ADMIN_COOKIE_NAME = "supraja_admin_auth";
++
++const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 12;
++
++function getSessionSecret() {
++  const secret = process.env.ADMIN_SESSION_SECRET;
++
++  if (!secret || secret.length < 32) {
++    throw new Error(
++      "ADMIN_SESSION_SECRET must be configured with at least 32 characters."
++    );
++  }
++
++  return secret;
++}
++
++function sign(value: string) {
++  return createHmac("sha256", getSessionSecret()).update(value).digest("hex");
++}
++
++export function createAdminSessionValue() {
++  const expiresAt = Date.now() + COOKIE_MAX_AGE_SECONDS * 1000;
++  const payload = String(expiresAt);
++  return `${payload}.${sign(payload)}`;
++}
++
++export function verifyAdminSessionValue(value?: string) {
++  if (!value) return false;
++
++  const [expiresAt, suppliedSignature] = value.split(".");
++  if (!expiresAt || !suppliedSignature) return false;
++  if (!Number.isFinite(Number(expiresAt)) || Number(expiresAt) <= Date.now()) {
++    return false;
++  }
++
++  const expectedSignature = sign(expiresAt);
++  const supplied = Buffer.from(suppliedSignature);
++  const expected = Buffer.from(expectedSignature);
++
++  return supplied.length === expected.length && timingSafeEqual(supplied, expected);
++}
++
++export function isAdminRequest(request: NextRequest) {
++  return verifyAdminSessionValue(
++    request.cookies.get(ADMIN_COOKIE_NAME)?.value
++  );
++}
++
++export const adminCookieOptions = {
++  httpOnly: true,
++  sameSite: "strict" as const,
++  secure: process.env.NODE_ENV === "production",
++  path: "/",
++  maxAge: COOKIE_MAX_AGE_SECONDS,
++};
+diff --git a/lib/click-events.ts b/lib/click-events.ts
+new file mode 100644
+index 0000000..aa225cb
+--- /dev/null
++++ b/lib/click-events.ts
+@@ -0,0 +1,79 @@
++export const CLICK_EVENT_TYPES = [
++  "page_view",
++  "call_click",
++  "whatsapp_click",
++  "email_click",
++  "booking_click",
++  "navigation_click",
++] as const;
++
++export type ClickEventType = (typeof CLICK_EVENT_TYPES)[number];
++
++export type ClickEventInput = {
++  eventType: ClickEventType;
++  pagePath: string;
++  pageTitle?: string;
++  targetUrl?: string;
++  targetLabel?: string;
++  visitorId: string;
++  sessionId: string;
++  referrer?: string;
++  screenWidth?: number;
++  utmSource?: string;
++  utmMedium?: string;
++  utmCampaign?: string;
++};
++
++export type StoredClickEvent = {
++  id: number;
++  created_at: string;
++  event_type: ClickEventType;
++  page_path: string;
++  page_title: string | null;
++  target_url: string | null;
++  target_label: string | null;
++  visitor_id: string;
++  session_id: string;
++  referrer: string | null;
++  device_type: string;
++  browser: string;
++  utm_source: string | null;
++  utm_medium: string | null;
++  utm_campaign: string | null;
++};
++
++export function isClickEventType(value: unknown): value is ClickEventType {
++  return (
++    typeof value === "string" &&
++    CLICK_EVENT_TYPES.includes(value as ClickEventType)
++  );
++}
++
++export function cleanText(value: unknown, maxLength: number) {
++  if (typeof value !== "string") return "";
++  return value.trim().slice(0, maxLength);
++}
++
++export function getDeviceType(userAgent: string, screenWidth?: number) {
++  if (
++    /tablet|ipad|playbook|silk/i.test(userAgent) ||
++    (screenWidth && screenWidth >= 768 && screenWidth < 1024)
++  ) {
++    return "Tablet";
++  }
++
++  if (/mobile|iphone|ipod|android/i.test(userAgent) || (screenWidth && screenWidth < 768)) {
++    return "Mobile";
++  }
++
++  return "Desktop";
++}
++
++export function getBrowser(userAgent: string) {
++  if (/edg\//i.test(userAgent)) return "Edge";
++  if (/opr\//i.test(userAgent)) return "Opera";
++  if (/chrome|crios/i.test(userAgent)) return "Chrome";
++  if (/firefox|fxios/i.test(userAgent)) return "Firefox";
++  if (/safari/i.test(userAgent)) return "Safari";
++  return "Other";
++}
+diff --git a/lib/supabase-rest.ts b/lib/supabase-rest.ts
+new file mode 100644
+index 0000000..7d01669
+--- /dev/null
++++ b/lib/supabase-rest.ts
+@@ -0,0 +1,31 @@
++function getSupabaseConfig() {
++  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
++  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
++
++  if (!url || !serviceRoleKey) {
++    throw new Error("Supabase tracking environment variables are missing.");
++  }
++
++  return {
++    endpoint: `${url.replace(/\/$/, "")}/rest/v1/hotel_click_events`,
++    serviceRoleKey,
++  };
++}
++
++export async function supabaseRequest(
++  searchParams: string,
++  init: RequestInit = {}
++) {
++  const { endpoint, serviceRoleKey } = getSupabaseConfig();
++
++  return fetch(`${endpoint}${searchParams}`, {
++    ...init,
++    headers: {
++      apikey: serviceRoleKey,
++      Authorization: `Bearer ${serviceRoleKey}`,
++      "Content-Type": "application/json",
++      ...init.headers,
++    },
++    cache: "no-store",
++  });
++}
+diff --git a/proxy.ts b/proxy.ts
+new file mode 100644
+index 0000000..920eddf
+--- /dev/null
++++ b/proxy.ts
+@@ -0,0 +1,56 @@
++import { NextResponse, type NextRequest } from "next/server";
++
++const COOKIE_NAME = "supraja_admin_auth";
++
++async function sign(value: string, secret: string) {
++  const key = await crypto.subtle.importKey(
++    "raw",
++    new TextEncoder().encode(secret),
++    { name: "HMAC", hash: "SHA-256" },
++    false,
++    ["sign"]
++  );
++  const signature = await crypto.subtle.sign(
++    "HMAC",
++    key,
++    new TextEncoder().encode(value)
++  );
++  return Array.from(new Uint8Array(signature))
++    .map((byte) => byte.toString(16).padStart(2, "0"))
++    .join("");
++}
++
++async function hasValidSession(request: NextRequest) {
++  const value = request.cookies.get(COOKIE_NAME)?.value;
++  const secret = process.env.ADMIN_SESSION_SECRET;
++  if (!value || !secret || secret.length < 32) return false;
++
++  const [expiresAt, suppliedSignature] = value.split(".");
++  if (!expiresAt || !suppliedSignature || Number(expiresAt) <= Date.now()) {
++    return false;
++  }
++
++  return suppliedSignature === (await sign(expiresAt, secret));
++}
++
++export async function proxy(request: NextRequest) {
++  const pathname = request.nextUrl.pathname;
++  const validSession = await hasValidSession(request);
++
++  if (pathname === "/admin/login") {
++    if (validSession) {
++      return NextResponse.redirect(new URL("/admin/clicks", request.url));
++    }
++    return NextResponse.next();
++  }
++
++  if (pathname.startsWith("/admin") && !validSession) {
++    return NextResponse.redirect(new URL("/admin/login", request.url));
++  }
++
++  return NextResponse.next();
++}
++
++export const config = {
++  matcher: ["/admin/:path*"],
++};
+-- 
+2.51.1
+
