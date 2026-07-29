@@ -14,6 +14,7 @@ import {
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Blog", href: "/blog" },
   { label: "Gallery", href: "/gallery" },
   { label: "Offers", href: "/offers" },
   { label: "Contact", href: "/contact" },
@@ -184,7 +185,8 @@ export default function Header() {
               key={link.href}
               href={link.href}
               className={`text-sm font-semibold transition hover:text-amber-500 ${
-                pathname === link.href
+                pathname === link.href ||
+                (link.href === "/blog" && pathname.startsWith("/blog/"))
                   ? "text-amber-600"
                   : "text-slate-700"
               }`}
@@ -312,7 +314,8 @@ export default function Header() {
                 href={link.href}
                 onClick={closeMenu}
                 className={`block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50 hover:text-blue-800 ${
-                  pathname === link.href
+                  pathname === link.href ||
+                  (link.href === "/blog" && pathname.startsWith("/blog/"))
                     ? "bg-blue-50 text-blue-800"
                     : "text-slate-700"
                 }`}

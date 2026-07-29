@@ -36,6 +36,10 @@ export default function Footer() {
                 Hotels in Hyderabad
               </Link>
 
+              <Link href="/blog" className="block hover:text-amber-400">
+                Hotel & Stay Guides
+              </Link>
+
               <Link href="/gallery" className="block hover:text-amber-400">
                 Gallery
               </Link>
