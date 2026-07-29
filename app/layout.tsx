@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -10,8 +11,9 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://suprajahotels.com";
+const siteUrl = "https://suprajahotels.com";
+const ogImageUrl = `${siteUrl}/images/social/supraja-hotels-og.jpg`;
+const googleAnalyticsId = "G-GNW9L105PW";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -43,7 +45,7 @@ export const metadata: Metadata = {
   category: "Hotel",
 
   alternates: {
-    canonical: "/",
+    canonical: siteUrl,
   },
 
   icons: {
@@ -57,16 +59,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "/",
+    url: siteUrl,
     siteName: "Supraja Hotels",
     title: "Supraja Hotels Hyderabad",
     description:
       "Comfortable stays in Hyderabad with Hotel Supraja Cyber View, Hotel Supraja Residency and Hotel Supraja Lodge.",
     images: [
       {
-        url: "/images/social/supraja-hotels-og.jpg",
+        url: ogImageUrl,
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: "Supraja Hotels Hyderabad comfortable hotel rooms",
       },
     ],
@@ -76,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Supraja Hotels Hyderabad",
     description: "Comfortable stays in Hyderabad with direct booking support.",
-    images: ["/images/social/supraja-hotels-og.jpg"],
+    images: [ogImageUrl],
   },
 
   robots: {
@@ -207,6 +210,20 @@ export default function RootLayout({
   return (
     <html lang="en-IN">
       <body className={`${geistSans.variable} min-h-screen antialiased`}>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${googleAnalyticsId}');
+          `}
+        </Script>
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

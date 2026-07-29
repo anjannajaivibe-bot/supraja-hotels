@@ -14,6 +14,7 @@ import {
 
 import SmartImage from "@/components/SmartImage";
 import AmenitiesSection from "@/components/AmenitiesSection";
+import DeferredHeroVideo from "@/components/DeferredHeroVideo";
 import { hotels } from "@/data/hotels";
 
 export const metadata: Metadata = {
@@ -161,32 +162,7 @@ export default function HomePage() {
           backgroundSize: "cover",
         }}
       >
-        <video
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/media/home-hero/supraja-hotels-home-hero-poster.webp"
-          aria-hidden="true"
-          disablePictureInPicture
-        >
-          <source
-            src="/media/home-hero/supraja-hotels-home-hero-mobile.webm"
-            type="video/webm"
-            media="(max-width: 767px)"
-          />
-          <source
-            src="/media/home-hero/supraja-hotels-home-hero.webm"
-            type="video/webm"
-            media="(min-width: 768px)"
-          />
-          <source
-            src="/media/home-hero/supraja-hotels-home-hero.mp4"
-            type="video/mp4"
-          />
-        </video>
+        <DeferredHeroVideo />
 
         <div
           className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
