@@ -37,6 +37,22 @@ export type BlogPost = {
   sections: BlogSection[];
   conclusion: string;
   faqs: BlogFaq[];
+  recommendation: {
+    text: string;
+    href: string;
+    anchor: string;
+  };
+  externalLinks: {
+    href: string;
+    anchor: string;
+    context: string;
+  }[];
+  cta: {
+    title: string;
+    text: string;
+    phone: string;
+    whatsappText: string;
+  };
 };
 
 export const blogPosts: BlogPost[] = [
@@ -205,8 +221,38 @@ export const blogPosts: BlogPost[] = [
           "Families should confirm the number of adults and children, suitable room type, extra-bed requirements, check-in time and the final payable amount before arrival.",
       },
     ],
+    recommendation: {
+      text: "Visiting Madhapur or the IT corridor?",
+      href: "/hotels/supraja-cyber-view",
+      anchor: "Review Hotel Supraja Cyber View",
+    },
+    externalLinks: [
+      {
+        href: "https://www.ltmetro.com/",
+        anchor: "Hyderabad Metro Rail",
+        context: "For official route and passenger information, visit",
+      },
+      {
+        href: "https://tourism.telangana.gov.in/",
+        anchor: "Telangana Tourism",
+        context: "For official destination information, use",
+      },
+    ],
+    cta: {
+      title: "Check Room Availability Directly",
+      text: "Contact Hotel Supraja Cyber View for current room availability, suitable occupancy options and booking assistance.",
+      phone: "9550776161",
+      whatsappText:
+        "Hi, I read your Hitech City hotel guide and would like to check room availability.",
+    },
   },
 ];
+
+export { additionalBlogPosts } from "./more-blog-posts";
+
+import { additionalBlogPosts } from "./more-blog-posts";
+
+blogPosts.push(...additionalBlogPosts);
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug);

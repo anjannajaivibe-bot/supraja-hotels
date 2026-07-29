@@ -1,0 +1,506 @@
+import type { BlogPost } from "./blog-posts";
+
+export const additionalBlogPosts: BlogPost[] = [
+  {
+    slug: "where-to-stay-in-madhapur",
+    focusKeyword: "Where to Stay in Madhapur",
+    title: "Where to Stay in Madhapur: A Practical Area Guide",
+    metaTitle: "Where to Stay in Madhapur | Practical Hotel Guide",
+    metaDescription:
+      "Where to Stay in Madhapur explained for business travellers, families and visitors, with location tips and direct booking guidance.",
+    excerpt:
+      "Choose the right part of Madhapur for offices, events, hospitals and family visits without adding an unnecessary daily commute.",
+    publishedAt: "2026-07-29",
+    updatedAt: "2026-07-29",
+    readingTime: "7 min read",
+    category: "Madhapur Guide",
+    author: "Supraja Hotels",
+    image: "/images/cyber-view/exterior.webp",
+    imageAlt: "Where to Stay in Madhapur near Hitech City Hyderabad",
+    supportingImages: [
+      {
+        src: "/images/cyber-view/room-2.webp",
+        alt: "Comfortable room for travellers deciding Where to Stay in Madhapur",
+        caption: "A practical guest room at Hotel Supraja Cyber View.",
+      },
+      {
+        src: "/images/cyber-view/reception.webp",
+        alt: "Reception assistance for a stay in Madhapur Hyderabad",
+        caption: "Direct assistance helps guests confirm the right room before arrival.",
+      },
+    ],
+    ogTitle: "Where to Stay in Madhapur: A Clear Local Guide",
+    ogDescription:
+      "Compare location, transport, room needs and booking options before choosing a hotel in Madhapur.",
+    synonyms: [
+      "Madhapur accommodation",
+      "hotel near Shilpa Kalavedika",
+      "stay near Hitech City",
+      "rooms in Madhapur",
+      "Hyderabad IT district hotel",
+    ],
+    tags: [
+      "Madhapur Stay",
+      "Madhapur Hotels",
+      "Hitech City",
+      "Shilpa Kalavedika",
+      "Cyber Towers",
+      "Business Travel",
+      "Family Stay",
+      "Hyderabad Hotels",
+      "Direct Booking",
+      "Supraja Cyber View",
+    ],
+    introduction: [
+      "Knowing Where to Stay in Madhapur makes a measurable difference to a Hyderabad visit. Madhapur sits beside major technology offices, event venues and commercial destinations, but traffic at busy times means that two hotels described as being in the same broad area can offer very different daily travel experiences.",
+      "Start with the place you will visit most often. An office meeting near Hitech City, an event at Shilpa Kalavedika and a family commitment toward Kondapur each create a different route. Once the destination is clear, compare room suitability, direct support and the complete booking cost.",
+    ],
+    sections: [
+      {
+        level: 2,
+        heading: "Where to Stay in Madhapur Based on Your Main Destination",
+        paragraphs: [
+          "For business travellers, a short route to the office is usually more valuable than a small difference in room price. Confirm the actual map pin of both the hotel and workplace. Broad descriptions such as Hitech City area may cover a larger distance than expected.",
+          "Hotel Supraja Cyber View is opposite Shilpa Kalavedika in Rohini Layout, Madhapur. Its position is useful for guests visiting Hitech City, Cyber Towers, Kondapur and nearby parts of the IT corridor.",
+        ],
+        bullets: [
+          "Pin the exact destination before comparing hotels.",
+          "Check peak-hour travel time, not only distance.",
+          "Choose a route that does not require repeated cross-city travel.",
+          "Keep a sensible time buffer for meetings and events.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Room and Booking Checks That Prevent Surprises",
+        paragraphs: [
+          "Ask for the room category, occupancy limit, final payable amount and check-in policy before making payment. Recent images should show the sleeping area, washroom and general condition clearly.",
+          "Madhapur accommodation should be evaluated for function as well as appearance. A hotel near Shilpa Kalavedika may suit an event visitor, while a stay near Hitech City should reduce the office commute. Rooms in Madhapur should still provide clean bedding, air conditioning and practical luggage space. A Hyderabad IT district hotel should offer a reliable way to contact the property.",
+        ],
+        bullets: [
+          "Confirm adults, children and extra-bed requirements.",
+          "Ask whether WiFi and parking meet your needs.",
+          "Read cancellation and refund terms before paying.",
+          "Save the direct hotel number for arrival support.",
+        ],
+      },
+      {
+        level: 3,
+        heading: "Where to Stay in Madhapur for a Business Trip",
+        paragraphs: [
+          "A business stay works best when the room supports rest, preparation and predictable travel. Confirm WiFi availability and decide whether you need desk space, twin occupancy or a longer-stay arrangement.",
+          "Direct contact is helpful when plans change quickly. The property team can confirm current availability and explain room choices, although every rate and policy should still be recorded clearly in the booking confirmation.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Planning a Family or Event Stay",
+        paragraphs: [
+          "Families should share the full guest count and arrival time. If relatives will meet at the hotel or an event ends late, discuss access and room occupancy beforehand.",
+          "Guests attending programmes at Shilpa Kalavedika benefit from choosing accommodation close to the venue. This can reduce late-evening travel and makes it easier to manage luggage, children or elderly family members.",
+        ],
+        bullets: [
+          "Choose a room for the actual occupancy.",
+          "Ask about early arrival before the travel day.",
+          "Confirm nearby food and transport options.",
+          "Plan return travel after late events.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Comparing Direct Booking and Travel Portals",
+        paragraphs: [
+          "Travel portals help compare general prices and reviews. Direct contact helps verify the latest room status and clarify a specific request. Use both sources carefully and compare the final amount rather than only the headline discount.",
+          "Request written confirmation of dates, guest count, room category, amount and major policies. This simple check prevents most misunderstandings.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Transport Around Madhapur",
+        paragraphs: [
+          "App-based cabs and local transport are widely available, and the Metro may help on selected routes. Always include the last connection between the station and hotel in your calculation.",
+          "Traffic conditions vary by time and road activity. Check live directions on the travel day and leave early for fixed appointments.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Why Hotel Supraja Cyber View Is Worth Considering",
+        paragraphs: [
+          "Hotel Supraja Cyber View offers a straightforward option for guests who want to remain in Madhapur near Hitech City. Authentic room and property images help travellers understand the stay before contacting the team.",
+          "For current availability, call or WhatsApp directly. Share dates, occupancy and any essential requirement so the hotel can recommend a suitable option.",
+        ],
+      },
+    ],
+    conclusion:
+      "The answer to Where to Stay in Madhapur depends on your real destination, travel hours and room needs. Prioritise a useful location, recent photographs, transparent terms and direct support. Hotel Supraja Cyber View is a practical option for Madhapur and Hitech City visitors who want to confirm availability directly.",
+    faqs: [
+      {
+        question: "Which area is practical for Hitech City office visits?",
+        answer: "Madhapur is practical for many Hitech City destinations, but verify the exact office and hotel map pins before booking.",
+      },
+      {
+        question: "Is Hotel Supraja Cyber View near Shilpa Kalavedika?",
+        answer: "Yes. The hotel is located opposite Shilpa Kalavedika in Rohini Layout, Madhapur.",
+      },
+      {
+        question: "Can families stay in Madhapur?",
+        answer: "Yes. Families should confirm room occupancy, bedding requirements and arrival time directly with the hotel.",
+      },
+      {
+        question: "Should I book directly or through a portal?",
+        answer: "Compare both. Direct contact is especially useful for current availability and specific room requirements.",
+      },
+    ],
+    recommendation: {
+      text: "Need a room close to Madhapur's business and event district?",
+      href: "/hotels/supraja-cyber-view",
+      anchor: "View Hotel Supraja Cyber View",
+    },
+    externalLinks: [
+      { href: "https://www.ltmetro.com/", anchor: "Hyderabad Metro Rail", context: "Check official passenger information at" },
+      { href: "https://tourism.telangana.gov.in/", anchor: "Telangana Tourism", context: "Plan wider city visits with" },
+    ],
+    cta: {
+      title: "Ask About Madhapur Room Availability",
+      text: "Contact Hotel Supraja Cyber View with your dates and guest count for direct booking assistance.",
+      phone: "9550776161",
+      whatsappText: "Hi, I read your Madhapur stay guide and would like to check room availability.",
+    },
+  },
+  {
+    slug: "hotels-near-chandanagar-and-miyapur",
+    focusKeyword: "Hotels Near Chandanagar and Miyapur",
+    title: "Hotels Near Chandanagar and Miyapur for Comfortable Budget Stays",
+    metaTitle: "Hotels Near Chandanagar and Miyapur | Stay Guide",
+    metaDescription:
+      "Compare Hotels Near Chandanagar and Miyapur for family, work and short stays, with practical location and direct booking guidance.",
+    excerpt: "A local guide for choosing rooms around Chandanagar, BHEL, Lingampally, Serilingampally and Miyapur.",
+    publishedAt: "2026-07-29",
+    updatedAt: "2026-07-29",
+    readingTime: "8 min read",
+    category: "Chandanagar Guide",
+    author: "Supraja Hotels",
+    image: "/images/residency/hero.webp",
+    imageAlt: "Hotels Near Chandanagar and Miyapur at Supraja Residency",
+    supportingImages: [
+      { src: "/images/residency/room-1.webp", alt: "Clean room at Hotels Near Chandanagar and Miyapur", caption: "A clean guest room at Hotel Supraja Residency." },
+      { src: "/images/lodge/exterior.webp", alt: "Supraja hotel exterior near Chandanagar Hyderabad", caption: "Supraja Hotels provides two stay options in Chandanagar." },
+    ],
+    ogTitle: "Hotels Near Chandanagar and Miyapur: A Practical Choice Guide",
+    ogDescription: "Plan a comfortable stay near Chandanagar, BHEL, Lingampally and Miyapur with direct hotel assistance.",
+    synonyms: ["Chandanagar accommodation", "hotel near BHEL Hyderabad", "rooms near Lingampally", "stay near Miyapur", "budget hotel in West Hyderabad"],
+    tags: ["Chandanagar Hotels", "Miyapur Hotels", "BHEL Hyderabad", "Lingampally", "Serilingampally", "Nallagandla", "Family Stay", "Budget Hotel", "Supraja Residency", "Supraja Lodge"],
+    introduction: [
+      "Hotels Near Chandanagar and Miyapur serve guests visiting families, offices, hospitals, educational institutions and residential communities across western Hyderabad. The area connects with BHEL, Lingampally, Serilingampally, Nallagandla and Hafeezpet, so the correct hotel depends on the exact destination and time of travel.",
+      "A sensible budget stay is not simply the lowest displayed price. Cleanliness, room capacity, transport access and clear booking terms determine the real value. Compare the complete stay cost and speak to the property if your arrival, occupancy or length of stay needs special attention.",
+    ],
+    sections: [
+      {
+        level: 2,
+        heading: "Choosing Hotels Near Chandanagar and Miyapur by Location",
+        paragraphs: [
+          "Chandanagar is a useful base for several western Hyderabad neighbourhoods. Before reserving, place the hotel and your destination on the same map and check the route during the hours you expect to travel.",
+          "Hotel Supraja Residency and Hotel Supraja Lodge are located in Chandanagar. These properties can suit visitors with work, family or personal commitments around Gangaram, BHEL, Serilingampally, Lingampally, Nallagandla and Miyapur.",
+        ],
+        bullets: ["Verify the exact map pin.", "Check traffic at arrival and appointment hours.", "Calculate cab costs for the entire stay.", "Choose the property closest to your repeated destination."],
+      },
+      {
+        level: 2,
+        heading: "What a Comfortable Budget Stay Should Include",
+        paragraphs: [
+          "A budget room should still provide the essentials clearly. Review current photographs of the room and washroom, confirm air conditioning and ask how housekeeping is managed.",
+          "Chandanagar accommodation should match the guest count. A hotel near BHEL Hyderabad may reduce a work commute, while rooms near Lingampally can help railway and local visitors. A stay near Miyapur needs a realistic road or Metro connection. A budget hotel in West Hyderabad should provide transparent terms rather than vague promises.",
+        ],
+        bullets: ["Clean bedding and washroom", "Suitable occupancy and bedding", "Air conditioning and WiFi", "Clear check-in and check-out times", "Direct arrival assistance"],
+      },
+      {
+        level: 3,
+        heading: "Hotels Near Chandanagar and Miyapur for Families",
+        paragraphs: [
+          "Families should state the number of adults and children before booking. Ask whether the suggested room category is suitable and whether additional bedding is available.",
+          "If the visit involves a hospital, ceremony or elderly relative, consider lift access, vehicle drop-off and the expected travel time. These practical details matter more than decorative features.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Business, Training and Longer Stays",
+        paragraphs: [
+          "Professionals visiting BHEL, nearby businesses or training locations should prioritise a manageable daily route and dependable communication. Longer stays require clarity on housekeeping, laundry options and the final rate.",
+          "Company coordinators should share guest names, dates and occupancy accurately. Ask for a written confirmation that can be checked before the employee travels.",
+        ],
+        bullets: ["Confirm WiFi requirements.", "Request the complete longer-stay price.", "Record the billing requirement in advance.", "Keep the property contact with the traveller."],
+      },
+      {
+        level: 2,
+        heading: "Hotel Supraja Residency or Hotel Supraja Lodge",
+        paragraphs: [
+          "Both properties serve Chandanagar, but room availability and categories may differ on your dates. Review each property page and contact the team with the correct occupancy.",
+          "Hotel Supraja Residency is above Parampara Sweets in Chandanagar. Hotel Supraja Lodge is another direct booking option in the same broader locality. The best choice is the property that has the suitable room and route for your visit.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Using Metro, Rail and Road Connections",
+        paragraphs: [
+          "Miyapur Metro can be useful for selected city routes, while Lingampally railway connections may suit some travellers. Do not assume the station is walkable from every property. Include the final cab or auto connection.",
+          "For early departures, ask about expected travel time and arrange transport in advance. Live traffic and official transport updates are more reliable than a fixed estimate.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Book With Clear Information",
+        paragraphs: [
+          "Whether booking directly or through a portal, keep a written record of dates, room type, guest count, payable amount and cancellation conditions.",
+          "Direct contact allows you to ask about the latest availability at both Supraja properties. It is particularly helpful for same-day arrival, family occupancy and extended stays.",
+        ],
+      },
+    ],
+    conclusion:
+      "The right Hotels Near Chandanagar and Miyapur provide a practical route, a room suited to the actual occupancy and transparent booking support. Compare Hotel Supraja Residency and Hotel Supraja Lodge, confirm the final terms and choose the option that best supports your Chandanagar, BHEL, Lingampally or Miyapur visit.",
+    faqs: [
+      { question: "Which Supraja hotels are in Chandanagar?", answer: "Hotel Supraja Residency and Hotel Supraja Lodge both serve guests looking for accommodation in Chandanagar." },
+      { question: "Are these hotels useful for BHEL and Lingampally visits?", answer: "They can be practical, but guests should check the exact destination and live route before booking." },
+      { question: "Can I ask about family rooms directly?", answer: "Yes. Share the total number of adults and children so the hotel can suggest a suitable available room." },
+      { question: "Is Miyapur Metro accessible?", answer: "Miyapur Metro may be useful for selected routes. Check the final road connection and current passenger information." },
+    ],
+    recommendation: {
+      text: "Comparing Chandanagar stay options?",
+      href: "/hotels",
+      anchor: "See all Supraja Hotels",
+    },
+    externalLinks: [
+      { href: "https://www.ltmetro.com/", anchor: "Hyderabad Metro Rail", context: "Check current Metro information through" },
+      { href: "https://www.irctc.co.in/", anchor: "IRCTC", context: "For official railway booking information, visit" },
+    ],
+    cta: {
+      title: "Check Chandanagar Room Options",
+      text: "Call Supraja Hotels for current availability at Hotel Supraja Residency and Hotel Supraja Lodge.",
+      phone: "9052996161",
+      whatsappText: "Hi, I read your Chandanagar and Miyapur hotel guide and would like to check room availability.",
+    },
+  },
+  {
+    slug: "corporate-stay-hotels-in-hyderabad",
+    focusKeyword: "Corporate Stay Hotels in Hyderabad",
+    title: "Corporate Stay Hotels in Hyderabad: What Companies Should Check",
+    metaTitle: "Corporate Stay Hotels in Hyderabad | Company Guide",
+    metaDescription:
+      "Evaluate Corporate Stay Hotels in Hyderabad with a practical checklist for location, billing, safety, WiFi and direct company bookings.",
+    excerpt: "A procurement-ready checklist for HR teams, administrators, project managers and frequent business travellers.",
+    publishedAt: "2026-07-29",
+    updatedAt: "2026-07-29",
+    readingTime: "8 min read",
+    category: "Corporate Travel",
+    author: "Supraja Hotels",
+    image: "/images/cyber-view/room-3.webp",
+    imageAlt: "Corporate Stay Hotels in Hyderabad for business travellers",
+    supportingImages: [
+      { src: "/images/cyber-view/reception.webp", alt: "Direct support at Corporate Stay Hotels in Hyderabad", caption: "Direct coordination can simplify company guest arrivals." },
+      { src: "/images/residency/room-2.webp", alt: "Clean room for an extended corporate hotel stay", caption: "Room suitability and location should be checked before confirming a company stay." },
+    ],
+    ogTitle: "Corporate Stay Hotels in Hyderabad: A Company Booking Checklist",
+    ogDescription: "Reduce corporate travel friction with clear checks for location, billing, room standards and direct coordination.",
+    synonyms: ["business accommodation Hyderabad", "company guest rooms", "employee hotel stay", "long-stay business hotel", "corporate lodging"],
+    tags: ["Corporate Hotels", "Business Travel", "Company Booking", "Employee Stay", "Long Stay", "Madhapur", "Hitech City", "Chandanagar", "Direct Booking", "Hyderabad Hotels"],
+    introduction: [
+      "Selecting Corporate Stay Hotels in Hyderabad requires more than comparing a nightly rate. Companies need predictable travel time, clean rooms, clear billing, responsive coordination and terms that suit changing project schedules. A poorly located or poorly documented booking can create avoidable cost for both the traveller and the administrator.",
+      "The strongest process starts with a written requirement: office location, dates, employee count, room occupancy, billing details and any extension possibility. This allows the hotel to confirm whether it can genuinely meet the requirement before the guest travels.",
+    ],
+    sections: [
+      {
+        level: 2,
+        heading: "Location First When Comparing Corporate Stay Hotels in Hyderabad",
+        paragraphs: [
+          "Daily commute time affects punctuality, traveller fatigue and cab expense. Choose accommodation near the employee's primary workplace rather than a hotel that is merely described as central.",
+          "Hotel Supraja Cyber View supports visits around Madhapur and Hitech City. Hotel Supraja Residency and Hotel Supraja Lodge can suit assignments around Chandanagar, BHEL, Serilingampally, Lingampally and Miyapur.",
+        ],
+        bullets: ["Map the exact office or project site.", "Check peak-hour travel time.", "Estimate total transport cost.", "Avoid changing hotels during short assignments unless necessary."],
+      },
+      {
+        level: 2,
+        heading: "Build a Clear Corporate Accommodation Checklist",
+        paragraphs: [
+          "Business accommodation Hyderabad coordinators should confirm room category, occupancy and included services. Company guest rooms need reliable contact support. An employee hotel stay should have a recorded check-in plan, while a long-stay business hotel requires clarity on housekeeping and extensions. Corporate lodging decisions should be based on the complete written offer.",
+          "Ask for recent room images and verify the final payable rate, taxes and cancellation conditions. If billing must contain a company name or GST details, communicate those requirements before checkout.",
+        ],
+        bullets: ["Room and washroom cleanliness", "WiFi and mobile connectivity", "Check-in support for late arrivals", "Invoice and billing requirements", "Extension and cancellation process"],
+      },
+      {
+        level: 3,
+        heading: "Corporate Stay Hotels in Hyderabad for Short Projects",
+        paragraphs: [
+          "Short projects often involve shifting dates. The administrator should know who can approve extensions and how quickly the hotel needs confirmation.",
+          "Share the traveller's name and phone number, but keep unnecessary personal information out of general email chains. Provide the guest with the hotel contact and confirmed booking details.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "WiFi, Work Comfort and Rest",
+        paragraphs: [
+          "A business traveller may need video calls, reports or late preparation. Confirm WiFi availability, but advise employees to maintain a mobile-data backup for critical work.",
+          "A clean, quiet and appropriately sized room supports rest and productivity. Twin-sharing should be agreed explicitly rather than assumed.",
+        ],
+        bullets: ["Ask about WiFi before confirming.", "Specify single or twin occupancy.", "Confirm air conditioning.", "Choose a room that fits luggage and work needs."],
+      },
+      {
+        level: 2,
+        heading: "Direct Coordination and Rate Comparison",
+        paragraphs: [
+          "Online portals are useful for market comparison. Direct coordination is better for multiple rooms, repeated stays, extensions and billing questions.",
+          "A corporate rate is valuable only when the terms are clear. Compare the full amount, included services, transport impact and flexibility rather than selecting only the lowest base rate.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Safety and Traveller Support",
+        paragraphs: [
+          "The company should keep the property address, contact number and booking reference in the travel record. Employees should know whom to contact if arrival plans change.",
+          "For women travelling alone or employees arriving late, confirm transport and reception arrangements in advance. Avoid promising facilities that have not been verified directly.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Creating a Repeatable Company Booking Process",
+        paragraphs: [
+          "Use a simple template containing employee name, phone, dates, office destination, occupancy, billing name and approval contact. Ask the hotel to reply with the confirmed room and amount.",
+          "After each stay, collect structured feedback on cleanliness, location, support and billing accuracy. This creates better decisions for future bookings.",
+        ],
+      },
+    ],
+    conclusion:
+      "The best Corporate Stay Hotels in Hyderabad reduce travel friction for both the employee and the company. Prioritise the correct location, verified room standards, transparent billing and direct support. Supraja Hotels offers options in Madhapur and Chandanagar for companies that want to discuss current availability and stay requirements directly.",
+    faqs: [
+      { question: "Does Supraja Hotels support company bookings?", answer: "Companies can contact Supraja Hotels directly to discuss current room availability, occupancy and booking requirements." },
+      { question: "Which property suits Hitech City business travel?", answer: "Hotel Supraja Cyber View in Madhapur is the relevant property for many Hitech City and IT-corridor visits." },
+      { question: "Can longer stays be discussed directly?", answer: "Yes. Share the dates, expected extension possibility and billing needs so the hotel can explain available options." },
+      { question: "What should HR confirm before booking?", answer: "Confirm location, guest details, occupancy, room rate, taxes, policies, WiFi and invoice requirements." },
+    ],
+    recommendation: {
+      text: "Coordinating rooms for employees or company guests?",
+      href: "/offers",
+      anchor: "Review corporate stay options",
+    },
+    externalLinks: [
+      { href: "https://www.hyderabad.aero/", anchor: "Hyderabad Airport", context: "For official airport passenger information, use" },
+      { href: "https://www.ltmetro.com/", anchor: "Hyderabad Metro Rail", context: "For current Metro routes, check" },
+    ],
+    cta: {
+      title: "Discuss a Corporate Stay",
+      text: "Share your office location, dates, room count and billing needs with Supraja Hotels.",
+      phone: "9052996161",
+      whatsappText: "Hi, I would like to discuss a corporate stay requirement with Supraja Hotels.",
+    },
+  },
+  {
+    slug: "banquet-hall-in-chandanagar",
+    focusKeyword: "Banquet Hall in Chandanagar",
+    title: "Saket Banquet Hall in Chandanagar for Family and Corporate Events",
+    metaTitle: "Banquet Hall in Chandanagar | Saket Banquet Hall",
+    metaDescription:
+      "Book a Banquet Hall in Chandanagar for family or corporate events. Explore Saket Banquet Hall, planning checks and direct enquiry details.",
+    excerpt: "A practical venue guide for birthdays, engagements, meetings, celebrations and organised group events in Chandanagar.",
+    publishedAt: "2026-07-29",
+    updatedAt: "2026-07-29",
+    readingTime: "7 min read",
+    category: "Event Venue Guide",
+    author: "Supraja Hotels",
+    image: "/images/banquet-hall/hero.webp",
+    imageAlt: "Banquet Hall in Chandanagar at Saket Banquet Hall",
+    supportingImages: [
+      { src: "/images/banquet-hall/banquet-hall-seating.webp", alt: "Seating layout at a Banquet Hall in Chandanagar", caption: "Discuss seating layout according to the event format and guest count." },
+      { src: "/images/banquet-hall/banquet-hall-stage.webp", alt: "Event stage at Saket Banquet Hall Chandanagar", caption: "Stage and presentation requirements should be confirmed before the event." },
+    ],
+    ogTitle: "Saket Banquet Hall in Chandanagar: Plan Your Event",
+    ogDescription: "Explore a convenient Chandanagar venue for family celebrations, meetings and corporate gatherings.",
+    synonyms: ["event hall Chandanagar", "function hall near Miyapur", "party venue Hyderabad", "corporate event space", "family celebration hall"],
+    tags: ["Chandanagar Banquet Hall", "Saket Banquet Hall", "Event Venue", "Function Hall", "Birthday Venue", "Engagement Hall", "Corporate Event", "Miyapur", "Family Celebration", "Supraja Residency"],
+    introduction: [
+      "Choosing a Banquet Hall in Chandanagar begins with the guest count, event format, date and budget. A venue should support comfortable movement, suitable seating and clear coordination rather than simply look attractive in a photograph.",
+      "Saket Banquet Hall is located on the dedicated second floor of Hotel Supraja Residency in Chandanagar. It offers a convenient option for family celebrations, meetings and organised gatherings, with direct enquiry support for availability and event requirements.",
+    ],
+    sections: [
+      {
+        level: 2,
+        heading: "Why Choose a Banquet Hall in Chandanagar",
+        paragraphs: [
+          "Chandanagar is accessible from BHEL, Lingampally, Serilingampally, Miyapur, Nallagandla and nearby residential communities. A local venue can reduce travel complexity for guests who live or work across western Hyderabad.",
+          "Check the route from the areas where most guests will start. Also consider arrival flow, elderly visitors and the expected finishing time.",
+        ],
+        bullets: ["Estimate the confirmed and maximum guest count.", "Check access from key neighbourhoods.", "Plan guest arrival and departure.", "Visit the venue before paying a major advance."],
+      },
+      {
+        level: 2,
+        heading: "Match the Venue to the Event",
+        paragraphs: [
+          "An event hall Chandanagar enquiry should state whether the programme is a birthday, engagement, meeting or celebration. A function hall near Miyapur may need flexible seating. A party venue Hyderabad booking may require a stage or décor plan. Corporate event space needs presentation clarity, while a family celebration hall must support mixed-age guests.",
+          "Share the programme sequence and expected duration. This allows the team to discuss seating, stage use and movement more accurately.",
+        ],
+        bullets: ["Event type and timings", "Guest count and seating style", "Stage or presentation requirement", "Décor and vendor access", "Food-service arrangement and cleanup responsibility"],
+      },
+      {
+        level: 3,
+        heading: "Banquet Hall in Chandanagar for Family Celebrations",
+        paragraphs: [
+          "Birthdays, engagements, anniversaries and family gatherings each need a different setup. Families should identify the main ceremony area, seating needs and photo moments before finalising décor.",
+          "If guests are travelling with children or senior citizens, keep walkways practical and avoid overcrowding the stage area.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Corporate Meetings and Organised Events",
+        paragraphs: [
+          "Corporate programmes should have a clear agenda, registration plan and contact person. Confirm whether the intended audio-visual arrangement can be supported before printing invitations.",
+          "Share vendor arrival times and setup requirements in writing. A single coordinator from the organiser reduces conflicting instructions.",
+        ],
+        bullets: ["Name one event coordinator.", "Test presentations in advance.", "Confirm seating before guest arrival.", "Keep emergency contact details accessible."],
+      },
+      {
+        level: 2,
+        heading: "Questions to Ask Before Booking",
+        paragraphs: [
+          "Ask what is included in the quoted amount and what requires separate arrangement. Confirm the booking duration, advance, balance-payment schedule, cancellation terms and overtime policy.",
+          "Do not rely on verbal assumptions. A written summary protects both the organiser and venue team.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Venue Visit Checklist",
+        paragraphs: [
+          "Visit at roughly the same time of day as the planned event if possible. Observe access, lighting, washrooms, seating space and the route vendors will use.",
+          "Take photographs only with permission and record agreed layout changes. Finalise guest count close to the event according to the venue's stated deadline.",
+        ],
+      },
+      {
+        level: 2,
+        heading: "Enquire About Saket Banquet Hall",
+        paragraphs: [
+          "Review the Saket Banquet Hall photographs and contact Supraja Hotels with the date, event type, timings and expected guest count.",
+          "Availability and inclusions can change by event requirement. Direct discussion is the correct way to receive current information before confirming.",
+        ],
+      },
+    ],
+    conclusion:
+      "A suitable Banquet Hall in Chandanagar should fit the guest count, event flow, location and budget with no ambiguity about inclusions. Saket Banquet Hall at Hotel Supraja Residency gives families and organisations a local venue option with direct enquiry support. Visit the space, document the agreed plan and confirm availability before announcing the date.",
+    faqs: [
+      { question: "Where is Saket Banquet Hall located?", answer: "It is on the dedicated second floor of Hotel Supraja Residency in Chandanagar, Hyderabad." },
+      { question: "What events can be discussed?", answer: "Guests may enquire about family celebrations, birthdays, engagements, meetings and corporate gatherings, subject to suitability and availability." },
+      { question: "How should I request availability?", answer: "Share the event date, timings, type and expected guest count when calling or messaging." },
+      { question: "Should I visit before booking?", answer: "Yes. A venue visit helps confirm layout, access and event-specific requirements before payment." },
+    ],
+    recommendation: {
+      text: "Planning a celebration or company gathering?",
+      href: "/saket-banquet-hall",
+      anchor: "Explore Saket Banquet Hall",
+    },
+    externalLinks: [
+      { href: "https://www.ltmetro.com/", anchor: "Hyderabad Metro Rail", context: "Help guests plan public transport through" },
+      { href: "https://tourism.telangana.gov.in/", anchor: "Telangana Tourism", context: "For official Hyderabad destination information, visit" },
+    ],
+    cta: {
+      title: "Check Event-Date Availability",
+      text: "Contact Supraja Hotels with your event type, date, timings and expected guest count.",
+      phone: "9346316161",
+      whatsappText: "Hi, I would like to check Saket Banquet Hall availability for an event.",
+    },
+  },
+];

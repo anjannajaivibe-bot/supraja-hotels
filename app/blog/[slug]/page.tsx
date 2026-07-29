@@ -218,14 +218,14 @@ export default async function BlogPostPage({ params }: Props) {
                 Quick recommendation
               </h2>
               <p className="mt-3 leading-8 text-slate-700">
-                Visiting Madhapur or the IT corridor? Review{" "}
+                {post.recommendation.text}{" "}
                 <Link
-                  href="/hotels/supraja-cyber-view"
+                  href={post.recommendation.href}
                   className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
                 >
-                  Hotel Supraja Cyber View
-                </Link>{" "}
-                and contact the hotel directly for current availability.
+                  {post.recommendation.anchor}
+                </Link>
+                .
               </p>
             </aside>
 
@@ -295,27 +295,22 @@ export default async function BlogPostPage({ params }: Props) {
               );
             })}
 
-            <p className="mt-12 text-lg leading-9 text-slate-700">
-              For official route and passenger information, visit{" "}
-              <a
-                href="https://www.ltmetro.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
-              >
-                Hyderabad Metro Rail
-              </a>
-              . Travellers planning a wider city visit can also use the{" "}
-              <a
-                href="https://tourism.telangana.gov.in/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
-              >
-                Telangana Tourism
-              </a>{" "}
-              portal.
-            </p>
+            <div className="mt-12 space-y-3 text-lg leading-9 text-slate-700">
+              {post.externalLinks.map((link) => (
+                <p key={link.href}>
+                  {link.context}{" "}
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
+                  >
+                    {link.anchor}
+                  </a>
+                  .
+                </p>
+              ))}
+            </div>
 
             <section className="mt-14">
               <h2 className="text-3xl font-bold text-slate-950">
@@ -347,22 +342,21 @@ export default async function BlogPostPage({ params }: Props) {
         <section className="bg-slate-950 px-4 py-16 text-white">
           <div className="container-custom max-w-4xl text-center">
             <h2 className="text-3xl font-bold md:text-4xl">
-              Check Room Availability Directly
+              {post.cta.title}
             </h2>
             <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-300">
-              Contact Hotel Supraja Cyber View for current room availability,
-              suitable occupancy options and booking assistance.
+              {post.cta.text}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a
-                href="tel:+919550776161"
+                href={`tel:+91${post.cta.phone}`}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-700 px-7 py-3 font-bold text-white hover:bg-blue-600"
               >
                 <Phone size={18} aria-hidden="true" />
-                Call 9550776161
+                Call {post.cta.phone}
               </a>
               <a
-                href="https://wa.me/919550776161?text=Hi%2C%20I%20read%20your%20Hitech%20City%20hotel%20guide%20and%20would%20like%20to%20check%20room%20availability."
+                href={`https://wa.me/91${post.cta.phone}?text=${encodeURIComponent(post.cta.whatsappText)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 font-bold text-white hover:bg-green-500"
