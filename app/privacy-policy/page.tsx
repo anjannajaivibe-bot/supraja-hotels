@@ -26,6 +26,14 @@ export default function PrivacyPolicyPage() {
         </p>
 
         <p>
+          We use analytics and first-party website activity tracking to
+          understand page visits, traffic sources, device categories and
+          interactions such as call or WhatsApp button clicks. A random browser
+          identifier may be stored locally to distinguish visits and sessions.
+          Our website activity dashboard does not store raw IP addresses.
+        </p>
+
+        <p>
           Personal information will not be sold, rented or shared with
           third parties except where required by law.
         </p>

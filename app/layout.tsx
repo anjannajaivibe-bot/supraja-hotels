@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import FloatingCTA from "@/components/FloatingCTA";
+import SiteShell from "@/components/SiteShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -238,13 +236,7 @@ export default function RootLayout({
           }}
         />
 
-        <Header />
-
-        <main>{children}</main>
-
-        <Footer />
-
-        <FloatingCTA />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );
