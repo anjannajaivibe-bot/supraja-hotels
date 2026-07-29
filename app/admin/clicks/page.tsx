@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   CalendarDays,
+  Download,
   ExternalLink,
   LogOut,
   MessageCircle,
@@ -55,6 +56,15 @@ function getEventBadge(eventType: ClickEventType) {
   };
 
   return styles[eventType];
+}
+
+function escapeCsvValue(value: string | number | null | undefined) {
+  let text = value == null ? "" : String(value);
+
+  // Prevent spreadsheet applications from treating exported text as a formula.
+  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 export default function AdminClicksPage() {
@@ -141,6 +151,66 @@ export default function AdminClicksPage() {
     location.href = "/admin/login";
   }
 
+  function exportCsv() {
+    if (events.length === 0) return;
+
+    const headers = [
+      "Date and time (IST)",
+      "Activity",
+      "Page path",
+      "Page title",
+      "Target label",
+      "Target URL",
+      "Source",
+      "Referrer",
+      "Device",
+      "Browser",
+      "Visitor ID",
+      "Session ID",
+      "UTM source",
+      "UTM medium",
+      "UTM campaign",
+    ];
+
+    const rows = events.map((event) => [
+      formatDate(event.created_at),
+      EVENT_LABELS[event.event_type],
+      event.page_path,
+      event.page_title,
+      event.target_label,
+      event.target_url,
+      getSource(event.referrer, event.utm_source),
+      event.referrer,
+      event.device_type,
+      event.browser,
+      event.visitor_id,
+      event.session_id,
+      event.utm_source,
+      event.utm_medium,
+      event.utm_campaign,
+    ]);
+
+    const csv = [
+      headers.map(escapeCsvValue).join(","),
+      ...rows.map((row) => row.map(escapeCsvValue).join(",")),
+    ].join("\r\n");
+    const blob = new Blob([`\uFEFF${csv}`], {
+      type: "text/csv;charset=utf-8",
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    }).format(new Date());
+
+    link.href = downloadUrl;
+    link.download = `supraja-hotels-web-clicks-${date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+  }
+
   const cards = [
     { label: "Visitors", value: metrics.visitors, icon: Users, color: "text-blue-700" },
     { label: "Sessions", value: metrics.sessions, icon: Activity, color: "text-indigo-700" },
@@ -173,7 +243,7 @@ export default function AdminClicksPage() {
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="grid gap-4 md:grid-cols-[180px_220px_1fr_auto]">
+          <div className="grid gap-4 md:grid-cols-[180px_220px_1fr_auto_auto]">
             <label>
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Period</span>
               <select
@@ -219,6 +289,16 @@ export default function AdminClicksPage() {
             >
               <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
               Refresh
+            </button>
+
+            <button
+              type="button"
+              onClick={exportCsv}
+              disabled={loading || events.length === 0}
+              className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-blue-800 px-4 py-2.5 font-semibold text-blue-800 hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent"
+            >
+              <Download size={17} />
+              Export CSV
             </button>
           </div>
         </section>
