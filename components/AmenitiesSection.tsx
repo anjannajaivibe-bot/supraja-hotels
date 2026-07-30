@@ -3,7 +3,7 @@ import { amenities } from "@/data/amenities";
 
 export default function AmenitiesSection() {
   return (
-    <section className="py-24 bg-white">
+    <section className="bg-white py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-14">

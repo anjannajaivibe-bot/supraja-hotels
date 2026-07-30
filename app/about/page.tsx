@@ -111,7 +111,7 @@ export default function AboutPage() {
         }}
       />
 
-      <section className="relative overflow-hidden bg-slate-950 px-4 py-20 text-white">
+      <section className="relative overflow-hidden bg-slate-950 px-4 py-16 text-white lg:py-20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.2),transparent_34%)]" />
 
         <div className="container-custom relative grid gap-10 lg:grid-cols-[55%_45%] lg:items-center">
@@ -161,7 +161,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-20">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -190,7 +190,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-20">
+      <section className="bg-slate-50 px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -226,7 +226,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-20">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="max-w-3xl">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -272,7 +272,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-slate-950 px-4 py-20 text-white">
+      <section className="bg-slate-950 px-4 py-16 text-white lg:py-20">
         <div className="container-custom text-center">
           <h2 className="text-3xl font-bold md:text-4xl">
             Ready to Plan Your Stay?

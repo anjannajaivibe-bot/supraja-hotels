@@ -238,7 +238,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-20">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="max-w-4xl">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -345,7 +345,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-20">
+      <section className="bg-slate-50 px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -386,7 +386,7 @@ export default function HomePage() {
 
       <AmenitiesSection />
 
-      <section className="bg-white px-4 py-20">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-8 md:p-12">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">

@@ -137,7 +137,7 @@ export default function HotelsPage() {
       />
 
       <main className="bg-white text-slate-900">
-        <section className="relative overflow-hidden bg-slate-950 px-4 py-24 text-white">
+        <section className="relative overflow-hidden bg-slate-950 px-4 py-16 text-white lg:py-20">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.16),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.18),transparent_30%)]" />
 
           <div className="container-custom relative grid items-center gap-12 lg:grid-cols-[52%_48%]">
@@ -217,7 +217,7 @@ export default function HotelsPage() {
           </div>
         </section>
 
-        <section className="bg-white px-4 py-20">
+        <section className="bg-white px-4 py-16 lg:py-20">
           <div className="container-custom">
             <div className="max-w-4xl">
               <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -331,7 +331,7 @@ export default function HotelsPage() {
           </div>
         </section>
 
-        <section className="bg-slate-50 px-4 py-20">
+        <section className="bg-slate-50 px-4 py-16 lg:py-20">
           <div className="container-custom">
             <div className="mx-auto max-w-3xl text-center">
               <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -370,7 +370,7 @@ export default function HotelsPage() {
           </div>
         </section>
 
-        <section className="bg-white px-4 py-20">
+        <section className="bg-white px-4 py-16 lg:py-20">
           <div className="container-custom">
             <div className="grid gap-12 lg:grid-cols-2">
               <div>
