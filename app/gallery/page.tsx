@@ -147,7 +147,7 @@ export default function GalleryPage() {
 
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/95 to-slate-950/60" />
 
-          <div className="container-custom relative grid gap-12 px-4 py-20 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:py-28">
+          <div className="container-custom relative grid gap-10 px-4 py-14 sm:py-16 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:gap-12 lg:py-16">
             <div>
               <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-white/10 px-4 py-2 text-sm font-semibold text-amber-200">
                 <Camera className="mr-2 h-4 w-4" />
@@ -198,13 +198,11 @@ export default function GalleryPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {heroImages.map((image, index) => (
                 <div
                   key={`${image}-${index}`}
-                  className={`relative overflow-hidden rounded-3xl border border-white/10 bg-white/10 shadow-2xl ${
-                    index === 0 ? "h-72" : "h-48"
-                  } ${index === 0 ? "row-span-2" : ""}`}
+                  className="relative h-36 overflow-hidden rounded-2xl border border-white/10 bg-white/10 shadow-2xl sm:h-44 lg:h-48 lg:rounded-3xl"
                 >
                   <SmartImage
                     src={image}
