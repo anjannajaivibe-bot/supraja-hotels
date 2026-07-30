@@ -472,7 +472,7 @@ export default function HotelsPage() {
           </div>
         </section>
 
-        <section className="bg-slate-950 px-4 py-16 text-white">
+        <section className="bg-slate-950 px-4 py-16 text-white lg:py-20">
           <div className="container-custom flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h2 className="text-3xl font-bold">

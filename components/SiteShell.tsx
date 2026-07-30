@@ -17,7 +17,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <div className="block bg-white">{children}</div>
+      <div className="m-0 block bg-white p-0">{children}</div>
       <Footer />
       <FloatingCTA />
       <Suspense fallback={null}>

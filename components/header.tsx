@@ -114,7 +114,7 @@ export default function Header() {
     pathname.startsWith("/saket-banquet-hall");
 
   return (
-    <header className="sticky top-0 z-50 m-0 block bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 m-0 block border-0 bg-white shadow-none">
       <div className="container-custom flex items-center justify-between px-4 py-4">
         <Link
           href="/"

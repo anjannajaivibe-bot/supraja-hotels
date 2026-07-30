@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function RefundPolicyPage() {
   return (
-    <main className="container-custom px-4 py-16">
+    <main className="container-custom px-4 py-16 lg:py-20">
       <h1 className="text-4xl font-semibold">
         Refund Policy
       </h1>

@@ -124,7 +124,7 @@ export default function ContactPage() {
 
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/95 to-slate-950/60" />
 
-          <div className="container-custom relative px-4 py-20 lg:py-28">
+          <div className="container-custom relative px-4 py-16 lg:py-20">
             <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
               <div>
                 <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-white/10 px-4 py-2 text-sm font-semibold text-amber-200">
@@ -204,7 +204,7 @@ export default function ContactPage() {
           </div>
         </section>
 
-        <section className="container-custom px-4 py-16 lg:py-24">
+        <section className="container-custom px-4 py-16 lg:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
               Contact Hotels
@@ -303,7 +303,7 @@ export default function ContactPage() {
         </section>
 
         <section className="bg-slate-50">
-          <div className="container-custom px-4 py-16 lg:py-24">
+          <div className="container-custom px-4 py-16 lg:py-20">
             <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
               <div>
                 <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -385,7 +385,7 @@ export default function ContactPage() {
           </div>
         </section>
 
-        <section className="container-custom px-4 py-16 lg:py-24">
+        <section className="container-custom px-4 py-16 lg:py-20">
           <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
             <div className="absolute inset-0 opacity-20">
               <SmartImage

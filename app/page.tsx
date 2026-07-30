@@ -447,7 +447,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="container-custom px-4 py-16 lg:py-24">
+      <section className="container-custom px-4 py-16 lg:py-20">
         <div className="rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Book Direct. Stay Better. Save More.

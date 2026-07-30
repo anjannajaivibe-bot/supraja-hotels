@@ -8,7 +8,7 @@ export default function HotelMap({
   embedUrl,
 }: HotelMapProps) {
   return (
-    <section className="py-16">
+    <section className="py-16 lg:py-20">
       <div className="container-custom">
         <h2 className="mb-6 text-3xl font-light text-slate-900">
           Location & Directions

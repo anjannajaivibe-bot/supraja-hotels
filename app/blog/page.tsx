@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <main className="bg-white text-slate-900">
-      <section className="bg-slate-950 px-4 py-20 text-white md:py-28">
+      <section className="bg-slate-950 px-4 py-16 text-white md:py-20">
         <div className="container-custom">
           <p className="font-semibold uppercase tracking-[0.22em] text-amber-400">
             Supraja Hotels
@@ -41,7 +41,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section className="px-4 py-16 md:py-24">
+      <section className="px-4 py-16 md:py-20">
         <div className="container-custom">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {blogPosts.map((post) => (

@@ -235,7 +235,7 @@ export default async function HotelPage({ params }: Props) {
           </div>
         </section>
 
-        <section className="bg-white px-4 py-14">
+        <section className="bg-white px-4 py-16 lg:py-20">
           <div className="container-custom">
             <HotelGallery
               hotelName={hotel.name}
@@ -245,7 +245,7 @@ export default async function HotelPage({ params }: Props) {
           </div>
         </section>
 
-        <section className="bg-slate-50 px-4 py-16">
+        <section className="bg-slate-50 px-4 py-16 lg:py-20">
           <div className="container-custom grid gap-10 lg:grid-cols-[65%_35%]">
             <div>
               <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
@@ -555,7 +555,7 @@ export default async function HotelPage({ params }: Props) {
           <HotelMap title={hotel.name} embedUrl={hotel.mapEmbed} />
         ) : null}
 
-        <section className="bg-slate-950 px-4 py-16 text-white">
+        <section className="bg-slate-950 px-4 py-16 text-white lg:py-20">
           <div className="container-custom flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h2 className="text-3xl font-bold">

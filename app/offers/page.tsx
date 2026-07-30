@@ -166,7 +166,7 @@ export default function OffersPage() {
 
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/95 to-slate-950/60" />
 
-          <div className="container-custom relative grid gap-12 px-4 py-20 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:py-28">
+          <div className="container-custom relative grid gap-12 px-4 py-16 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:py-20">
             <div>
               <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-white/10 px-4 py-2 text-sm font-semibold text-amber-200">
                 <BadgePercent className="mr-2 h-4 w-4" />
@@ -442,7 +442,7 @@ export default function OffersPage() {
         </section>
 
         <section className="bg-slate-950 text-white">
-          <div className="container-custom px-4 py-14">
+          <div className="container-custom px-4 py-16 lg:py-20">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
               {amenityHighlights.map((item) => {
                 const Icon = item.icon;
@@ -497,7 +497,7 @@ export default function OffersPage() {
           </div>
         </section>
 
-        <section className="container-custom px-4 pb-16 lg:pb-24">
+        <section className="container-custom px-4 py-16 lg:py-20">
           <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
             <div className="absolute inset-0 opacity-20">
               <SmartImage

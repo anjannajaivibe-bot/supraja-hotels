@@ -156,7 +156,7 @@ export default async function BlogPostPage({ params }: Props) {
       ))}
 
       <article>
-        <header className="bg-slate-950 px-4 py-14 text-white md:py-20">
+        <header className="bg-slate-950 px-4 py-16 text-white md:py-20">
           <div className="container-custom max-w-5xl">
             <Link
               href="/blog"

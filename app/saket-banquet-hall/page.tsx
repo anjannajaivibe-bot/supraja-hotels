@@ -254,7 +254,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-14 md:py-16">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="mx-auto max-w-4xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -293,7 +293,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-14 md:py-16">
+      <section className="bg-slate-50 px-4 py-16 lg:py-20">
         <div className="container-custom grid gap-10 lg:grid-cols-[44%_56%] lg:items-center">
           <div>
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -324,7 +324,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-14 md:py-16">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -376,7 +376,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-14 md:py-16">
+      <section className="bg-slate-50 px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -429,7 +429,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-14 md:py-16">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-8 md:p-10">
             <p className="font-semibold uppercase tracking-[0.22em] text-amber-600">
@@ -479,7 +479,7 @@ export default function SaketBanquetHallPage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 pb-20 pt-8">
+      <section className="bg-white px-4 py-16 lg:py-20">
         <div className="container-custom">
           <div className="rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
