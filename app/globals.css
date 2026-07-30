@@ -18,12 +18,16 @@
 }
 
 html {
+  margin: 0;
+  padding: 0;
   scroll-behavior: smooth;
+  background: #ffffff;
 }
 
 body {
   margin: 0;
-  background: var(--ivory);
+  padding: 0;
+  background: #ffffff;
   color: var(--text);
 }
 
@@ -31,6 +35,23 @@ header,
 main,
 section {
   display: block;
+}
+
+header {
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+main {
+  margin: 0;
+  padding: 0;
+}
+
+header + main,
+header + div,
+main > :first-child {
+  margin-top: 0;
 }
 
 a {
