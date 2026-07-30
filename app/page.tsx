@@ -165,15 +165,15 @@ export default function HomePage() {
         <DeferredHeroVideo />
 
         <div
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
+          className="absolute inset-0 z-10 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/75 via-transparent to-slate-950/20"
+          className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/75 via-transparent to-slate-950/20"
           aria-hidden="true"
         />
 
-        <div className="container-custom w-full px-5 py-20 sm:px-6 md:py-24">
+        <div className="container-custom relative z-20 w-full px-5 py-20 sm:px-6 md:py-24">
           <div className="max-w-4xl">
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300 sm:text-base">
               Supraja Hotels | Hyderabad

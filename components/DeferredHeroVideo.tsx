@@ -24,13 +24,7 @@ export default function DeferredHeroVideo() {
       ? MOBILE_VIDEO
       : DESKTOP_VIDEO;
 
-    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
-      setVideoSource(selectedSource);
-    }, 1200);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
+    setVideoSource(selectedSource);
   }, []);
 
   useEffect(() => {
@@ -49,11 +43,12 @@ export default function DeferredHeroVideo() {
   return (
     <video
       ref={videoRef}
-      className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
+      autoPlay
       muted
       loop
       playsInline
-      preload="none"
+      preload="auto"
       poster={POSTER}
       aria-hidden="true"
       disablePictureInPicture
