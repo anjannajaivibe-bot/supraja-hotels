@@ -67,6 +67,12 @@ a {
   margin: 0 auto;
 }
 
+/* Keep section titles visually strong and avoid unnecessary desktop wrapping. */
+.mx-auto.max-w-3xl.text-center,
+.mx-auto.max-w-4xl.text-center {
+  max-width: min(1120px, 100%);
+}
+
 .luxury-shadow {
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
 }
@@ -82,6 +88,31 @@ a {
 @media (min-width: 1024px) {
   .section-padding {
     padding-block: 80px;
+  }
+
+  .mx-auto.max-w-3xl.text-center h1,
+  .mx-auto.max-w-3xl.text-center h2,
+  .mx-auto.max-w-4xl.text-center h1,
+  .mx-auto.max-w-4xl.text-center h2 {
+    max-width: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .mx-auto.max-w-3xl.text-center h2,
+  .mx-auto.max-w-4xl.text-center h2 {
+    white-space: nowrap;
+    font-size: clamp(2.25rem, 2.7vw, 3rem);
+    line-height: 1.08;
+  }
+}
+
+@media (max-width: 1279px) {
+  .mx-auto.max-w-3xl.text-center h1,
+  .mx-auto.max-w-3xl.text-center h2,
+  .mx-auto.max-w-4xl.text-center h1,
+  .mx-auto.max-w-4xl.text-center h2 {
+    text-wrap: balance;
   }
 }
 
