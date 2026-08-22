@@ -6,7 +6,6 @@ import {
   MapPin,
   Phone,
   MessageCircle,
-  Star,
   Navigation,
   ShieldCheck,
   BedDouble,
@@ -174,20 +173,16 @@ export default async function HotelPage({ params }: Props) {
               </p>
 
               <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 drop-shadow md:text-lg md:leading-8">
-                Clean, comfortable accommodation with direct booking support and
-                convenient access to{" "}
-                <strong className="font-semibold text-white">
-                  {hotel.seo.targetLocations.slice(0, 4).join(", ")}
-                </strong>
-                . {hotel.description}
+                {hotel.description} Call or WhatsApp the hotel directly to check
+                current room availability and confirm your stay.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2.5 text-xs font-semibold text-white sm:text-sm">
                 {[
-                  "Direct Reservations",
+                  "Call for Availability",
+                  "WhatsApp Booking Support",
                   "Clean Rooms",
-                  "Prime Location",
-                  "WhatsApp Booking",
+                  "Convenient Location",
                 ].map((item) => (
                   <span
                     key={item}
@@ -208,7 +203,7 @@ export default async function HotelPage({ params }: Props) {
                 </a>
 
                 <a
-                  href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
+                  href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20check%20room%20availability%20at%20${encodeURIComponent(
                     hotel.name,
                   )}`}
                   target="_blank"
@@ -216,7 +211,7 @@ export default async function HotelPage({ params }: Props) {
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <MessageCircle size={18} aria-hidden="true" />
-                  WhatsApp Booking
+                  Check on WhatsApp
                 </a>
 
                 {hotel.googleBusinessUrl ? (
@@ -254,25 +249,21 @@ export default async function HotelPage({ params }: Props) {
                 </p>
 
                 <h2 className="mt-3 text-3xl font-bold text-slate-950">
-                  {hotel.seo.focusKeyword} for Comfortable Stays
+                  A Comfortable Stay in {hotel.area}
                 </h2>
 
                 <p className="mt-5 leading-8 text-slate-600">
-                  <strong>{hotel.seo.focusKeyword}</strong> is a practical
-                  choice for guests looking for clean rooms, easy access,
-                  helpful service and direct booking convenience. {hotel.name}{" "}
-                  is designed for business guests, families, visitors and
-                  travelers who want a dependable stay in Hyderabad.
+                  {hotel.name} offers a practical Hyderabad stay for business
+                  guests, families, visitors and short-stay travellers. The
+                  property provides direct booking support and convenient access
+                  to {hotel.seo.targetLocations.slice(0, 5).join(", ")}.
                 </p>
 
                 <p className="mt-4 leading-8 text-slate-600">
-                  Guests searching for <strong>{hotel.seo.synonyms[0]}</strong>,{" "}
-                  <strong>{hotel.seo.synonyms[1]}</strong> or{" "}
-                  <strong>{hotel.seo.synonyms[2]}</strong> can consider{" "}
-                  {hotel.name} for a stay that balances comfort, location and
-                  booking support. The property is also useful for guests
-                  visiting{" "}
-                  <strong>{hotel.seo.targetLocations.join(", ")}</strong>.
+                  Before travelling, call or WhatsApp the hotel team to confirm
+                  current room availability, rates and any property-specific
+                  requirements. This gives you direct information from the hotel
+                  rather than relying on third-party availability.
                 </p>
               </div>
 
@@ -280,17 +271,17 @@ export default async function HotelPage({ params }: Props) {
                 {[
                   {
                     title: "Comfortable Rooms",
-                    text: "Clean, practical and well-maintained accommodation.",
+                    text: "Clean, practical accommodation for business, family and short stays.",
                     icon: BedDouble,
                   },
                   {
                     title: "Direct Booking",
-                    text: "Call or WhatsApp for quick room availability.",
+                    text: "Call or WhatsApp the property for current room availability and rates.",
                     icon: Phone,
                   },
                   {
-                    title: "Trusted Hospitality",
-                    text: "Helpful service for business and family guests.",
+                    title: "Helpful Hotel Support",
+                    text: "Speak directly with the hotel team before confirming your stay.",
                     icon: ShieldCheck,
                   },
                 ].map((item) => {
@@ -319,24 +310,25 @@ export default async function HotelPage({ params }: Props) {
 
               <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-7">
                 <h2 className="text-3xl font-bold text-slate-900">
-                  Why Choose {hotel.seo.focusKeyword}
+                  Why Guests Choose {hotel.name}
                 </h2>
 
                 <p className="mt-5 leading-8 text-slate-600">
-                  <strong>{hotel.seo.synonyms[3]}</strong> and{" "}
-                  <strong>{hotel.seo.synonyms[4]}</strong> are common needs for
-                  Hyderabad guests. {hotel.name} supports these needs with
-                  practical amenities, clean rooms, responsive assistance and
-                  convenient access to nearby locations.
+                  The property combines a convenient {hotel.area} location with
+                  practical amenities, straightforward direct booking and access
+                  to nearby business, residential and transport areas. It is a
+                  useful option for guests whose plans involve {hotel.seo.targetLocations
+                    .slice(0, 5)
+                    .join(", ")}.
                 </p>
 
                 <ul className="mt-8 grid gap-3 text-slate-700 sm:grid-cols-2">
                   <li>✓ Comfortable and well-maintained rooms</li>
-                  <li>✓ Direct booking support through phone and WhatsApp</li>
-                  <li>✓ Convenient location with easy connectivity</li>
-                  <li>✓ Family-friendly and business-friendly environment</li>
-                  <li>✓ Essential amenities for a comfortable stay</li>
-                  <li>✓ Helpful guidance before booking</li>
+                  <li>✓ Direct phone and WhatsApp booking support</li>
+                  <li>✓ Convenient access to nearby locations</li>
+                  <li>✓ Suitable for business and family stays</li>
+                  <li>✓ Essential amenities for a practical stay</li>
+                  <li>✓ Direct hotel guidance before confirmation</li>
                 </ul>
               </div>
 
@@ -346,8 +338,8 @@ export default async function HotelPage({ params }: Props) {
                 </h2>
 
                 <p className="mt-4 leading-8 text-slate-600">
-                  {hotel.name} is useful for guests looking for accommodation
-                  near these important Hyderabad locations:
+                  {hotel.name} is positioned for guests visiting these nearby
+                  Hyderabad locations and landmarks:
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-3">
@@ -425,7 +417,7 @@ export default async function HotelPage({ params }: Props) {
                     href="/hotels"
                     className="text-blue-700 hover:underline"
                   >
-                    Explore all Supraja Hotels
+                    Compare Supraja Hotels
                   </Link>
 
                   <Link
@@ -446,7 +438,7 @@ export default async function HotelPage({ params }: Props) {
                     href="/contact"
                     className="text-blue-700 hover:underline"
                   >
-                    Contact our booking team
+                    Contact Supraja Hotels
                   </Link>
 
                   <a
@@ -470,20 +462,20 @@ export default async function HotelPage({ params }: Props) {
               </div>
 
               <p className="mt-8 leading-8 text-slate-600">
-                For guests searching for a reliable{" "}
-                <strong>{hotel.seo.focusKeyword}</strong>, {hotel.name} offers
-                comfortable accommodation, helpful service, direct booking
-                support and a convenient location for the next Hyderabad visit.
+                If {hotel.name} matches your destination, contact the property
+                directly by phone or WhatsApp to check room availability before
+                your Hyderabad visit.
               </p>
             </div>
 
             <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
               <h3 className="text-2xl font-bold text-slate-900">
-                Direct Booking
+                Check Room Availability
               </h3>
 
               <p className="mt-3 text-slate-600">
-                Call or WhatsApp us for room availability and stay guidance.
+                Contact this hotel directly for current availability, rates and
+                booking confirmation.
               </p>
 
               <div className="mt-6 rounded-2xl bg-slate-50 p-5">
@@ -504,18 +496,18 @@ export default async function HotelPage({ params }: Props) {
                 href={`tel:+91${hotel.phone}`}
                 className="mt-6 block rounded-full bg-blue-700 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-800"
               >
-                Call Now
+                Call Hotel
               </a>
 
               <a
-                href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
+                href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20check%20room%20availability%20at%20${encodeURIComponent(
                   hotel.name,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 block rounded-full bg-green-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-green-700"
               >
-                Book on WhatsApp
+                Check on WhatsApp
               </a>
 
               {hotel.googleBusinessUrl ? (
@@ -530,21 +522,12 @@ export default async function HotelPage({ params }: Props) {
               ) : null}
 
               <div className="mt-6 rounded-2xl border border-slate-200 p-5">
-                <div className="flex items-center gap-2">
-                  <span className="rounded bg-green-600 px-2 py-1 text-xs font-semibold text-white">
-                    4.5
-                  </span>
-
-                  <div className="flex text-green-600">
-                    {[1, 2, 3, 4, 5].map((item) => (
-                      <Star key={item} size={14} fill="currentColor" />
-                    ))}
-                  </div>
-                </div>
-
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Guest-friendly stay with direct booking assistance and
-                  convenient Hyderabad access.
+                <p className="text-sm font-semibold text-slate-900">
+                  Direct hotel contact
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  For the most current room information, contact the property
+                  directly before travelling.
                 </p>
               </div>
             </aside>
@@ -559,25 +542,35 @@ export default async function HotelPage({ params }: Props) {
           <div className="container-custom flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h2 className="text-3xl font-bold">
-                Book Your Stay at {hotel.name}
+                Check Availability at {hotel.name}
               </h2>
 
               <p className="mt-3 text-slate-300">
-                Speak with Supraja Hotels for room availability, direct booking
-                support and property guidance.
+                Call or WhatsApp the hotel directly for current room
+                availability, rates and booking confirmation.
               </p>
             </div>
 
-            <a
-              href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20book%20a%20room%20at%20${encodeURIComponent(
-                hotel.name,
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-green-600 px-8 py-3 font-semibold text-white transition hover:bg-green-700"
-            >
-              Book on WhatsApp
-            </a>
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+              <a
+                href={`tel:+91${hotel.phone}`}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-8 py-3 font-semibold text-white transition hover:bg-white/10"
+              >
+                <Phone size={18} aria-hidden="true" />
+                Call Hotel
+              </a>
+              <a
+                href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20check%20room%20availability%20at%20${encodeURIComponent(
+                  hotel.name,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-8 py-3 font-semibold text-white transition hover:bg-green-700"
+              >
+                <MessageCircle size={18} aria-hidden="true" />
+                WhatsApp Hotel
+              </a>
+            </div>
           </div>
         </section>
       </main>
