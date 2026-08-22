@@ -58,13 +58,20 @@ a {
   text-decoration: none;
 }
 
+/* Keep primary page titles premium rather than overly heavy. */
+h1 {
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+}
+
 .section-padding {
-  padding: 64px 16px;
+  padding: 56px 16px;
 }
 
 .container-custom {
+  width: min(100% - 32px, 1220px);
   max-width: 1220px;
-  margin: 0 auto;
+  margin-inline: auto;
 }
 
 /* Keep section titles visually strong and avoid unnecessary desktop wrapping. */
@@ -85,9 +92,15 @@ a {
   background: linear-gradient(135deg, #0f172a, #1e3a8a, #1e40af);
 }
 
+@media (min-width: 768px) {
+  .container-custom {
+    width: min(100% - 48px, 1220px);
+  }
+}
+
 @media (min-width: 1024px) {
   .section-padding {
-    padding-block: 80px;
+    padding-block: 72px;
   }
 
   .mx-auto.max-w-3xl.text-center h1,
