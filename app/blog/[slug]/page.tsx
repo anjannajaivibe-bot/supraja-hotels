@@ -13,7 +13,7 @@ import {
 
 import { blogPosts, getBlogPost } from "@/data/blog-posts";
 
-const siteUrl = "https://suprajahotels.com";
+const siteUrl = "https://www.suprajahotels.com";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -169,7 +169,7 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="mt-8 font-semibold uppercase tracking-[0.2em] text-amber-400">
               {post.category}
             </p>
-            <h1 className="mt-4 max-w-5xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+            <h1 className="mt-4 max-w-5xl text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
               {post.title}
             </h1>
             <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
