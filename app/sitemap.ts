@@ -3,102 +3,91 @@ import { blogPosts } from "@/data/blog-posts";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://suprajahotels.com";
+  const coreUpdatedAt = new Date("2026-08-22");
+  const supportingUpdatedAt = new Date("2026-07-30");
 
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
-      lastModified: new Date(),
+      lastModified: coreUpdatedAt,
       changeFrequency: "weekly",
       priority: 1,
     },
-
     {
       url: `${baseUrl}/about`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "monthly",
       priority: 0.8,
     },
-
     {
       url: `${baseUrl}/hotels`,
-      lastModified: new Date(),
+      lastModified: coreUpdatedAt,
       changeFrequency: "weekly",
       priority: 0.9,
     },
-
     {
       url: `${baseUrl}/hotels/supraja-cyber-view`,
-      lastModified: new Date(),
+      lastModified: coreUpdatedAt,
       changeFrequency: "weekly",
-      priority: 0.9,
+      priority: 0.95,
     },
-
     {
       url: `${baseUrl}/hotels/supraja-residency`,
-      lastModified: new Date(),
+      lastModified: coreUpdatedAt,
       changeFrequency: "weekly",
-      priority: 0.9,
+      priority: 0.95,
     },
-
     {
       url: `${baseUrl}/hotels/supraja-lodge`,
-      lastModified: new Date(),
+      lastModified: coreUpdatedAt,
       changeFrequency: "weekly",
-      priority: 0.9,
+      priority: 0.95,
     },
-
     {
       url: `${baseUrl}/saket-banquet-hall`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "weekly",
       priority: 0.85,
     },
-
     {
       url: `${baseUrl}/gallery`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "monthly",
       priority: 0.7,
     },
-
     {
       url: `${baseUrl}/offers`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "weekly",
       priority: 0.8,
     },
-
     {
       url: `${baseUrl}/contact`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "monthly",
       priority: 0.7,
     },
-
     {
       url: `${baseUrl}/blog`,
       lastModified: new Date("2026-07-29"),
       changeFrequency: "weekly",
       priority: 0.8,
     },
-
     {
       url: `${baseUrl}/privacy-policy`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "yearly",
       priority: 0.3,
     },
-
     {
       url: `${baseUrl}/terms-and-conditions`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "yearly",
       priority: 0.3,
     },
-
     {
       url: `${baseUrl}/refund-policy`,
-      lastModified: new Date(),
+      lastModified: supportingUpdatedAt,
       changeFrequency: "yearly",
       priority: 0.3,
     },
