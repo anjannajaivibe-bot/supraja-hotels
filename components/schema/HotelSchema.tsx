@@ -14,19 +14,13 @@ type HotelSchemaProps = {
     checkOutTime: string;
     mapEmbed?: string;
     googleBusinessUrl?: string;
-    geo: {
-      latitude: number;
-      longitude: number;
-    };
-    images: {
-      hero: string;
-      gallery: string[];
-    };
+    geo: { latitude: number; longitude: number };
+    images: { hero: string; gallery: string[] };
     amenities?: string[];
   };
 };
 
-const siteUrl = "https://suprajahotels.com";
+const siteUrl = "https://www.suprajahotels.com";
 
 export default function HotelSchema({ hotel }: HotelSchemaProps) {
   const hotelUrl = `${siteUrl}/hotels/${hotel.slug}`;
@@ -40,10 +34,7 @@ export default function HotelSchema({ hotel }: HotelSchemaProps) {
     url: hotelUrl,
     sameAs: hotel.googleBusinessUrl ? [hotel.googleBusinessUrl] : undefined,
     description: hotel.description,
-    image: [
-      heroImage,
-      ...hotel.images.gallery.map((image) => `${siteUrl}${image}`),
-    ],
+    image: [heroImage, ...hotel.images.gallery.map((image) => `${siteUrl}${image}`)],
     telephone: `+91-${hotel.phone}`,
     email: hotel.email,
     priceRange: hotel.priceRange,
@@ -62,28 +53,23 @@ export default function HotelSchema({ hotel }: HotelSchemaProps) {
     },
     checkinTime: hotel.checkInTime,
     checkoutTime: hotel.checkOutTime,
-    amenityFeature:
-      hotel.amenities?.map((amenity) => ({
-        "@type": "LocationFeatureSpecification",
-        name: amenity,
-        value: true,
-      })) ?? [],
+    amenityFeature: hotel.amenities?.map((amenity) => ({
+      "@type": "LocationFeatureSpecification",
+      name: amenity,
+      value: true,
+    })) ?? [],
     petsAllowed: false,
     smokingAllowed: false,
     currenciesAccepted: "INR",
     paymentAccepted: "Cash, UPI, Credit Card, Debit Card",
     hasMap: hotel.googleBusinessUrl || hotel.mapEmbed,
-    parentOrganization: {
-      "@id": `${siteUrl}/#organization`,
-    },
+    parentOrganization: { "@id": `${siteUrl}/#organization` },
   };
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schema),
-      }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
 }
