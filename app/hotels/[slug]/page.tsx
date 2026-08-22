@@ -154,8 +154,8 @@ export default async function HotelPage({ params }: Props) {
             </video>
           ) : null}
 
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/58 to-slate-950/5" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/62 via-transparent to-slate-950/10" />
 
           <div className="container-custom relative z-10 w-full px-4 py-10 sm:py-12 lg:py-14">
             <div className="max-w-4xl">
