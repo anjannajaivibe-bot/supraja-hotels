@@ -74,12 +74,7 @@ export default function HotelSchema({ hotel }: HotelSchemaProps) {
     paymentAccepted: "Cash, UPI, Credit Card, Debit Card",
     hasMap: hotel.googleBusinessUrl || hotel.mapEmbed,
     parentOrganization: {
-      "@type": "Organization",
-      "@id": `${siteUrl}#organization`,
-      name: "Supraja Hotels",
-      url: siteUrl,
-      email: "srisuprajahotels@gmail.com",
-      telephone: "+91-9550776161",
+      "@id": `${siteUrl}/#organization`,
     },
   };
 
