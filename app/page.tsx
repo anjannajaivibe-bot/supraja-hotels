@@ -159,11 +159,11 @@ export default function HomePage() {
         <DeferredHeroVideo />
 
         <div
-          className="absolute inset-0 z-10 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
+          className="absolute inset-0 z-10 bg-gradient-to-r from-slate-950/95 via-slate-950/58 to-slate-950/5"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/75 via-transparent to-slate-950/20"
+          className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/62 via-transparent to-slate-950/10"
           aria-hidden="true"
         />
 
@@ -403,14 +403,15 @@ export default function HomePage() {
                 </p>
 
                 <h2 className="mt-3 text-3xl font-bold text-slate-950 md:text-4xl">
-                  Stay Near Hyderabad&apos;s Important Business and Residential Areas
+                  Stay Near Hyderabad&apos;s Important Destinations
                 </h2>
 
                 <p className="mt-5 max-w-4xl leading-8 text-slate-600">
-                  Our properties serve guests visiting Hitech City, Madhapur,
-                  Gachibowli, Kondapur, Chandanagar, BHEL, Serilingampally,
-                  Nallagandla and Miyapur. Choose the hotel page that best matches
-                  your destination, then call or WhatsApp that property directly.
+                  Supraja Hotels has properties in Madhapur and Chandanagar,
+                  providing practical access to Hitech City, Gachibowli,
+                  Kondapur, BHEL, Serilingampally, Nallagandla and Miyapur.
+                  Choose the hotel that best matches where you need to be in the
+                  city.
                 </p>
               </div>
 
@@ -457,13 +458,13 @@ export default function HomePage() {
       <section className="container-custom px-4 py-16 lg:py-20">
         <div className="rounded-[2rem] bg-slate-950 p-8 text-center text-white shadow-2xl sm:p-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Check Availability Directly with the Hotel
+            Check Room Availability Directly with the Hotel
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300">
-            Call or WhatsApp Supraja Hotels for current room availability, rates
-            and booking confirmation. For the fastest response, choose your hotel
-            first and contact that property directly.
+            Call or WhatsApp Supraja Hotels to ask about current room
+            availability, rates and booking confirmation. For the fastest
+            response, choose the property that matches your preferred location.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
@@ -471,14 +472,14 @@ export default function HomePage() {
               href="/hotels"
               className="inline-flex items-center justify-center rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950 transition hover:bg-amber-100"
             >
-              Choose Your Hotel
+              Choose a Hotel
             </Link>
 
             <a
               href="tel:+919550776161"
               className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-4 text-sm font-bold text-white transition hover:bg-white/10"
             >
-              Call Cyber View
+              Call Supraja Hotels
             </a>
 
             <a
@@ -487,7 +488,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-full bg-green-600 px-7 py-4 text-sm font-bold text-white transition hover:bg-green-700"
             >
-              WhatsApp Supraja Hotels
+              Check on WhatsApp
             </a>
           </div>
         </div>
