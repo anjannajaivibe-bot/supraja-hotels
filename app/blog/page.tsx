@@ -10,19 +10,25 @@ export const metadata: Metadata = {
   description:
     "Read practical Hyderabad hotel, location and travel guides from Supraja Hotels to plan a comfortable stay and book with confidence.",
   alternates: {
-    canonical: "/blog",
+    canonical: "https://www.suprajahotels.com/blog",
   },
   openGraph: {
     title: "Hyderabad Hotel and Stay Guides | Supraja Hotels",
     description:
       "Practical local guidance for comfortable hotel stays across Hyderabad.",
-    url: "/blog",
+    url: "https://www.suprajahotels.com/blog",
     type: "website",
-    images: ["/images/social/supraja-hotels-og.jpg"],
+    images: ["https://www.suprajahotels.com/images/social/supraja-hotels-og.jpg"],
   },
 };
 
 export default function BlogPage() {
+  const sortedPosts = [...blogPosts].sort(
+    (a, b) =>
+      new Date(`${b.publishedAt}T00:00:00`).getTime() -
+      new Date(`${a.publishedAt}T00:00:00`).getTime(),
+  );
+
   return (
     <main className="bg-white text-slate-900">
       <section className="bg-slate-950 px-4 py-16 text-white md:py-20">
@@ -30,7 +36,7 @@ export default function BlogPage() {
           <p className="font-semibold uppercase tracking-[0.22em] text-amber-400">
             Supraja Hotels
           </p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight md:text-6xl">
             Hyderabad Hotel and Stay Guides
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
@@ -44,7 +50,7 @@ export default function BlogPage() {
       <section className="px-4 py-16 md:py-20">
         <div className="container-custom">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {blogPosts.map((post) => (
+            {sortedPosts.map((post) => (
               <article
                 key={post.slug}
                 className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
