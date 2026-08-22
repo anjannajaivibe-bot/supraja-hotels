@@ -25,16 +25,16 @@ export default function FloatingCTA() {
   const pathname = usePathname();
 
   const currentHotel = hotelCtaData.find((hotel) =>
-    pathname.includes(hotel.slug)
+    pathname.includes(hotel.slug),
   );
 
   const phone = currentHotel?.phone || "9550776161";
   const message = currentHotel
-    ? `Hi, I would like to book a room at ${currentHotel.name}.`
-    : "Hi, I would like to know room availability at Supraja Hotels.";
+    ? `Hi, I would like to check room availability at ${currentHotel.name}.`
+    : "Hi, I would like to check room availability at Supraja Hotels.";
 
   const whatsappUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(
-    message
+    message,
   )}`;
 
   return (
@@ -43,18 +43,24 @@ export default function FloatingCTA() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Book on WhatsApp"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700"
+        aria-label={
+          currentHotel
+            ? `Check room availability at ${currentHotel.name} on WhatsApp`
+            : "Check Supraja Hotels room availability on WhatsApp"
+        }
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
       >
-        <MessageCircle size={26} />
+        <MessageCircle size={26} aria-hidden="true" />
       </a>
 
       <a
         href={`tel:+91${phone}`}
-        aria-label="Call Supraja Hotels"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-700 text-white shadow-lg transition hover:scale-105 hover:bg-blue-800"
+        aria-label={
+          currentHotel ? `Call ${currentHotel.name}` : "Call Supraja Hotels"
+        }
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-700 text-white shadow-lg transition hover:scale-105 hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
       >
-        <Phone size={25} />
+        <Phone size={25} aria-hidden="true" />
       </a>
     </div>
   );
