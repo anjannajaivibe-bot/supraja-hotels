@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/api/"],
     },
-    sitemap: "https://suprajahotels.com/sitemap.xml",
-    host: "https://suprajahotels.com",
+    sitemap: "https://www.suprajahotels.com/sitemap.xml",
+    host: "https://www.suprajahotels.com",
   };
 }
