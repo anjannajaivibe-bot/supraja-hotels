@@ -38,7 +38,7 @@ export default function FloatingCTA() {
   )}`;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3">
+    <div className="fixed bottom-5 right-5 z-[9999] hidden flex-col gap-3 md:flex">
       <a
         href={whatsappUrl}
         target="_blank"
