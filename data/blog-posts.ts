@@ -40,6 +40,7 @@ export type BlogPost = {
 
 import { additionalBlogPosts } from "./more-blog-posts";
 import { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
+import { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
 
 export const blogPosts: BlogPost[] = [
   {
@@ -93,10 +94,12 @@ export const blogPosts: BlogPost[] = [
   },
   ...additionalBlogPosts,
   ...seoBlogPostsAug22,
+  ...seoBlogPostsAug22B,
 ];
 
 export { additionalBlogPosts } from "./more-blog-posts";
 export { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
+export { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug);
