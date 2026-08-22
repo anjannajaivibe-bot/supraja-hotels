@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/gallery`, lastModified: supportingUpdatedAt, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/offers`, lastModified: supportingUpdatedAt, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/contact`, lastModified: supportingUpdatedAt, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/blog`, lastModified: new Date("2026-07-29"), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/blog`, lastModified: new Date("2026-08-22"), changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/privacy-policy`, lastModified: supportingUpdatedAt, changeFrequency: "yearly", priority: 0.3 },
     { url: `${baseUrl}/terms-and-conditions`, lastModified: supportingUpdatedAt, changeFrequency: "yearly", priority: 0.3 },
     { url: `${baseUrl}/refund-policy`, lastModified: supportingUpdatedAt, changeFrequency: "yearly", priority: 0.3 },
