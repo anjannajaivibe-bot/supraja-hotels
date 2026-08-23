@@ -5,15 +5,107 @@ import SmartImage from "@/components/SmartImage";
 import { hotels } from "@/data/hotels";
 
 const siteUrl = "https://www.suprajahotels.com";
-export const metadata: Metadata = { title: "Hotel Gallery | Supraja Hotels Hyderabad", description: "View real room, exterior and hotel photos from Hotel Supraja Cyber View, Hotel Supraja Residency and Hotel Supraja Lodge in Hyderabad.", alternates: { canonical: "/gallery" }, openGraph: { title: "Hotel Gallery | Supraja Hotels Hyderabad", description: "Explore real photos from all three Supraja Hotels in Hyderabad.", url: "/gallery", siteName: "Supraja Hotels", images: [{ url: "/images/social/supraja-hotels-og.jpg", width: 1200, height: 630, alt: "Supraja Hotels gallery" }], locale: "en_IN", type: "website" } };
 
-export default function GalleryPage(){
- const schema={"@context":"https://schema.org","@type":"ImageGallery","@id":`${siteUrl}/gallery#imagegallery`,url:`${siteUrl}/gallery`,name:"Supraja Hotels Hyderabad Gallery",image:hotels.flatMap(h=>[`${siteUrl}${h.images.hero}`,...h.images.gallery.map(i=>`${siteUrl}${i}`)])};
- const lead=[hotels[0]?.images.hero,hotels[1]?.images.hero,hotels[2]?.images.hero,hotels[0]?.images.gallery?.[0]].filter(Boolean) as string[];
- return <main className="bg-white pb-20 text-slate-900 md:pb-0"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/>
-  <section className="relative isolate overflow-hidden bg-slate-950 text-white"><div className="absolute inset-0 bg-slate-950"/><div className="container-custom relative z-10 grid gap-10 px-5 py-16 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:py-20"><div><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Hotel Gallery</p><h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">Explore Our Hotels Before You Book</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">Browse real photos of rooms, hotel interiors and exteriors across our Madhapur and Chandanagar properties.</p><Link href="/hotels" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950">Explore Our Hotels <ArrowRight size={16}/></Link></div><div className="grid grid-cols-2 gap-3">{lead.map((img,i)=><div key={img} className={`relative overflow-hidden rounded-[1.5rem] ${i===0?'col-span-2 h-[310px]':'h-[190px]'}`}><SmartImage src={img} alt={`Supraja Hotels gallery view ${i+1}`} fill className="object-cover" sizes="(max-width:1024px) 50vw, 30vw"/></div>)}</div></div></section>
-  {hotels.map((hotel,index)=>{const images=[hotel.images.hero,...hotel.images.gallery];return <section key={hotel.slug} className={index%2===0?'bg-[#f7f5f1]':'bg-white'}><div className="container-custom px-4 py-16 lg:py-24"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-700"><MapPin size={16}/>{hotel.location}</p><h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">{hotel.name}</h2><p className="mt-4 max-w-2xl leading-7 text-slate-600">Explore the property photos, then view the hotel page for amenities, nearby landmarks and booking details.</p></div><div className="flex gap-3"><Link href={`/hotels/${hotel.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-slate-300 bg-white px-5 text-sm font-bold">View Hotel</Link><a href={`https://wa.me/91${hotel.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-green-600 px-5 text-sm font-bold text-white"><MessageCircle size={16}/>WhatsApp</a></div></div><div className="mt-8 grid gap-3 md:grid-cols-4">{images.map((img,i)=><figure key={`${img}-${i}`} className={`group relative overflow-hidden rounded-[1.5rem] bg-slate-100 ${i===0?'md:col-span-2 md:row-span-2 min-h-[360px]':'min-h-[220px]'}`}><SmartImage src={img} alt={`${hotel.name} photo ${i+1}`} fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width:768px) 100vw, 25vw"/>{i===0?<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5 pt-16 text-white"><span className="font-bold">{hotel.name}</span></div>:null}</figure>)}</div></div></section>})}
-  <section className="bg-slate-950 px-4 py-16 text-white"><div className="container-custom flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-300">Ready to Book?</p><h2 className="mt-2 text-3xl font-bold">Choose Your Hotel and Check Availability</h2></div><div className="flex gap-3"><a href="tel:+919550776161" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-slate-950"><Phone size={17}/>Call</a><Link href="/contact" className="inline-flex min-h-12 items-center rounded-full bg-green-600 px-6 text-sm font-bold text-white">Contact Hotels</Link></div></div></section>
-  <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 border-t border-slate-200 bg-white p-2 shadow-[0_-8px_30px_rgba(15,23,42,.14)] md:hidden"><a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 text-sm font-bold"><Phone size={18}/>Call</a><Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={18}/>Contact</Link></div>
- </main>;
+export const metadata: Metadata = {
+  title: "Hotel Gallery Hyderabad | Supraja Hotels",
+  description:
+    "View real room, exterior and hotel photos from Hotel Supraja Cyber View in Madhapur and Supraja Residency and Lodge in Chandanagar, Hyderabad.",
+  alternates: { canonical: "/gallery" },
+  openGraph: {
+    title: "Hotel Gallery Hyderabad | Supraja Hotels",
+    description: "Explore real photos from all three Supraja Hotels in Madhapur and Chandanagar.",
+    url: "/gallery",
+    siteName: "Supraja Hotels",
+    images: [{ url: "/images/social/supraja-hotels-og.jpg", width: 1200, height: 630, alt: "Supraja Hotels gallery" }],
+    locale: "en_IN",
+    type: "website",
+  },
+};
+
+export default function GalleryPage() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    "@id": `${siteUrl}/gallery#imagegallery`,
+    url: `${siteUrl}/gallery`,
+    name: "Supraja Hotels Hyderabad Gallery",
+    image: hotels.flatMap((h) => [`${siteUrl}${h.images.hero}`, ...h.images.gallery.map((i) => `${siteUrl}${i}`)]),
+  };
+  const lead = [hotels[0]?.images.hero, hotels[1]?.images.hero, hotels[2]?.images.hero, hotels[0]?.images.gallery?.[0]].filter(Boolean) as string[];
+
+  return (
+    <main className="bg-white pb-20 text-slate-900 md:pb-0">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0 bg-slate-950" />
+        <div className="container-custom relative z-10 grid gap-10 px-5 py-16 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:py-20">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Real Hotel Photos</p>
+            <h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">See Supraja Hotels Before You Choose Your Stay</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+              Browse real room, reception, exterior and guest-space photos from our hotels in Madhapur and Chandanagar, then open the property page for amenities, nearby landmarks and booking details.
+            </p>
+            <Link href="/hotels" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950">Compare Hotels <ArrowRight size={16} /></Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {lead.map((img, i) => (
+              <div key={img} className={`relative overflow-hidden rounded-[1.5rem] ${i === 0 ? "col-span-2 h-[310px]" : "h-[190px]"}`}>
+                <SmartImage src={img} alt={`Supraja Hotels Hyderabad gallery photo ${i + 1}`} fill className="object-cover" sizes="(max-width:1024px) 50vw, 30vw" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {hotels.map((hotel, index) => {
+        const images = [hotel.images.hero, ...hotel.images.gallery];
+        return (
+          <section key={hotel.slug} className={index % 2 === 0 ? "bg-[#f7f5f1]" : "bg-white"}>
+            <div className="container-custom px-4 py-16 lg:py-24">
+              <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-700"><MapPin size={16} />{hotel.location}</p>
+                  <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">{hotel.name}</h2>
+                  <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+                    View real photos of {hotel.name}, then visit the hotel page to check its location, amenities, nearby landmarks and direct Call or WhatsApp contact.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Link href={`/hotels/${hotel.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-slate-300 bg-white px-5 text-sm font-bold">View Hotel</Link>
+                  <a href={`https://wa.me/91${hotel.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-green-600 px-5 text-sm font-bold text-white"><MessageCircle size={16} />WhatsApp</a>
+                </div>
+              </div>
+              <div className="mt-8 grid gap-3 md:grid-cols-4">
+                {images.map((img, i) => (
+                  <figure key={`${img}-${i}`} className={`group relative overflow-hidden rounded-[1.5rem] bg-slate-100 ${i === 0 ? "md:col-span-2 md:row-span-2 min-h-[360px]" : "min-h-[220px]"}`}>
+                    <SmartImage src={img} alt={`${hotel.name} hotel photo ${i + 1}`} fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width:768px) 100vw, 25vw" />
+                    {i === 0 ? <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5 pt-16 text-white"><span className="font-bold">{hotel.name}</span></div> : null}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })}
+
+      <section className="bg-slate-950 px-4 py-16 text-white">
+        <div className="container-custom flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-300">Found the Right Hotel?</p>
+            <h2 className="mt-2 text-3xl font-bold">Check Rooms and Current Rates Directly</h2>
+          </div>
+          <div className="flex gap-3">
+            <a href="tel:+919550776161" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-slate-950"><Phone size={17} />Call</a>
+            <Link href="/contact" className="inline-flex min-h-12 items-center rounded-full bg-green-600 px-6 text-sm font-bold text-white">Contact Hotels</Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 border-t border-slate-200 bg-white p-2 shadow-[0_-8px_30px_rgba(15,23,42,.14)] md:hidden">
+        <a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 text-sm font-bold"><Phone size={18} />Call</a>
+        <Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={18} />Contact</Link>
+      </div>
+    </main>
+  );
 }
