@@ -197,17 +197,17 @@ export default function HomePage() {
               ))}
             </div>
             <div className="lg:pl-8">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Comfort in the Right Location</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">A Comfortable Stay, Close to Where You Need to Be</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Stay Close. Travel Less.</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">Well-Located Hotels for Your Hyderabad Stay</h2>
               <p className="mt-4 leading-8 text-slate-600">
-                Choose the Supraja Hotel that best fits your Hyderabad visit, with convenient locations in Madhapur and Chandanagar for business trips, family stays and short visits.
+                Whether you are visiting Hyderabad for work, family, an appointment or a short trip, choose a Supraja Hotel close to the places that matter to you.
               </p>
               <div className="mt-6 space-y-4">
-                {["Madhapur stay near HITEC City, Shilpakala Vedika and Shilparamam", "Chandanagar stays near Lingampally, BHEL, Serilingampally and Miyapur", "Call or WhatsApp the hotel directly for room availability and booking assistance"].map((item) => (
+                {["Madhapur: close to HITEC City, Shilpakala Vedika, Shilparamam and major IT destinations", "Chandanagar: convenient for Lingampally, BHEL, Serilingampally, Miyapur and western Hyderabad", "Book direct: call or WhatsApp your preferred hotel for availability, rates and booking assistance"].map((item) => (
                   <p key={item} className="flex gap-3 leading-7 text-slate-700"><CheckCircle2 className="mt-1 shrink-0 text-green-700" size={19} />{item}</p>
                 ))}
               </div>
-              <Link href="/gallery" className="mt-7 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800"><Camera size={17} />Explore Hotel Photos</Link>
+              <Link href="#choose-hotel" className="mt-7 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800">Find Your Hotel <ArrowRight size={17} /></Link>
             </div>
           </div>
         </div>
