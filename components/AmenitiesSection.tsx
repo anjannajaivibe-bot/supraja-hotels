@@ -5,19 +5,19 @@ export default function AmenitiesSection() {
   return (
     <section className="bg-white py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-6">
-
         <div className="text-center mb-14">
           <span className="uppercase tracking-[0.3em] text-[#C8A54B] text-sm font-medium">
-            Amenities
+            Hotel Amenities
           </span>
-
           <h2 className="mt-4 text-4xl font-light text-slate-900">
-            Everything You Need For A Comfortable Stay
+            Essentials for a Comfortable Stay
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl leading-7 text-slate-600">
+            Enjoy useful everyday amenities designed for a comfortable and convenient stay at Supraja Hotels.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-
           {amenities.map((item) => (
             <div
               key={item.title}
@@ -30,13 +30,11 @@ export default function AmenitiesSection() {
                 height={48}
                 className="mb-6"
               />
-
               <h3 className="text-xl font-medium text-slate-900">
                 {item.title}
               </h3>
             </div>
           ))}
-
         </div>
       </div>
     </section>
