@@ -1,20 +1,20 @@
 import {
-  AirVent,
-  Broom,
-  CarFront,
-  ConciergeBell,
-  UsersRound,
+  Bell,
+  Car,
+  Sparkles,
+  Users,
   Wifi,
+  Wind,
 } from "lucide-react";
 import { amenities } from "@/data/amenities";
 
 const amenityIcons = {
   "Free WiFi": Wifi,
-  "Air Conditioning": AirVent,
-  "24x7 Reception": ConciergeBell,
-  "Daily Housekeeping": Broom,
-  Parking: CarFront,
-  "Family Rooms": UsersRound,
+  "Air Conditioning": Wind,
+  "24x7 Reception": Bell,
+  "Daily Housekeeping": Sparkles,
+  Parking: Car,
+  "Family Rooms": Users,
 };
 
 export default function AmenitiesSection() {
@@ -35,7 +35,7 @@ export default function AmenitiesSection() {
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {amenities.map((item) => {
-            const Icon = amenityIcons[item.title as keyof typeof amenityIcons] || ConciergeBell;
+            const Icon = amenityIcons[item.title as keyof typeof amenityIcons] || Bell;
 
             return (
               <div
