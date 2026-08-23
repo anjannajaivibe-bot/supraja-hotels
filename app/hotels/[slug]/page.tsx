@@ -70,7 +70,7 @@ const searchCopy: Record<
     overview:
       "Hotel Supraja Residency is a comfortable hotel in Chandanagar for families, professionals and visitors travelling around western Hyderabad. The Gangaram location works well for guests whose plans involve Lingampally Railway Station, BHEL, Serilingampally, Nallagandla, Miyapur or nearby residential and business areas.",
     why:
-      "Residency is a strong choice when Chandanagar is the right base for your visit. Guests get comfortable rooms and useful amenities without travelling unnecessarily toward central Hyderabad, with direct access to the property team by phone or WhatsApp for room and booking information.",
+      "Residency is a strong choice when Chandanagar is the right base for your visit. Guests get comfortable rooms and essential amenities without travelling unnecessarily toward central Hyderabad, with direct access to the property team by phone or WhatsApp for room and booking information.",
     nearbyIntro:
       "If you are looking for a hotel in Chandanagar or accommodation near Lingampally Railway Station and BHEL, these nearby areas can help you compare the location:",
     final:
@@ -83,7 +83,7 @@ const searchCopy: Record<
     intro:
       "Affordable rooms in Chandanagar for short stays, work trips and family visits, with access to Lingampally Railway Station, Gangaram, BHEL, Serilingampally and Miyapur.",
     overview:
-      "Hotel Supraja Lodge is a budget hotel in Chandanagar for travellers who want straightforward accommodation in a useful western Hyderabad location. It is suited to short visits, work trips and family travel around Lingampally Railway Station, Gangaram, BHEL, Serilingampally and Miyapur.",
+      "Hotel Supraja Lodge is a budget hotel in Chandanagar for travellers who want straightforward accommodation in a convenient western Hyderabad location. It is suited to short visits, work trips and family travel around Lingampally Railway Station, Gangaram, BHEL, Serilingampally and Miyapur.",
     why:
       "Choose Supraja Lodge when value and location matter more than unnecessary extras. The property keeps you close to Chandanagar and nearby western Hyderabad destinations, with essential amenities and direct contact with the hotel team for available rooms and current rates.",
     nearbyIntro:
@@ -204,7 +204,7 @@ export default async function HotelPage({ params }: Props) {
               <div className="mt-10 grid gap-5 sm:grid-cols-3">
                 {[
                   { title: "Comfortable Rooms", text: "Well-maintained accommodation for business, family and short stays.", icon: BedDouble },
-                  { title: "Useful Location", text: `Stay in ${hotel.area} with access to the nearby places that matter to your visit.`, icon: MapPin },
+                  { title: "Well-Connected Location", text: `Stay in ${hotel.area} with convenient access to the places that matter to your visit.`, icon: MapPin },
                   { title: "Direct Booking", text: "Call or WhatsApp the property team for rooms, rates and booking details.", icon: Phone },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -296,8 +296,8 @@ export default async function HotelPage({ params }: Props) {
             </div>
             <div className="rounded-[1.75rem] bg-[#f7f5f1] p-7">
               <ShieldCheck className="text-amber-800" size={28} />
-              <h3 className="mt-4 text-xl font-bold">Explore Before You Book</h3>
-              <p className="mt-3 leading-7 text-slate-600">Compare all Supraja Hotels, view more property photos or read local Hyderabad stay guides before choosing your hotel.</p>
+              <h3 className="mt-4 text-xl font-bold">Plan Your Stay</h3>
+              <p className="mt-3 leading-7 text-slate-600">Compare Supraja Hotels, view more property photos or read local Hyderabad stay guides to find the location that suits your visit.</p>
               <div className="mt-6 grid gap-3">
                 {[
                   ["/hotels", "Compare Supraja Hotels"],
