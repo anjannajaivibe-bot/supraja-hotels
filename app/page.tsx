@@ -24,12 +24,12 @@ const hotelDescriptions: Record<string, string> = {
 };
 
 const featureCards = [
-  { title: "Comfortable Rooms", description: "Well-maintained rooms for business visits, family stays and short Hyderabad trips.", icon: BedDouble },
-  { title: "Useful Locations", description: "Stay in Madhapur near HITEC City or Chandanagar near Lingampally, BHEL and Miyapur.", icon: MapPin },
-  { title: "Direct Hotel Support", description: "Call or WhatsApp the property for current room availability, rates and confirmation.", icon: Phone },
-  { title: "Free WiFi", description: "Stay connected for work, calls, streaming and everyday browsing.", icon: Wifi },
-  { title: "Parking at Selected Hotels", description: "Parking is available at selected properties. Confirm with the hotel before arrival.", icon: Car },
-  { title: "Business & Family Stays", description: "Practical options for work trips, family visits, appointments, events and short stays.", icon: ShieldCheck },
+  { title: "Clean & Comfortable Rooms", description: "Well-maintained rooms for business trips, family stays and short visits in Hyderabad.", icon: BedDouble },
+  { title: "Convenient Locations", description: "Choose Madhapur near HITEC City or Chandanagar near Lingampally, BHEL and Miyapur.", icon: MapPin },
+  { title: "Direct Booking Assistance", description: "Call or WhatsApp the hotel directly to check available rooms, rates and booking details.", icon: Phone },
+  { title: "Free WiFi", description: "Complimentary WiFi for work, calls, streaming and staying connected during your visit.", icon: Wifi },
+  { title: "Parking at All Hotels", description: "Parking is available at every Supraja Hotels property for guests travelling by car or two-wheeler.", icon: Car },
+  { title: "Business & Family Friendly", description: "Comfortable stays for business travellers, families, events and short visits to Hyderabad.", icon: ShieldCheck },
 ];
 
 export default function HomePage() {
@@ -74,7 +74,7 @@ export default function HomePage() {
 
       <section className="bg-slate-950 px-4 py-9 text-white"><div className="container-custom grid gap-6 md:grid-cols-3"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Book Direct</p><h2 className="mt-2 text-2xl font-semibold">Talk to the Hotel, Not a Call Centre</h2></div><div className="flex items-start gap-3"><Phone className="mt-1 text-amber-300" size={22} /><div><p className="font-bold">Current Availability</p><p className="mt-1 text-sm leading-6 text-slate-300">Ask the property about rooms and current rates before travelling.</p></div></div><div className="flex items-start gap-3"><MessageCircle className="mt-1 text-amber-300" size={22} /><div><p className="font-bold">WhatsApp Support</p><p className="mt-1 text-sm leading-6 text-slate-300">Message the hotel directly when calling is not convenient.</p></div></div></div></section>
 
-      <section className="bg-[#f7f5f1] px-4 py-14 lg:py-20"><div className="container-custom"><div className="mx-auto max-w-3xl text-center"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Your Stay, Simplified</p><h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">What You Can Expect</h2></div><div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{featureCards.map((feature) => { const Icon = feature.icon; return <div key={feature.title} className="rounded-[1.5rem] bg-white p-7 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-800"><Icon size={21} /></div><h3 className="mt-5 text-xl font-semibold text-slate-950">{feature.title}</h3><p className="mt-3 leading-7 text-slate-600">{feature.description}</p></div>; })}</div></div></section>
+      <section className="bg-[#f7f5f1] px-4 py-14 lg:py-20"><div className="container-custom"><div className="mx-auto max-w-3xl text-center"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Comfort, Location & Convenience</p><h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">Why Stay With Supraja Hotels</h2></div><div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{featureCards.map((feature) => { const Icon = feature.icon; return <div key={feature.title} className="rounded-[1.5rem] bg-white p-7 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-800"><Icon size={21} /></div><h3 className="mt-5 text-xl font-semibold text-slate-950">{feature.title}</h3><p className="mt-3 leading-7 text-slate-600">{feature.description}</p></div>; })}</div></div></section>
 
       <AmenitiesSection />
 
