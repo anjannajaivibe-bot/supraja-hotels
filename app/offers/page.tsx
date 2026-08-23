@@ -4,25 +4,142 @@ import { BriefcaseBusiness, CalendarCheck, CheckCircle2, MessageCircle, Phone, U
 import SmartImage from "@/components/SmartImage";
 import { hotels } from "@/data/hotels";
 
-export const metadata: Metadata = { title: "Hotel Offers in Hyderabad", description: "Contact Supraja Hotels directly for current room rates, corporate stays, group bookings and long-stay support in Hyderabad.", alternates: { canonical: "/offers" }, openGraph: { title: "Hotel Offers in Hyderabad | Supraja Hotels", description: "Check current room rates and stay options directly with Supraja Hotels.", url: "/offers", siteName: "Supraja Hotels", images: [{ url: "/images/social/supraja-hotels-og.jpg", width: 1200, height: 630, alt: "Supraja Hotels offers" }], locale: "en_IN", type: "website" } };
+export const metadata: Metadata = {
+  title: "Hotel Offers, Corporate & Group Stays in Hyderabad",
+  description:
+    "Contact Supraja Hotels for current room rates, corporate stays, group bookings and long-stay enquiries in Madhapur and Chandanagar, Hyderabad.",
+  alternates: { canonical: "/offers" },
+  openGraph: {
+    title: "Corporate, Group & Long Stays | Supraja Hotels",
+    description: "Ask Supraja Hotels about current rates for corporate, group and extended stays in Hyderabad.",
+    url: "/offers",
+    siteName: "Supraja Hotels",
+    images: [{ url: "/images/social/supraja-hotels-og.jpg", width: 1200, height: 630, alt: "Supraja Hotels corporate and group stays" }],
+    locale: "en_IN",
+    type: "website",
+  },
+};
 
-const options=[
- {title:"Current Rate Check",text:"Speak directly with the hotel team to check current room rates and availability before confirming your stay.",icon:Phone},
- {title:"Corporate Stay Support",text:"Accommodation support for business guests, company staff and project teams based on current availability.",icon:BriefcaseBusiness},
- {title:"Group Reservations",text:"Coordinate room requirements for family functions, staff stays, event guests and group visits.",icon:Users},
- {title:"Long Stay Enquiries",text:"Ask the hotel about weekly, monthly or extended-stay requirements and current room options.",icon:CalendarCheck},
+const options = [
+  {
+    title: "Current Room Rates",
+    text: "Call or WhatsApp the hotel to check the current rate for your dates and preferred property.",
+    icon: Phone,
+  },
+  {
+    title: "Corporate Stays",
+    text: "For business travellers, company staff and project teams who need accommodation in Madhapur or Chandanagar.",
+    icon: BriefcaseBusiness,
+  },
+  {
+    title: "Group Room Enquiries",
+    text: "Coordinate room requirements for family functions, staff travel, event guests and small groups directly with the hotel.",
+    icon: Users,
+  },
+  {
+    title: "Long-Stay Enquiries",
+    text: "Ask about weekly, monthly or extended stays based on room availability and the property that best fits your location.",
+    icon: CalendarCheck,
+  },
 ];
 
-export default function OffersPage(){
- return <main className="bg-white pb-20 text-slate-900 md:pb-0">
-  <section className="relative isolate overflow-hidden bg-slate-950 text-white"><SmartImage src={hotels[0].images.hero} alt="Supraja Hotels booking enquiries" fill isHero className="object-cover opacity-65" sizes="100vw"/><div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/68 to-slate-950/25"/><div className="container-custom relative z-10 px-5 py-20 lg:py-24"><div className="max-w-4xl"><p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300">Direct Booking Enquiries</p><h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">Check Current Rates and Availability Directly</h1><p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">For current room rates, corporate stays, group requirements or longer visits, contact Supraja Hotels directly by phone or WhatsApp.</p><div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/90">{["Current room rates","Room availability","Corporate & group stays","Long-stay enquiries"].map(x=><span key={x} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-amber-300"/>{x}</span>)}</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><a href="https://wa.me/919550776161?text=Hi%20I%20would%20like%20to%20check%20current%20room%20rates%20and%20availability" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold"><MessageCircle size={18}/>Check on WhatsApp</a><a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950"><Phone size={18}/>Call for Availability</a></div></div></div></section>
+export default function OffersPage() {
+  return (
+    <main className="bg-white pb-20 text-slate-900 md:pb-0">
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <SmartImage src={hotels[0].images.hero} alt="Hotel offers and group stays at Supraja Hotels Hyderabad" fill isHero className="object-cover opacity-65" sizes="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/68 to-slate-950/25" />
+        <div className="container-custom relative z-10 px-5 py-20 lg:py-24">
+          <div className="max-w-4xl">
+            <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300">Rates & Stay Enquiries</p>
+            <h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">Corporate, Group and Long-Stay Hotel Enquiries in Hyderabad</h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+              Planning a business stay, group visit or longer trip? Contact Supraja Hotels directly to discuss current room rates and availability at our Madhapur and Chandanagar properties.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/90">
+              {["Current room rates", "Corporate stays", "Group room enquiries", "Long-stay enquiries"].map((x) => (
+                <span key={x} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-amber-300" />{x}</span>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a href="https://wa.me/919550776161?text=Hi%20I%20would%20like%20to%20check%20room%20rates%20and%20availability%20at%20Supraja%20Hotels" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold"><MessageCircle size={18} />Check on WhatsApp</a>
+              <a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950"><Phone size={18} />Call Supraja Hotels</a>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <section className="bg-[#f7f5f1] px-4 py-16 lg:py-24"><div className="container-custom"><div className="max-w-5xl"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Stay Options</p><h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">Talk to the Hotel Before You Confirm</h2><p className="mt-5 max-w-3xl leading-8 text-slate-600">Get direct information about current rates, availability and the stay option that best fits your requirement.</p></div><div className="mt-10 grid gap-6 md:grid-cols-2">{options.map((item,i)=>{const Icon=item.icon;const hotel=hotels[i%hotels.length];return <article key={item.title} className="overflow-hidden rounded-[1.75rem] bg-white shadow-sm"><div className="relative h-60"><SmartImage src={hotel.images.hero} alt={`${item.title} at Supraja Hotels`} fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw"/><div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/><div className="absolute bottom-5 left-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-amber-800"><Icon size={22}/></div></div><div className="p-7"><h3 className="text-2xl font-bold">{item.title}</h3><p className="mt-3 leading-7 text-slate-600">{item.text}</p></div></article>})}</div></div></section>
+      <section className="bg-[#f7f5f1] px-4 py-16 lg:py-24">
+        <div className="container-custom">
+          <div className="max-w-5xl">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Stay Options</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">Tell Us What Kind of Stay You Are Planning</h2>
+            <p className="mt-5 max-w-3xl leading-8 text-slate-600">
+              Rates and room availability can vary by date and property. Contact the hotel directly with your dates, number of rooms and preferred location for the most useful information.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {options.map((item, i) => {
+              const Icon = item.icon;
+              const hotel = hotels[i % hotels.length];
+              return (
+                <article key={item.title} className="overflow-hidden rounded-[1.75rem] bg-white shadow-sm">
+                  <div className="relative h-60">
+                    <SmartImage src={hotel.images.hero} alt={`${item.title} at Supraja Hotels Hyderabad`} fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-5 left-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-amber-800"><Icon size={22} /></div>
+                  </div>
+                  <div className="p-7">
+                    <h3 className="text-2xl font-bold">{item.title}</h3>
+                    <p className="mt-3 leading-7 text-slate-600">{item.text}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-  <section className="bg-white px-4 py-16 lg:py-24"><div className="container-custom"><div className="max-w-5xl"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Choose a Property</p><h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">Check Rates with the Hotel That Fits Your Location</h2></div><div className="mt-10 grid gap-6 lg:grid-cols-3">{hotels.map(h=><div key={h.slug} className="overflow-hidden rounded-[1.75rem] border border-slate-200"><div className="relative h-60"><SmartImage src={h.images.hero} alt={h.seo.featuredImageAlt} fill className="object-cover" sizes="(max-width:1024px) 100vw,33vw"/></div><div className="p-6"><h3 className="text-xl font-bold">{h.name}</h3><p className="mt-2 text-sm text-slate-500">{h.location}</p><div className="mt-5 grid grid-cols-2 gap-2"><a href={`tel:+91${h.phone}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-300 text-sm font-bold"><Phone size={16}/>Call</a><a href={`https://wa.me/91${h.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={16}/>WhatsApp</a></div><Link href={`/hotels/${h.slug}`} className="mt-4 inline-block text-sm font-bold text-blue-800 hover:underline">View hotel details</Link></div></div>)}</div></div></section>
+      <section className="bg-white px-4 py-16 lg:py-24">
+        <div className="container-custom">
+          <div className="max-w-5xl">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Choose a Property</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">Select the Hotel Nearest to Your Work, Event or Family Visit</h2>
+            <p className="mt-4 max-w-3xl leading-8 text-slate-600">Choose Madhapur for HITEC City and nearby IT destinations, or Chandanagar for Lingampally, BHEL, Serilingampally, Nallagandla and Miyapur.</p>
+          </div>
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {hotels.map((h) => (
+              <div key={h.slug} className="overflow-hidden rounded-[1.75rem] border border-slate-200">
+                <div className="relative h-60"><SmartImage src={h.images.hero} alt={h.seo.featuredImageAlt} fill className="object-cover" sizes="(max-width:1024px) 100vw,33vw" /></div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold">{h.name}</h3>
+                  <p className="mt-2 text-sm text-slate-500">{h.location}</p>
+                  <div className="mt-5 grid grid-cols-2 gap-2">
+                    <a href={`tel:+91${h.phone}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-300 text-sm font-bold"><Phone size={16} />Call</a>
+                    <a href={`https://wa.me/91${h.whatsapp}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={16} />WhatsApp</a>
+                  </div>
+                  <Link href={`/hotels/${h.slug}`} className="mt-4 inline-block text-sm font-bold text-blue-800 hover:underline">View hotel details</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-  <section className="bg-slate-950 px-4 py-16 text-white"><div className="container-custom flex flex-col justify-between gap-6 md:flex-row md:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-300">Ready to Check?</p><h2 className="mt-2 text-3xl font-bold">Ask for Current Availability and Rates</h2></div><a href="https://wa.me/919550776161" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold"><MessageCircle size={17}/>WhatsApp Supraja Hotels</a></div></section>
+      <section className="bg-slate-950 px-4 py-16 text-white">
+        <div className="container-custom flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-300">Planning Your Stay?</p>
+            <h2 className="mt-2 text-3xl font-bold">Share Your Dates and Room Requirement</h2>
+          </div>
+          <a href="https://wa.me/919550776161" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold"><MessageCircle size={17} />WhatsApp Supraja Hotels</a>
+        </div>
+      </section>
 
-  <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 border-t border-slate-200 bg-white p-2 shadow-[0_-8px_30px_rgba(15,23,42,.14)] md:hidden"><a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 text-sm font-bold"><Phone size={18}/>Call</a><a href="https://wa.me/919550776161" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={18}/>WhatsApp</a></div>
- </main>;
+      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 border-t border-slate-200 bg-white p-2 shadow-[0_-8px_30px_rgba(15,23,42,.14)] md:hidden">
+        <a href="tel:+919550776161" className="inline-flex min-h-12 items-center justify-center gap-2 text-sm font-bold"><Phone size={18} />Call</a>
+        <a href="https://wa.me/919550776161" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={18} />WhatsApp</a>
+      </div>
+    </main>
+  );
 }
