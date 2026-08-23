@@ -48,10 +48,10 @@ const searchCopy: Record<
   }
 > = {
   "supraja-cyber-view": {
-    eyebrow: "Hotel in Madhapur near HITEC City",
-    heading: "Hotel Supraja Cyber View in Madhapur near HITEC City",
+    eyebrow: "Madhapur · Near HITEC City",
+    heading: "Hotel Supraja Cyber View",
     intro:
-      "Stay opposite Shilpakala Vedika in Madhapur, with convenient access to HITEC City Metro Station, Shilparamam, Mindspace IT Park, Kondapur and Gachibowli.",
+      "Comfortable stay in Madhapur, opposite Shilpakala Vedika and close to HITEC City, Shilparamam, Mindspace, Kondapur and Gachibowli.",
     overview:
       "Hotel Supraja Cyber View is a well-located hotel in Madhapur for business travellers, event visitors and short Hyderabad stays. Its position opposite Shilpakala Vedika makes it especially convenient for guests attending programmes nearby, while HITEC City, Shilparamam, Mindspace, Kondapur and Gachibowli remain within the surrounding business and entertainment corridor.",
     why:
@@ -60,13 +60,13 @@ const searchCopy: Record<
       "Guests searching for a hotel near HITEC City, Shilpakala Vedika or Shilparamam can use these nearby locations to judge whether Cyber View fits their itinerary:",
     final:
       "Planning to stay in Madhapur near HITEC City, Shilpakala Vedika or Shilparamam? Contact Hotel Supraja Cyber View directly to check available rooms and current rates.",
-    highlights: ["Opposite Shilpakala Vedika", "Near HITEC City & Shilparamam", "Suitable for business and event stays"],
+    highlights: ["Opposite Shilpakala Vedika", "Near HITEC City", "Parking Available"],
   },
   "supraja-residency": {
-    eyebrow: "Hotel in Chandanagar Hyderabad",
-    heading: "Hotel Supraja Residency in Chandanagar, Hyderabad",
+    eyebrow: "Chandanagar · Near Lingampally & BHEL",
+    heading: "Hotel Supraja Residency",
     intro:
-      "Comfortable accommodation near Gangaram in Chandanagar, with convenient access to Lingampally Railway Station, BHEL, Serilingampally, Nallagandla and Miyapur.",
+      "Comfortable stay near Gangaram in Chandanagar, with convenient access to Lingampally Railway Station, BHEL, Serilingampally, Nallagandla and Miyapur.",
     overview:
       "Hotel Supraja Residency is a comfortable hotel in Chandanagar for families, professionals and visitors travelling around western Hyderabad. The Gangaram location works well for guests whose plans involve Lingampally Railway Station, BHEL, Serilingampally, Nallagandla, Miyapur or nearby residential and business areas.",
     why:
@@ -75,13 +75,13 @@ const searchCopy: Record<
       "If you are looking for a hotel in Chandanagar or accommodation near Lingampally Railway Station and BHEL, these nearby areas can help you compare the location:",
     final:
       "Need a hotel in Chandanagar near Gangaram, Lingampally Railway Station or BHEL? Call or WhatsApp Hotel Supraja Residency to check rooms and current rates.",
-    highlights: ["Near Gangaram, Chandanagar", "Convenient for Lingampally & BHEL", "Comfortable family and business stays"],
+    highlights: ["Near Gangaram, Chandanagar", "Near Lingampally & BHEL", "Parking Available"],
   },
   "supraja-lodge": {
-    eyebrow: "Budget Hotel in Chandanagar",
-    heading: "Hotel Supraja Lodge: Budget Stay in Chandanagar",
+    eyebrow: "Chandanagar · Budget Stay",
+    heading: "Hotel Supraja Lodge",
     intro:
-      "Affordable rooms in Chandanagar for short stays, work trips and family visits, with access to Lingampally Railway Station, Gangaram, BHEL, Serilingampally and Miyapur.",
+      "Affordable stay in Chandanagar for short visits, work trips and family travel, with convenient access to Lingampally, Gangaram, BHEL, Serilingampally and Miyapur.",
     overview:
       "Hotel Supraja Lodge is a budget hotel in Chandanagar for travellers who want straightforward accommodation in a convenient western Hyderabad location. It is suited to short visits, work trips and family travel around Lingampally Railway Station, Gangaram, BHEL, Serilingampally and Miyapur.",
     why:
@@ -90,7 +90,7 @@ const searchCopy: Record<
       "For guests comparing budget hotels in Chandanagar or accommodation near Lingampally and BHEL, these are the main nearby locations:",
     final:
       "Looking for an affordable hotel in Chandanagar near Lingampally Railway Station, Gangaram or BHEL? Contact Hotel Supraja Lodge directly for available rooms and current rates.",
-    highlights: ["Budget-friendly Chandanagar stay", "Near Lingampally & BHEL", "Suitable for short and work stays"],
+    highlights: ["Budget-Friendly Stay", "Near Lingampally & BHEL", "Parking Available"],
   },
 };
 
@@ -157,30 +157,30 @@ export default async function HotelPage({ params }: Props) {
       <FAQSchema faqs={hotel.seo?.faqs?.map((f) => ({ question: f.question, answer: f.answer })) || []} />
 
       <main className="bg-white pb-20 text-slate-900 md:pb-0">
-        <section className="relative isolate flex min-h-[650px] items-end overflow-hidden bg-slate-950 text-white md:min-h-[720px] md:items-center">
+        <section className="relative isolate flex min-h-[580px] items-end overflow-hidden bg-slate-950 text-white md:min-h-[640px] md:items-center lg:min-h-[680px]">
           <SmartImage src={hotel.images.hero} alt={hotel.seo.featuredImageAlt} fill isHero className="object-cover" sizes="100vw" />
           {hotelHeroVideos[hotel.slug] ? (
             <video autoPlay muted loop playsInline preload="metadata" poster={hotel.images.hero} aria-hidden="true" className="absolute inset-0 h-full w-full object-cover">
               <source src={hotelHeroVideos[hotel.slug]} type="video/webm" />
             </video>
           ) : null}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/48 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/10" />
-          <div className="container-custom relative z-10 w-full px-5 pb-12 pt-32 sm:px-6 md:py-20">
-            <div className="max-w-4xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/62 to-slate-950/12" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/78 via-transparent to-slate-950/12" />
+          <div className="container-custom relative z-10 w-full px-5 pb-12 pt-28 sm:px-6 md:py-20">
+            <div className="max-w-[760px]">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-300 sm:text-sm"><MapPin size={16} />{copy?.eyebrow || hotel.location}</p>
-              <h1 className="mt-5 text-4xl font-bold leading-[1.04] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">{copy?.heading || hotel.name}</h1>
-              <p className="mt-5 max-w-3xl text-base leading-7 text-white/90 md:text-lg md:leading-8">{copy?.intro || hotel.description}</p>
-              <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-white/90">
-                {(copy?.highlights || ["Comfortable rooms", "Convenient location", "Direct Call & WhatsApp"]).map((x) => (
-                  <span key={x} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-amber-300" />{x}</span>
+              <h1 className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-[3.6rem] lg:text-[4rem]">{copy?.heading || hotel.name}</h1>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-white/90 md:text-lg md:leading-8">{copy?.intro || hotel.description}</p>
+              <div className="mt-6 flex flex-wrap gap-2.5 text-sm font-semibold text-white/95">
+                {(copy?.highlights || ["Comfortable Rooms", "Convenient Location", "Parking Available"]).map((x) => (
+                  <span key={x} className="flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3.5 py-2 backdrop-blur-sm"><CheckCircle2 size={16} className="text-amber-300" />{x}</span>
                 ))}
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold text-white shadow-xl"><MessageCircle size={18} />Check Availability</a>
-                <a href={`tel:+91${hotel.phone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950"><Phone size={18} />Call {hotel.phone}</a>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold text-white shadow-xl transition hover:bg-green-700"><MessageCircle size={18} />Check Availability</a>
+                <a href={`tel:+91${hotel.phone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950 transition hover:bg-slate-100"><Phone size={18} />Call Hotel</a>
                 {hotel.googleBusinessUrl ? (
-                  <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/50 bg-black/25 px-6 text-sm font-bold text-white backdrop-blur-sm"><Navigation size={17} />Directions</a>
+                  <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-black/40"><Navigation size={17} />Directions</a>
                 ) : null}
               </div>
             </div>
