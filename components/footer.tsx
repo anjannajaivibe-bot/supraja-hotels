@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hotels } from "@/data/hotels";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -34,16 +35,19 @@ export default function Footer() {
                 <Link href="/hotels/supraja-cyber-view" className="block font-medium hover:text-amber-400">Hotel Supraja Cyber View</Link>
                 <p className="mt-1 text-xs text-slate-400">Madhapur near HITEC City, Shilpakala Vedika & Shilparamam</p>
                 <a href="tel:+919550776161" className="mt-1 block text-xs text-slate-400 hover:text-amber-400">9550776161</a>
+                <a href={hotels[0].googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-block text-xs font-semibold text-amber-400 hover:text-amber-300">Google Business Profile</a>
               </div>
               <div>
                 <Link href="/hotels/supraja-residency" className="block font-medium hover:text-amber-400">Hotel Supraja Residency</Link>
                 <p className="mt-1 text-xs text-slate-400">Chandanagar near Gangaram, Lingampally & BHEL</p>
                 <a href="tel:+919346316161" className="mt-1 block text-xs text-slate-400 hover:text-amber-400">9346316161</a>
+                <a href={hotels[1].googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-block text-xs font-semibold text-amber-400 hover:text-amber-300">Google Business Profile</a>
               </div>
               <div>
                 <Link href="/hotels/supraja-lodge" className="block font-medium hover:text-amber-400">Hotel Supraja Lodge</Link>
                 <p className="mt-1 text-xs text-slate-400">Budget stay in Chandanagar near Lingampally & BHEL</p>
                 <a href="tel:+919348446161" className="mt-1 block text-xs text-slate-400 hover:text-amber-400">9348446161</a>
+                <a href={hotels[2].googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-block text-xs font-semibold text-amber-400 hover:text-amber-300">Google Business Profile</a>
               </div>
             </div>
           </div>
