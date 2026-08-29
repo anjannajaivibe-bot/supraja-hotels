@@ -296,6 +296,15 @@ export default async function BlogPostPage({ params }: Props) {
             })}
 
             <div className="mt-12 space-y-3 text-lg leading-9 text-slate-700">
+              {post.internalLinks?.map((link) => (
+                <p key={link.href}>
+                  {link.context}{" "}
+                  <Link href={link.href} className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4">
+                    {link.anchor}
+                  </Link>
+                  .
+                </p>
+              ))}
               {post.externalLinks.map((link) => (
                 <p key={link.href}>
                   {link.context}{" "}
