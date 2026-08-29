@@ -34,6 +34,7 @@ export type BlogPost = {
   conclusion: string;
   faqs: BlogFaq[];
   recommendation: { text: string; href: string; anchor: string };
+  internalLinks?: { href: string; anchor: string; context: string }[];
   externalLinks: { href: string; anchor: string; context: string }[];
   cta: { title: string; text: string; phone: string; whatsappText: string };
 };
@@ -41,6 +42,7 @@ export type BlogPost = {
 import { additionalBlogPosts } from "./more-blog-posts";
 import { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
 import { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
+import { seoBlogPostsAug29 } from "./seo-blog-posts-aug-29";
 
 export const blogPosts: BlogPost[] = [
   {
@@ -95,11 +97,13 @@ export const blogPosts: BlogPost[] = [
   ...additionalBlogPosts,
   ...seoBlogPostsAug22,
   ...seoBlogPostsAug22B,
+  ...seoBlogPostsAug29,
 ];
 
 export { additionalBlogPosts } from "./more-blog-posts";
 export { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
 export { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
+export { seoBlogPostsAug29 } from "./seo-blog-posts-aug-29";
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug);
