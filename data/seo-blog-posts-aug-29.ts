@@ -9,7 +9,7 @@ export const seoBlogPostsAug29: BlogPost[] = [
     metaDescription: "Compare Hotels Near US Visa Application Center Hyderabad for VAC appointments at HITEC City Metro, with practical arrival and booking guidance.",
     excerpt: "A practical stay-planning guide for applicants attending biometrics or document appointments at the Hyderabad Visa Application Center.",
     publishedAt: "2026-08-29", updatedAt: "2026-08-29", readingTime: "8 min read", category: "Visa Travel Guide", author: "Supraja Hotels",
-    image: "/images/cyber-view/hero.webp",
+    image: "/images/blog/aug-29/us-visa-application-center-hyderabad.webp",
     imageAlt: "Hotels Near US Visa Application Center Hyderabad in Madhapur",
     supportingImages: [
       { src: "/images/cyber-view/room-1.webp", alt: "Guest room near Hyderabad Visa Application Center", caption: "A practical Madhapur room for travellers attending a visa appointment." },
@@ -57,7 +57,7 @@ export const seoBlogPostsAug29: BlogPost[] = [
     metaDescription: "Find Hotels Near Cyber Towers Hyderabad for meetings and IT travel. Compare Madhapur location, transport, rooms and direct booking support.",
     excerpt: "How to choose a practical Madhapur hotel for meetings, interviews, training and short assignments around Cyber Towers.",
     publishedAt: "2026-08-29", updatedAt: "2026-08-29", readingTime: "8 min read", category: "Business Stay Guide", author: "Supraja Hotels",
-    image: "/images/cyber-view/exterior.webp", imageAlt: "Hotels Near Cyber Towers Hyderabad in Madhapur",
+    image: "/images/blog/aug-29/cyber-towers-business-stay.webp", imageAlt: "Hotels Near Cyber Towers Hyderabad in Madhapur",
     supportingImages: [
       { src: "/images/cyber-view/room-2.webp", alt: "Business guest room near Cyber Towers Hyderabad", caption: "A practical room for a short business stay in Madhapur." },
       { src: "/images/cyber-view/reception.webp", alt: "Hotel reception for Cyber Towers business travellers", caption: "Direct hotel support can simplify arrival and room confirmation." },
@@ -104,7 +104,7 @@ export const seoBlogPostsAug29: BlogPost[] = [
     metaDescription: "Compare Hotels Near Citizens Specialty Hospital Hyderabad for patients and families, with practical Nallagandla and Chandanagar stay guidance.",
     excerpt: "A practical guide for patient attendants and families planning accommodation around Citizens Specialty Hospital in Nallagandla.",
     publishedAt: "2026-08-29", updatedAt: "2026-08-29", readingTime: "8 min read", category: "Medical Stay Guide", author: "Supraja Hotels",
-    image: "/images/residency/hero.webp", imageAlt: "Hotels Near Citizens Specialty Hospital Hyderabad for families",
+    image: "/images/blog/aug-29/citizens-specialty-hospital-family-stay.webp", imageAlt: "Hotels Near Citizens Specialty Hospital Hyderabad for families",
     supportingImages: [
       { src: "/images/residency/room-1.webp", alt: "Family room for Citizens Specialty Hospital visitors", caption: "A practical Chandanagar room for families visiting western Hyderabad." },
       { src: "/images/lodge/room-1.webp", alt: "Affordable room near Nallagandla and Chandanagar", caption: "Supraja Lodge offers another direct-booking option in Chandanagar." },
@@ -151,7 +151,7 @@ export const seoBlogPostsAug29: BlogPost[] = [
     metaDescription: "Compare Hotels Near Chandanagar Railway Station for family, work and short visits, with room, route and direct booking guidance.",
     excerpt: "A local guide to choosing accommodation around Chandanagar for rail arrivals, family visits and short western Hyderabad stays.",
     publishedAt: "2026-08-29", updatedAt: "2026-08-29", readingTime: "8 min read", category: "Railway Stay Guide", author: "Supraja Hotels",
-    image: "/images/lodge/exterior.webp", imageAlt: "Hotels Near Chandanagar Railway Station in Hyderabad",
+    image: "/images/blog/aug-29/chandanagar-railway-station-stay.webp", imageAlt: "Hotels Near Chandanagar Railway Station in Hyderabad",
     supportingImages: [
       { src: "/images/lodge/room-2.webp", alt: "Budget room near Chandanagar Railway Station", caption: "A straightforward room option for a short Chandanagar stay." },
       { src: "/images/residency/exterior.webp", alt: "Hotel in Chandanagar for railway travellers", caption: "Supraja Residency is another Chandanagar property with direct booking support." },
@@ -198,7 +198,7 @@ export const seoBlogPostsAug29: BlogPost[] = [
     metaDescription: "Choose a Birthday Party Hall in Chandanagar with practical guidance on guest count, food, decoration, timing and Saket Banquet Hall enquiries.",
     excerpt: "A practical checklist for planning a family birthday celebration in Chandanagar without missing venue, food or timing details.",
     publishedAt: "2026-08-29", updatedAt: "2026-08-29", readingTime: "8 min read", category: "Event Planning Guide", author: "Supraja Hotels",
-    image: "/images/residency/hero.webp", imageAlt: "Birthday Party Hall in Chandanagar at Saket Banquet Hall",
+    image: "/images/blog/aug-29/birthday-party-hall-chandanagar.webp", imageAlt: "Birthday Party Hall in Chandanagar at Saket Banquet Hall",
     supportingImages: [
       { src: "/images/residency/reception.webp", alt: "Guest arrival area for a Chandanagar birthday event", caption: "Clear arrival guidance helps guests reach the event without confusion." },
       { src: "/images/residency/room-3.webp", alt: "Hotel room option for birthday party guests in Chandanagar", caption: "On-site hotel rooms can be discussed separately for outstation guests." },
