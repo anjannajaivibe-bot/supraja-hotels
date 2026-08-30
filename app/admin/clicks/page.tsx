@@ -3,17 +3,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
+  BedDouble,
+  Building2,
   CalendarDays,
   Download,
   ExternalLink,
   LogOut,
+  Mail,
   MessageCircle,
   MousePointerClick,
   Phone,
   RefreshCw,
   Users,
+  UserCheck,
 } from "lucide-react";
 import type { ClickEventType, StoredClickEvent } from "@/lib/click-events";
+import { LEAD_STATUSES, type HotelLead, type LeadStatus } from "@/lib/hotel-leads";
 
 type Period = 1 | 7 | 30 | 90;
 
@@ -69,8 +74,11 @@ function escapeCsvValue(value: string | number | null | undefined) {
 
 export default function AdminClicksPage() {
   const [events, setEvents] = useState<StoredClickEvent[]>([]);
+  const [leads, setLeads] = useState<HotelLead[]>([]);
+  const [view, setView] = useState<"overview" | "leads" | "activity">("overview");
   const [period, setPeriod] = useState<Period>(30);
   const [eventType, setEventType] = useState("all");
+  const [leadStatus, setLeadStatus] = useState("all");
   const [pageFilter, setPageFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -86,9 +94,10 @@ export default function AdminClicksPage() {
     if (pageFilter.trim()) params.set("page", pageFilter.trim());
 
     try {
-      const response = await fetch(`/api/admin/click-events?${params}`, {
-        cache: "no-store",
-      });
+      const [response, leadResponse] = await Promise.all([
+        fetch(`/api/admin/click-events?${params}`, { cache: "no-store" }),
+        fetch(`/api/admin/leads?days=${period}&status=${leadStatus}`, { cache: "no-store" }),
+      ]);
 
       if (response.status === 401) {
         location.href = "/admin/login";
@@ -106,12 +115,15 @@ export default function AdminClicksPage() {
       }
 
       setEvents(result.events ?? []);
+      const leadResult = (await leadResponse.json()) as { leads?: HotelLead[]; error?: string };
+      if (leadResponse.ok) setLeads(leadResult.leads ?? []);
+      else if (leadResponse.status !== 500) setError(leadResult.error ?? "Unable to load leads.");
     } catch {
       setError("Unable to load tracking data.");
     } finally {
       setLoading(false);
     }
-  }, [period, eventType, pageFilter]);
+  }, [period, eventType, pageFilter, leadStatus]);
 
   useEffect(() => {
     const timeout = setTimeout(() => void loadEvents(), 250);
@@ -132,8 +144,13 @@ export default function AdminClicksPage() {
       )
     ).length;
 
-    return { pageViews: pageViews.length, visitors, sessions, calls, whatsapp, actionClicks };
-  }, [events]);
+    return {
+      pageViews: pageViews.length, visitors, sessions, calls, whatsapp, actionClicks,
+      totalLeads: leads.length,
+      newLeads: leads.filter((lead) => lead.status === "new").length,
+      bookings: leads.filter((lead) => lead.status === "booked").length,
+    };
+  }, [events, leads]);
 
   const topPages = useMemo(() => {
     const counts = new Map<string, number>();
@@ -149,6 +166,16 @@ export default function AdminClicksPage() {
   async function logout() {
     await fetch("/api/admin-logout", { method: "POST" });
     location.href = "/admin/login";
+  }
+
+  async function updateLead(lead: HotelLead, status: LeadStatus) {
+    const response = await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: lead.id, status, notes: lead.notes }),
+    });
+    if (response.ok) setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, status } : item));
+    else setError("Unable to update the lead status.");
   }
 
   function exportCsv() {
@@ -212,12 +239,15 @@ export default function AdminClicksPage() {
   }
 
   const cards = [
+    { label: "Enquiries", value: metrics.totalLeads, icon: Mail, color: "text-rose-700" },
+    { label: "New leads", value: metrics.newLeads, icon: UserCheck, color: "text-orange-700" },
+    { label: "Bookings", value: metrics.bookings, icon: BedDouble, color: "text-emerald-700" },
     { label: "Visitors", value: metrics.visitors, icon: Users, color: "text-blue-700" },
     { label: "Sessions", value: metrics.sessions, icon: Activity, color: "text-indigo-700" },
     { label: "Page views", value: metrics.pageViews, icon: MousePointerClick, color: "text-slate-700" },
     { label: "Call clicks", value: metrics.calls, icon: Phone, color: "text-blue-700" },
     { label: "WhatsApp clicks", value: metrics.whatsapp, icon: MessageCircle, color: "text-green-700" },
-    { label: "Lead-action clicks", value: metrics.actionClicks, icon: ExternalLink, color: "text-amber-700" },
+    { label: "Contact clicks", value: metrics.actionClicks, icon: ExternalLink, color: "text-amber-700" },
   ];
 
   return (
@@ -228,7 +258,7 @@ export default function AdminClicksPage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
               Supraja Hotels Admin
             </p>
-            <h1 className="mt-1 text-2xl font-bold">Website clicks</h1>
+            <h1 className="mt-1 text-2xl font-bold">Hotel website dashboard</h1>
           </div>
           <button
             type="button"
@@ -242,8 +272,13 @@ export default function AdminClicksPage() {
       </header>
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
+        <nav aria-label="Admin sections" className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+          {([ ["overview", "Overview"], ["leads", "Leads"], ["activity", "Website activity"] ] as const).map(([value, label]) => (
+            <button key={value} type="button" onClick={() => setView(value)} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${view === value ? "bg-blue-800 text-white" : "text-slate-600 hover:bg-slate-100"}`}>{label}</button>
+          ))}
+        </nav>
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="grid gap-4 md:grid-cols-[180px_220px_1fr_auto_auto]">
+          <div className="grid gap-4 md:grid-cols-[160px_180px_180px_1fr_auto_auto]">
             <label>
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Period</span>
               <select
@@ -255,6 +290,14 @@ export default function AdminClicksPage() {
                 <option value={7}>Last 7 days</option>
                 <option value={30}>Last 30 days</option>
                 <option value={90}>Last 90 days</option>
+              </select>
+            </label>
+
+            <label>
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Lead status</span>
+              <select value={leadStatus} onChange={(event) => setLeadStatus(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5">
+                <option value="all">All leads</option>
+                {LEAD_STATUSES.map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}
               </select>
             </label>
 
@@ -309,7 +352,7 @@ export default function AdminClicksPage() {
           </p>
         )}
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-9">
           {cards.map(({ label, value, icon: Icon, color }) => (
             <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <Icon size={22} className={color} />
@@ -319,7 +362,34 @@ export default function AdminClicksPage() {
           ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        {(view === "overview" || view === "leads") && (
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 p-5">
+              <div><h2 className="text-lg font-bold">Website enquiries</h2><p className="mt-1 text-sm text-slate-500">Follow up, qualify and mark confirmed bookings</p></div>
+              <Building2 className="text-blue-700" />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Received</th><th className="px-5 py-3">Guest</th><th className="px-5 py-3">Hotel / requirement</th><th className="px-5 py-3">Stay details</th><th className="px-5 py-3">Source</th><th className="px-5 py-3">Status</th></tr></thead>
+                <tbody className="divide-y divide-slate-100">
+                  {!loading && leads.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-slate-500">No enquiries found for this period.</td></tr>}
+                  {leads.map((lead) => (
+                    <tr key={lead.id} className="align-top hover:bg-slate-50">
+                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">{formatDate(lead.created_at)}</td>
+                      <td className="px-5 py-4"><p className="font-bold">{lead.name}</p><a href={`tel:${lead.phone}`} className="mt-1 block font-semibold text-blue-800">{lead.phone}</a>{lead.email && <a href={`mailto:${lead.email}`} className="mt-1 block text-xs text-slate-500">{lead.email}</a>}</td>
+                      <td className="max-w-xs px-5 py-4"><p className="font-semibold">{lead.property}</p><p className="mt-1 text-slate-600">{lead.enquiry_type}</p>{lead.message && <p className="mt-2 text-xs leading-5 text-slate-500">{lead.message}</p>}</td>
+                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">{lead.check_in || "Not given"}{lead.check_out && <> to<br />{lead.check_out}</>}{lead.guests && <span className="block text-xs">{lead.guests} guest{lead.guests === 1 ? "" : "s"}</span>}</td>
+                      <td className="px-5 py-4 text-slate-600">{lead.utm_source || lead.referrer ? getSource(lead.referrer, lead.utm_source) : "Direct"}<span className="mt-1 block max-w-48 break-all text-xs text-slate-400">{lead.source_page}</span></td>
+                      <td className="px-5 py-4"><select aria-label={`Status for ${lead.name}`} value={lead.status} onChange={(event) => void updateLead(lead, event.target.value as LeadStatus)} className="rounded-lg border border-slate-300 px-2 py-2 font-semibold">{LEAD_STATUSES.map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}</select></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {(view === "overview" || view === "activity") && <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
           <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold">Top pages</h2>
             <p className="mt-1 text-sm text-slate-500">Ranked by page views</p>
@@ -406,7 +476,7 @@ export default function AdminClicksPage() {
               </table>
             </div>
           </article>
-        </section>
+        </section>}
 
         <p className="text-center text-xs text-slate-500">
           Your excluded IP and localhost visits are not counted. Raw IP addresses are not stored.
