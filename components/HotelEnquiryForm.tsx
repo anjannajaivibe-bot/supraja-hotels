@@ -17,6 +17,10 @@ export default function HotelEnquiryForm() {
     event.preventDefault();
     if (!selectedProperty) return;
     const values = Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>;
+    if (values.marketingConsent === "yes" && !values.email) {
+      event.currentTarget.querySelector<HTMLInputElement>('input[name="email"]')?.focus();
+      return;
+    }
     const message = [
       `Hi, I would like to enquire about ${values.enquiryType?.toLowerCase() || "availability"} at ${values.property}.`,
       `Name: ${values.name}`,
@@ -27,6 +31,19 @@ export default function HotelEnquiryForm() {
       values.email ? `Email: ${values.email}` : "",
       values.message ? `Requirement: ${values.message}` : "",
     ].filter(Boolean).join("\n");
+    if (values.marketingConsent === "yes") {
+      void fetch("/api/subscribers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          sourcePage: location.pathname,
+          consentSource: "contact_enquiry",
+        }),
+      });
+    }
     window.open(`https://wa.me/91${selectedProperty.whatsapp}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
@@ -55,6 +72,10 @@ export default function HotelEnquiryForm() {
         <label className="text-sm font-semibold">Email<input name="email" type="email" className={inputClass} /></label>
       </div>
       <label className="mt-4 block text-sm font-semibold">Requirement<textarea name="message" rows={3} maxLength={1000} className={inputClass} placeholder="Room count, stay purpose, event details or any special request" /></label>
+      <label className="mt-4 flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-sm leading-6 text-slate-700">
+        <input name="marketingConsent" value="yes" type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-blue-800" />
+        <span>Send me Supraja Hotels offers, new stay guides and important updates by email or WhatsApp. I can unsubscribe anytime.</span>
+      </label>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button type="submit" disabled={!selectedProperty} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-green-600 px-6 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"><MessageCircle size={18} />Send via WhatsApp</button>
         {selectedProperty ? <a href={`tel:+91${selectedProperty.phone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-blue-800 px-6 font-bold text-blue-800 hover:bg-blue-50"><Phone size={18} />Call {selectedProperty.phone}</a> : <span className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-slate-200 px-6 font-bold text-slate-400"><Phone size={18} />Select hotel to call</span>}

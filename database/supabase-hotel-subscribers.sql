@@ -12,3 +12,8 @@ revoke all on table public.hotel_subscribers from anon, authenticated;
 grant all on table public.hotel_subscribers to service_role;
 grant usage, select on sequence public.hotel_subscribers_id_seq to service_role;
 comment on table public.hotel_subscribers is 'Server-managed Supraja Hotels email subscribers.';
+
+alter table public.hotel_subscribers add column if not exists name text;
+alter table public.hotel_subscribers add column if not exists phone text;
+alter table public.hotel_subscribers add column if not exists consent_source text not null default 'footer_form';
+alter table public.hotel_subscribers add column if not exists consented_at timestamptz not null default now();
