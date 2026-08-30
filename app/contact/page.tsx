@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import SmartImage from "@/components/SmartImage";
+import HotelEnquiryForm from "@/components/HotelEnquiryForm";
 import { hotels } from "@/data/hotels";
 
 export const metadata: Metadata = {
@@ -34,6 +35,17 @@ export default function ContactPage() {
               Choose the property that fits your location, then contact the hotel team directly for available rooms, current rates, directions and booking details.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f7f5f1] px-4 py-16 lg:py-20">
+        <div className="container-custom grid items-start gap-8 lg:grid-cols-[.8fr_1.2fr]">
+          <div className="lg:sticky lg:top-24">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Quick Enquiry</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Let the Right Hotel Team Call You</h2>
+            <p className="mt-5 leading-8 text-slate-600">Use this form for room availability, corporate stays, group bookings, long stays or Saket Banquet Hall enquiries. Your request will appear in the hotel website admin dashboard for follow-up.</p>
+          </div>
+          <HotelEnquiryForm />
         </div>
       </section>
 
