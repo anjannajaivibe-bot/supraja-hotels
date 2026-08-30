@@ -42,8 +42,8 @@ export default function ContactPage() {
         <div className="container-custom grid items-start gap-8 lg:grid-cols-[.8fr_1.2fr]">
           <div className="lg:sticky lg:top-24">
             <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Quick Enquiry</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Let the Right Hotel Team Call You</h2>
-            <p className="mt-5 leading-8 text-slate-600">Use this form for room availability, corporate stays, group bookings, long stays or Saket Banquet Hall enquiries. Your request will appear in the hotel website admin dashboard for follow-up.</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Contact the Right Hotel Directly</h2>
+            <p className="mt-5 leading-8 text-slate-600">Use this form for room availability, corporate stays, group bookings, long stays or Saket Banquet Hall enquiries. Your details will open in WhatsApp for the selected hotel, ready for you to send.</p>
           </div>
           <HotelEnquiryForm />
         </div>

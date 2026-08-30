@@ -1,487 +1,118 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  BedDouble,
-  Building2,
-  CalendarDays,
-  Download,
-  ExternalLink,
-  LogOut,
-  Mail,
-  MessageCircle,
-  MousePointerClick,
-  Phone,
-  RefreshCw,
-  Users,
-  UserCheck,
-} from "lucide-react";
+import { Activity, CalendarDays, Download, LogOut, Mail, MessageCircle, MousePointerClick, Phone, RefreshCw, Users } from "lucide-react";
 import type { ClickEventType, StoredClickEvent } from "@/lib/click-events";
-import { LEAD_STATUSES, type HotelLead, type LeadStatus } from "@/lib/hotel-leads";
 
 type Period = 1 | 7 | 30 | 90;
+type Subscriber = { id: number; created_at: string; email: string; source_page: string; status: string };
 
-const EVENT_LABELS: Record<ClickEventType, string> = {
-  page_view: "Page view",
-  call_click: "Call",
-  whatsapp_click: "WhatsApp",
-  email_click: "Email",
-  booking_click: "Booking",
-  navigation_click: "Navigation",
-};
+const EVENT_LABELS: Record<ClickEventType, string> = { page_view: "Page view", call_click: "Call", whatsapp_click: "WhatsApp", email_click: "Email", booking_click: "Booking", navigation_click: "Navigation" };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Kolkata",
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date(value));
 }
 
 function getSource(referrer: string | null, utmSource: string | null) {
   if (utmSource) return utmSource;
   if (!referrer) return "Direct";
-
-  try {
-    return new URL(referrer).hostname.replace(/^www\./, "");
-  } catch {
-    return referrer;
-  }
+  try { return new URL(referrer).hostname.replace(/^www\./, ""); } catch { return referrer; }
 }
 
-function getEventBadge(eventType: ClickEventType) {
-  const styles: Record<ClickEventType, string> = {
-    page_view: "bg-slate-100 text-slate-700",
-    call_click: "bg-blue-100 text-blue-800",
-    whatsapp_click: "bg-green-100 text-green-800",
-    email_click: "bg-purple-100 text-purple-800",
-    booking_click: "bg-amber-100 text-amber-900",
-    navigation_click: "bg-cyan-100 text-cyan-800",
-  };
-
-  return styles[eventType];
+function csvValue(value: unknown) {
+  let output = value == null ? "" : String(value);
+  if (/^[=+\-@]/.test(output)) output = `'${output}`;
+  return `"${output.replace(/"/g, '""')}"`;
 }
 
-function escapeCsvValue(value: string | number | null | undefined) {
-  let text = value == null ? "" : String(value);
-
-  // Prevent spreadsheet applications from treating exported text as a formula.
-  if (/^[=+\-@]/.test(text)) text = `'${text}`;
-
-  return `"${text.replace(/"/g, '""')}"`;
+function downloadCsv(name: string, headers: string[], rows: unknown[][]) {
+  const csv = [headers.map(csvValue).join(","), ...rows.map((row) => row.map(csvValue).join(","))].join("\r\n");
+  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
 }
 
 export default function AdminClicksPage() {
+  const [view, setView] = useState<"activity" | "subscribers">("activity");
   const [events, setEvents] = useState<StoredClickEvent[]>([]);
-  const [leads, setLeads] = useState<HotelLead[]>([]);
-  const [view, setView] = useState<"overview" | "leads" | "activity">("overview");
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [period, setPeriod] = useState<Period>(30);
   const [eventType, setEventType] = useState("all");
-  const [leadStatus, setLeadStatus] = useState("all");
   const [pageFilter, setPageFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadEvents = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    const params = new URLSearchParams({
-      days: String(period),
-      eventType,
-    });
+  const loadData = useCallback(async () => {
+    setLoading(true); setError("");
+    const params = new URLSearchParams({ days: String(period), eventType });
     if (pageFilter.trim()) params.set("page", pageFilter.trim());
-
     try {
-      const [response, leadResponse] = await Promise.all([
+      const [activityResponse, subscriberResponse] = await Promise.all([
         fetch(`/api/admin/click-events?${params}`, { cache: "no-store" }),
-        fetch(`/api/admin/leads?days=${period}&status=${leadStatus}`, { cache: "no-store" }),
+        fetch("/api/admin/subscribers", { cache: "no-store" }),
       ]);
+      if (activityResponse.status === 401 || subscriberResponse.status === 401) { location.href = "/admin/login"; return; }
+      const activityResult = await activityResponse.json() as { events?: StoredClickEvent[]; error?: string };
+      const subscriberResult = await subscriberResponse.json() as { subscribers?: Subscriber[]; error?: string };
+      if (!activityResponse.ok) throw new Error(activityResult.error || "Unable to load website activity.");
+      if (!subscriberResponse.ok) throw new Error(subscriberResult.error || "Unable to load subscribers.");
+      setEvents(activityResult.events ?? []); setSubscribers(subscriberResult.subscribers ?? []);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to load dashboard data."); }
+    finally { setLoading(false); }
+  }, [period, eventType, pageFilter]);
 
-      if (response.status === 401) {
-        location.href = "/admin/login";
-        return;
-      }
-
-      const result = (await response.json()) as {
-        events?: StoredClickEvent[];
-        error?: string;
-      };
-
-      if (!response.ok) {
-        setError(result.error ?? "Unable to load tracking data.");
-        return;
-      }
-
-      setEvents(result.events ?? []);
-      const leadResult = (await leadResponse.json()) as { leads?: HotelLead[]; error?: string };
-      if (leadResponse.ok) setLeads(leadResult.leads ?? []);
-      else if (leadResponse.status !== 500) setError(leadResult.error ?? "Unable to load leads.");
-    } catch {
-      setError("Unable to load tracking data.");
-    } finally {
-      setLoading(false);
-    }
-  }, [period, eventType, pageFilter, leadStatus]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => void loadEvents(), 250);
-    return () => clearTimeout(timeout);
-  }, [loadEvents]);
+  useEffect(() => { const timer = setTimeout(() => void loadData(), 250); return () => clearTimeout(timer); }, [loadData]);
 
   const metrics = useMemo(() => {
     const pageViews = events.filter((event) => event.event_type === "page_view");
-    const visitors = new Set(pageViews.map((event) => event.visitor_id)).size;
-    const sessions = new Set(pageViews.map((event) => event.session_id)).size;
-    const calls = events.filter((event) => event.event_type === "call_click").length;
-    const whatsapp = events.filter(
-      (event) => event.event_type === "whatsapp_click"
-    ).length;
-    const actionClicks = events.filter((event) =>
-      ["call_click", "whatsapp_click", "email_click", "booking_click"].includes(
-        event.event_type
-      )
-    ).length;
-
     return {
-      pageViews: pageViews.length, visitors, sessions, calls, whatsapp, actionClicks,
-      totalLeads: leads.length,
-      newLeads: leads.filter((lead) => lead.status === "new").length,
-      bookings: leads.filter((lead) => lead.status === "booked").length,
+      visitors: new Set(pageViews.map((event) => event.visitor_id)).size,
+      sessions: new Set(pageViews.map((event) => event.session_id)).size,
+      pageViews: pageViews.length,
+      calls: events.filter((event) => event.event_type === "call_click").length,
+      whatsapp: events.filter((event) => event.event_type === "whatsapp_click").length,
     };
-  }, [events, leads]);
+  }, [events]);
 
   const topPages = useMemo(() => {
     const counts = new Map<string, number>();
-    events
-      .filter((event) => event.event_type === "page_view")
-      .forEach((event) => counts.set(event.page_path, (counts.get(event.page_path) ?? 0) + 1));
-
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
+    events.filter((event) => event.event_type === "page_view").forEach((event) => counts.set(event.page_path, (counts.get(event.page_path) ?? 0) + 1));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   }, [events]);
 
-  async function logout() {
-    await fetch("/api/admin-logout", { method: "POST" });
-    location.href = "/admin/login";
-  }
-
-  async function updateLead(lead: HotelLead, status: LeadStatus) {
-    const response = await fetch("/api/admin/leads", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: lead.id, status, notes: lead.notes }),
-    });
-    if (response.ok) setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, status } : item));
-    else setError("Unable to update the lead status.");
-  }
-
-  function exportCsv() {
-    if (events.length === 0) return;
-
-    const headers = [
-      "Date and time (IST)",
-      "Activity",
-      "Page path",
-      "Page title",
-      "Target label",
-      "Target URL",
-      "Source",
-      "Referrer",
-      "Device",
-      "Browser",
-      "Visitor ID",
-      "Session ID",
-      "UTM source",
-      "UTM medium",
-      "UTM campaign",
-    ];
-
-    const rows = events.map((event) => [
-      formatDate(event.created_at),
-      EVENT_LABELS[event.event_type],
-      event.page_path,
-      event.page_title,
-      event.target_label,
-      event.target_url,
-      getSource(event.referrer, event.utm_source),
-      event.referrer,
-      event.device_type,
-      event.browser,
-      event.visitor_id,
-      event.session_id,
-      event.utm_source,
-      event.utm_medium,
-      event.utm_campaign,
-    ]);
-
-    const csv = [
-      headers.map(escapeCsvValue).join(","),
-      ...rows.map((row) => row.map(escapeCsvValue).join(",")),
-    ].join("\r\n");
-    const blob = new Blob([`\uFEFF${csv}`], {
-      type: "text/csv;charset=utf-8",
-    });
-    const downloadUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const date = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    }).format(new Date());
-
-    link.href = downloadUrl;
-    link.download = `supraja-hotels-web-clicks-${date}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(downloadUrl);
-  }
+  async function logout() { await fetch("/api/admin-logout", { method: "POST" }); location.href = "/admin/login"; }
 
   const cards = [
-    { label: "Enquiries", value: metrics.totalLeads, icon: Mail, color: "text-rose-700" },
-    { label: "New leads", value: metrics.newLeads, icon: UserCheck, color: "text-orange-700" },
-    { label: "Bookings", value: metrics.bookings, icon: BedDouble, color: "text-emerald-700" },
-    { label: "Visitors", value: metrics.visitors, icon: Users, color: "text-blue-700" },
-    { label: "Sessions", value: metrics.sessions, icon: Activity, color: "text-indigo-700" },
-    { label: "Page views", value: metrics.pageViews, icon: MousePointerClick, color: "text-slate-700" },
-    { label: "Call clicks", value: metrics.calls, icon: Phone, color: "text-blue-700" },
-    { label: "WhatsApp clicks", value: metrics.whatsapp, icon: MessageCircle, color: "text-green-700" },
-    { label: "Contact clicks", value: metrics.actionClicks, icon: ExternalLink, color: "text-amber-700" },
+    { label: "Visitors", value: metrics.visitors, icon: Users }, { label: "Sessions", value: metrics.sessions, icon: Activity },
+    { label: "Page views", value: metrics.pageViews, icon: MousePointerClick }, { label: "Call clicks", value: metrics.calls, icon: Phone },
+    { label: "WhatsApp clicks", value: metrics.whatsapp, icon: MessageCircle }, { label: "Subscribers", value: subscribers.length, icon: Mail },
   ];
 
-  return (
-    <main className="min-h-screen bg-slate-100 text-slate-950">
-      <header className="border-b border-slate-200 bg-slate-950 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-              Supraja Hotels Admin
-            </p>
-            <h1 className="mt-1 text-2xl font-bold">Hotel website dashboard</h1>
-          </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10"
-          >
-            <LogOut size={17} />
-            Logout
-          </button>
-        </div>
-      </header>
+  return <main className="min-h-screen bg-slate-100 text-slate-950">
+    <header className="border-b border-slate-200 bg-slate-950 text-white"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">Supraja Hotels Admin</p><h1 className="mt-1 text-2xl font-bold">Website dashboard</h1></div><button onClick={logout} className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10"><LogOut size={17} />Logout</button></div></header>
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
+      <nav aria-label="Admin sections" className="flex gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        <button onClick={() => setView("activity")} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${view === "activity" ? "bg-blue-800 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Website activity</button>
+        <button onClick={() => setView("subscribers")} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${view === "subscribers" ? "bg-blue-800 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Subscribers</button>
+      </nav>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
-        <nav aria-label="Admin sections" className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-          {([ ["overview", "Overview"], ["leads", "Leads"], ["activity", "Website activity"] ] as const).map(([value, label]) => (
-            <button key={value} type="button" onClick={() => setView(value)} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${view === value ? "bg-blue-800 text-white" : "text-slate-600 hover:bg-slate-100"}`}>{label}</button>
-          ))}
-        </nav>
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="grid gap-4 md:grid-cols-[160px_180px_180px_1fr_auto_auto]">
-            <label>
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Period</span>
-              <select
-                value={period}
-                onChange={(event) => setPeriod(Number(event.target.value) as Period)}
-                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
-              >
-                <option value={1}>Today</option>
-                <option value={7}>Last 7 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={90}>Last 90 days</option>
-              </select>
-            </label>
+      {view === "activity" && <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="grid gap-4 md:grid-cols-[160px_180px_1fr_auto_auto]">
+        <label><span className="text-xs font-bold uppercase tracking-wide text-slate-500">Period</span><select value={period} onChange={(e) => setPeriod(Number(e.target.value) as Period)} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"><option value={1}>Today</option><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option></select></label>
+        <label><span className="text-xs font-bold uppercase tracking-wide text-slate-500">Activity</span><select value={eventType} onChange={(e) => setEventType(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"><option value="all">All activity</option>{Object.entries(EVENT_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label><span className="text-xs font-bold uppercase tracking-wide text-slate-500">Page contains</span><input value={pageFilter} onChange={(e) => setPageFilter(e.target.value)} placeholder="/hotels/supraja-cyber-view" className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label>
+        <button onClick={() => void loadData()} className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-800 px-4 py-2.5 font-semibold text-white"><RefreshCw size={17} className={loading ? "animate-spin" : ""} />Refresh</button>
+        <button disabled={!events.length} onClick={() => downloadCsv("supraja-hotels-website-activity.csv", ["Date", "Activity", "Page", "Target", "Source", "Device", "Browser"], events.map((e) => [formatDate(e.created_at), EVENT_LABELS[e.event_type], e.page_path, e.target_label, getSource(e.referrer, e.utm_source), e.device_type, e.browser]))} className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-blue-800 px-4 py-2.5 font-semibold text-blue-800 disabled:opacity-40"><Download size={17} />Export CSV</button>
+      </div></section>}
 
-            <label>
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Lead status</span>
-              <select value={leadStatus} onChange={(event) => setLeadStatus(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5">
-                <option value="all">All leads</option>
-                {LEAD_STATUSES.map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}
-              </select>
-            </label>
+      {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800">{error}</p>}
 
-            <label>
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Activity</span>
-              <select
-                value={eventType}
-                onChange={(event) => setEventType(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
-              >
-                <option value="all">All activity</option>
-                {Object.entries(EVENT_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </label>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{cards.map(({ label, value, icon: Icon }) => <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><Icon size={22} className="text-blue-700" /><p className="mt-5 text-3xl font-bold">{loading ? "..." : value}</p><p className="mt-1 text-sm font-medium text-slate-500">{label}</p></article>)}</section>
 
-            <label>
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Page contains</span>
-              <input
-                value={pageFilter}
-                onChange={(event) => setPageFilter(event.target.value)}
-                placeholder="/hotels/supraja-cyber-view"
-                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5"
-              />
-            </label>
-
-            <button
-              type="button"
-              onClick={() => void loadEvents()}
-              className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-800 px-4 py-2.5 font-semibold text-white hover:bg-blue-900"
-            >
-              <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
-              Refresh
-            </button>
-
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={loading || events.length === 0}
-              className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-blue-800 px-4 py-2.5 font-semibold text-blue-800 hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent"
-            >
-              <Download size={17} />
-              Export CSV
-            </button>
-          </div>
-        </section>
-
-        {error && (
-          <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800">
-            {error}
-          </p>
-        )}
-
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-9">
-          {cards.map(({ label, value, icon: Icon, color }) => (
-            <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <Icon size={22} className={color} />
-              <p className="mt-5 text-3xl font-bold">{loading ? "…" : value}</p>
-              <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
-            </article>
-          ))}
-        </section>
-
-        {(view === "overview" || view === "leads") && (
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 p-5">
-              <div><h2 className="text-lg font-bold">Website enquiries</h2><p className="mt-1 text-sm text-slate-500">Follow up, qualify and mark confirmed bookings</p></div>
-              <Building2 className="text-blue-700" />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Received</th><th className="px-5 py-3">Guest</th><th className="px-5 py-3">Hotel / requirement</th><th className="px-5 py-3">Stay details</th><th className="px-5 py-3">Source</th><th className="px-5 py-3">Status</th></tr></thead>
-                <tbody className="divide-y divide-slate-100">
-                  {!loading && leads.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-slate-500">No enquiries found for this period.</td></tr>}
-                  {leads.map((lead) => (
-                    <tr key={lead.id} className="align-top hover:bg-slate-50">
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">{formatDate(lead.created_at)}</td>
-                      <td className="px-5 py-4"><p className="font-bold">{lead.name}</p><a href={`tel:${lead.phone}`} className="mt-1 block font-semibold text-blue-800">{lead.phone}</a>{lead.email && <a href={`mailto:${lead.email}`} className="mt-1 block text-xs text-slate-500">{lead.email}</a>}</td>
-                      <td className="max-w-xs px-5 py-4"><p className="font-semibold">{lead.property}</p><p className="mt-1 text-slate-600">{lead.enquiry_type}</p>{lead.message && <p className="mt-2 text-xs leading-5 text-slate-500">{lead.message}</p>}</td>
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">{lead.check_in || "Not given"}{lead.check_out && <> to<br />{lead.check_out}</>}{lead.guests && <span className="block text-xs">{lead.guests} guest{lead.guests === 1 ? "" : "s"}</span>}</td>
-                      <td className="px-5 py-4 text-slate-600">{lead.utm_source || lead.referrer ? getSource(lead.referrer, lead.utm_source) : "Direct"}<span className="mt-1 block max-w-48 break-all text-xs text-slate-400">{lead.source_page}</span></td>
-                      <td className="px-5 py-4"><select aria-label={`Status for ${lead.name}`} value={lead.status} onChange={(event) => void updateLead(lead, event.target.value as LeadStatus)} className="rounded-lg border border-slate-300 px-2 py-2 font-semibold">{LEAD_STATUSES.map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}</select></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {(view === "overview" || view === "activity") && <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-bold">Top pages</h2>
-            <p className="mt-1 text-sm text-slate-500">Ranked by page views</p>
-            <div className="mt-5 space-y-4">
-              {topPages.length === 0 && !loading && (
-                <p className="text-sm text-slate-500">No page views in this period.</p>
-              )}
-              {topPages.map(([page, views]) => (
-                <div key={page}>
-                  <div className="flex items-start justify-between gap-4 text-sm">
-                    <span className="break-all font-medium text-slate-700">{page}</span>
-                    <span className="font-bold">{views}</span>
-                  </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full bg-blue-700"
-                      style={{
-                        width: `${Math.max(
-                          8,
-                          (views / Math.max(topPages[0]?.[1] ?? 1, 1)) * 100
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
-              <div>
-                <h2 className="text-lg font-bold">Recent activity</h2>
-                <p className="mt-1 text-sm text-slate-500">Latest 1,000 matching events</p>
-              </div>
-              <CalendarDays className="text-blue-700" />
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="px-5 py-3">Date and time</th>
-                    <th className="px-5 py-3">Activity</th>
-                    <th className="px-5 py-3">Page / target</th>
-                    <th className="px-5 py-3">Source</th>
-                    <th className="px-5 py-3">Device</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {!loading && events.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
-                        No activity found for these filters.
-                      </td>
-                    </tr>
-                  )}
-                  {events.map((event) => (
-                    <tr key={event.id} className="align-top hover:bg-slate-50">
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
-                        {formatDate(event.created_at)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${getEventBadge(event.event_type)}`}>
-                          {EVENT_LABELS[event.event_type]}
-                        </span>
-                      </td>
-                      <td className="max-w-sm px-5 py-4">
-                        <p className="break-all font-semibold text-slate-800">{event.page_path}</p>
-                        {event.target_label && (
-                          <p className="mt-1 break-all text-xs text-slate-500">{event.target_label}</p>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-slate-600">
-                        {getSource(event.referrer, event.utm_source)}
-                      </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
-                        {event.device_type}
-                        <span className="block text-xs text-slate-400">{event.browser}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </article>
-        </section>}
-
-        <p className="text-center text-xs text-slate-500">
-          Your excluded IP and localhost visits are not counted. Raw IP addresses are not stored.
-        </p>
-      </div>
-    </main>
-  );
+      {view === "activity" ? <section className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-lg font-bold">Top pages</h2><p className="mt-1 text-sm text-slate-500">Ranked by page views</p><div className="mt-5 space-y-4">{!loading && !topPages.length && <p className="text-sm text-slate-500">No page views in this period.</p>}{topPages.map(([page, views]) => <div key={page}><div className="flex justify-between gap-4 text-sm"><span className="break-all font-medium text-slate-700">{page}</span><strong>{views}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-blue-700" style={{ width: `${Math.max(8, views / Math.max(topPages[0]?.[1] ?? 1, 1) * 100)}%` }} /></div></div>)}</div></article>
+        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 p-5"><div><h2 className="text-lg font-bold">Recent website activity</h2><p className="mt-1 text-sm text-slate-500">Latest matching visits and clicks</p></div><CalendarDays className="text-blue-700" /></div><div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Date and time</th><th className="px-5 py-3">Activity</th><th className="px-5 py-3">Page / target</th><th className="px-5 py-3">Source</th><th className="px-5 py-3">Device</th></tr></thead><tbody className="divide-y divide-slate-100">{!loading && !events.length && <tr><td colSpan={5} className="px-5 py-10 text-center text-slate-500">No activity found.</td></tr>}{events.map((event) => <tr key={event.id}><td className="whitespace-nowrap px-5 py-4 text-slate-600">{formatDate(event.created_at)}</td><td className="px-5 py-4 font-semibold">{EVENT_LABELS[event.event_type]}</td><td className="max-w-sm px-5 py-4"><p className="break-all font-semibold">{event.page_path}</p>{event.target_label && <p className="mt-1 text-xs text-slate-500">{event.target_label}</p>}</td><td className="px-5 py-4 text-slate-600">{getSource(event.referrer, event.utm_source)}</td><td className="px-5 py-4 text-slate-600">{event.device_type}<span className="block text-xs text-slate-400">{event.browser}</span></td></tr>)}</tbody></table></div></article>
+      </section> : <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 p-5"><div><h2 className="text-lg font-bold">Email subscribers</h2><p className="mt-1 text-sm text-slate-500">People who subscribed on the hotel website</p></div><button disabled={!subscribers.length} onClick={() => downloadCsv("supraja-hotels-subscribers.csv", ["Subscribed", "Email", "Source page", "Status"], subscribers.map((s) => [formatDate(s.created_at), s.email, s.source_page, s.status]))} className="inline-flex items-center gap-2 rounded-xl border border-blue-800 px-4 py-2.5 text-sm font-semibold text-blue-800 disabled:opacity-40"><Download size={17} />Export CSV</button></div><div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Subscribed</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Source page</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{!loading && !subscribers.length && <tr><td colSpan={4} className="px-5 py-10 text-center text-slate-500">No subscribers yet.</td></tr>}{subscribers.map((subscriber) => <tr key={subscriber.id}><td className="whitespace-nowrap px-5 py-4 text-slate-600">{formatDate(subscriber.created_at)}</td><td className="px-5 py-4"><a className="font-semibold text-blue-800" href={`mailto:${subscriber.email}`}>{subscriber.email}</a></td><td className="px-5 py-4 text-slate-600">{subscriber.source_page}</td><td className="px-5 py-4 capitalize">{subscriber.status}</td></tr>)}</tbody></table></div></section>}
+      <p className="text-center text-xs text-slate-500">Excluded IP and localhost visits are not counted. Raw IP addresses are not stored.</p>
+    </div>
+  </main>;
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -61,6 +62,7 @@ export default function Footer() {
             >
               Check on WhatsApp
             </a>
+            <NewsletterSubscribe />
             <p className="mt-5 text-sm text-slate-400">Hyderabad, Telangana, India</p>
           </div>
         </div>
