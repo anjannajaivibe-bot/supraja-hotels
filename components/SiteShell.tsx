@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import FloatingCTA from "@/components/FloatingCTA";
+import FloatingSubscribe from "@/components/FloatingSubscribe";
 import VisitorClickTracker from "@/components/VisitorClickTracker";
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="m-0 block bg-white p-0">{children}</div>
       <Footer />
+      <FloatingSubscribe />
       <FloatingCTA />
       <Suspense fallback={null}>
         <VisitorClickTracker />
