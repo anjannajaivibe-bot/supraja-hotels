@@ -1,4 +1,4 @@
-function getSupabaseConfig() {
+function getSupabaseConfig(table = "hotel_click_events") {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -7,16 +7,17 @@ function getSupabaseConfig() {
   }
 
   return {
-    endpoint: `${url.replace(/\/$/, "")}/rest/v1/hotel_click_events`,
+    endpoint: `${url.replace(/\/$/, "")}/rest/v1/${table}`,
     serviceRoleKey,
   };
 }
 
 export async function supabaseRequest(
   searchParams: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
+  table = "hotel_click_events"
 ) {
-  const { endpoint, serviceRoleKey } = getSupabaseConfig();
+  const { endpoint, serviceRoleKey } = getSupabaseConfig(table);
 
   return fetch(`${endpoint}${searchParams}`, {
     ...init,
