@@ -26,7 +26,7 @@ export const hotels = [
     mapEmbed:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.1584470401276!2d78.37846297462835!3d17.45212880093779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb93128214499d%3A0xa765183000594e85!2sHotel%20Supraja%20Cyber%20View%20Hitech%20City!5e0!3m2!1sen!2sin!4v1781237671284!5m2!1sen!2sin",
     googleBusinessUrl:
-      "https://www.google.com/search?q=Supraja+Cyber+View+Hotel&stick=H4sIAAAAAAAA_-NgU1I1qDBOSk6yNDY0sjAyNDGxtEyxMqhINDczNbQwNjAwMLU0SbUwXcQqEVxaUJSYlajgXJmUWqQQlplaruCRX5KaAwBd4sOkRAAAAA&hl=en&mat=CdhO8Zxu0Ei_ElcBTVDHnrfVIK4FF2yEgwfvPn7PucGF2gzCQClNVPZPQPFqCyeS2pAiIg0Aj9eL8qsqsC8GtdLKwYz7KSHEVc4ZJFVMmMf_iPzqav-cgDMNomdf_iOspWA&authuser=0",
+      "https://www.google.com/maps?cid=12062073771425091205",
     images: {
       hero: "/images/cyber-view/hero.webp",
       gallery: [
@@ -157,7 +157,7 @@ export const hotels = [
     mapEmbed:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.268262228298!2d78.32400007462928!3d17.494703099705735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb9291f741f477%3A0x1c532426df884fee!2sSupraja%20Residency!5e0!3m2!1sen!2sin!4v1781237725573!5m2!1sen!2sin",
     googleBusinessUrl:
-      "https://www.google.com/search?q=Supraja+Residency&stick=H4sIAAAAAAAA_-NgU1I1qDBOSk6yNLI0TDM3MUwzMTe3MqgwTDY1NjIxMktJs7AwSUtNXcQqGFxaUJSYlagQlFqcmZKal1wJAGUC_hM9AAAA&hl=en&mat=CcC4AqNkK0hYElMBa0lj_8QP6DVj6BCTrs5ubCw2IIr7SyKBedPEoVR0sicpfG_ndMhrTXOq6T7HdDRob2PtwEnqKageL0vDpKrMA-X1GFQkK5_CVCHxAbRssyvS0g&authuser=0",
+      "https://www.google.com/maps?cid=2041014805506576366",
     images: {
       hero: "/images/residency/hero.webp",
       gallery: [
@@ -283,7 +283,7 @@ export const hotels = [
     mapEmbed:
       "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3805.2547848988615!2d78.31920789678956!3d17.495346900000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sSupraja%20lodge!5e0!3m2!1sen!2sin!4v1781237773260!5m2!1sen!2sin",
     googleBusinessUrl:
-      "https://www.google.com/search?q=SRI+SUPRAJA+LODGE&stick=H4sIAAAAAAAA_-NgU1I1qDBOSk6yNLI0NDdONrUwMTK0MqhINU82sTC0MDe2tDQ2S0xMWsQqGBzkqRAcGhDk6OWo4OPv4u4KAOLST2Q9AAAA&hl=en&mat=CcxgzRAS0EZUElYBTVDHnlOMKVAAUkkKccmTvrU441uJLbpEUMRVXjyln_ZikLJM1778VKnioLAMAiR8spmKl9X9RNeo3dBIKhZxdS4TzVvTrAZpITd1uSdV1_CyCA04Uw&authuser=0",
+      "https://www.google.com/maps/search/?api=1&query=Hotel+Supraja+Lodge+Chandanagar+Hyderabad",
     images: {
       hero: "/images/lodge/hero.webp",
       gallery: [

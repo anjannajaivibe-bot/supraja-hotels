@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin, MessageCircle, Navigation, Phone } from "lucide-react";
 import SmartImage from "@/components/SmartImage";
 import { hotels } from "@/data/hotels";
 
@@ -105,6 +105,15 @@ export default function HotelsPage() {
                     <a href={`tel:+91${hotel.phone}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-300 text-sm font-bold"><Phone size={16} />Call</a>
                     <a href={`https://wa.me/91${hotel.whatsapp}?text=Hi%20I%20would%20like%20to%20check%20room%20availability%20at%20${encodeURIComponent(hotel.name)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-bold text-white"><MessageCircle size={16} />WhatsApp</a>
                   </div>
+                  <a
+                    href={hotel.googleBusinessUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`View ${hotel.name} on Google Business Profile`}
+                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-900 transition hover:border-blue-300 hover:bg-blue-100"
+                  >
+                    <Navigation size={16} />Google Business Profile
+                  </a>
                   <Link href={`/hotels/${hotel.slug}`} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-800 hover:underline">View rooms, amenities & location <ArrowRight size={15} /></Link>
                 </div>
               </article>

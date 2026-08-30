@@ -180,7 +180,7 @@ export default async function HotelPage({ params }: Props) {
                 <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 text-sm font-bold text-white shadow-xl transition hover:bg-green-700"><MessageCircle size={18} />Check Availability</a>
                 <a href={`tel:+91${hotel.phone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-slate-950 transition hover:bg-slate-100"><Phone size={18} />Call Hotel</a>
                 {hotel.googleBusinessUrl ? (
-                  <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-black/40"><Navigation size={17} />Directions</a>
+                  <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" aria-label={`View ${hotel.name} on Google Business Profile`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/35 bg-black/25 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-black/40"><Navigation size={17} />Google Profile</a>
                 ) : null}
               </div>
             </div>
@@ -248,6 +248,7 @@ export default async function HotelPage({ params }: Props) {
               </div>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-5 text-sm font-bold"><MessageCircle size={17} />WhatsApp Hotel</a>
               <a href={`tel:+91${hotel.phone}`} className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-slate-950"><Phone size={17} />Call Hotel</a>
+              <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" aria-label={`View ${hotel.name} on Google Business Profile`} className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/25 px-5 text-sm font-bold text-white transition hover:bg-white/10"><Navigation size={17} />Google Business Profile</a>
             </aside>
           </div>
         </section>
