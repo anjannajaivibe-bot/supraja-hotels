@@ -1,4 +1,4 @@
-const siteUrl = "https://suprajahotels.com";
+const siteUrl = "https://www.suprajahotels.com";
 
 export default function OrganizationSchema() {
   const schema = {

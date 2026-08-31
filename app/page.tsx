@@ -95,21 +95,8 @@ const featureCards = [
 ];
 
 export default function HomePage() {
-  const homeSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": `${siteUrl}/#website`,
-    name: "Supraja Hotels",
-    url: siteUrl,
-    description:
-      "Hotels in Hyderabad with Supraja Hotels properties in Madhapur near HITEC City and Chandanagar near Lingampally, BHEL and Miyapur.",
-    publisher: { "@id": `${siteUrl}/#organization` },
-  };
-
   return (
     <main className="bg-white pb-20 text-slate-900 md:pb-0">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchema) }} />
-
       <section
         className="relative isolate flex min-h-[610px] items-center overflow-hidden bg-slate-950 text-white md:min-h-[660px] lg:min-h-[690px]"
         style={{

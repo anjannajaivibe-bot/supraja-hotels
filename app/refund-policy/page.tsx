@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Refund Policy",
   description:
     "Refund and cancellation policy for direct bookings at Supraja Hotels.",
+  alternates: { canonical: "/refund-policy" }
 };
 
 export default function RefundPolicyPage() {

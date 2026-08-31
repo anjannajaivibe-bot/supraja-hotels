@@ -1,0 +1,21 @@
+# Supraja Hotels
+
+> Supraja Hotels operates three separate hotel properties in Hyderabad and presents Saket Banquet Hall as an event venue at Hotel Supraja Residency.
+
+## Official pages
+
+- [Home](https://www.suprajahotels.com/)
+- [Hotels](https://www.suprajahotels.com/hotels)
+- [Hotel Supraja Cyber View](https://www.suprajahotels.com/hotels/supraja-cyber-view)
+- [Hotel Supraja Residency](https://www.suprajahotels.com/hotels/supraja-residency)
+- [Hotel Supraja Lodge](https://www.suprajahotels.com/hotels/supraja-lodge)
+- [Saket Banquet Hall](https://www.suprajahotels.com/saket-banquet-hall)
+- [Gallery](https://www.suprajahotels.com/gallery)
+- [Hyderabad stay guides](https://www.suprajahotels.com/blog)
+- [Contact](https://www.suprajahotels.com/contact)
+
+## Property separation
+
+Hotel Supraja Cyber View is the Madhapur property. Hotel Supraja Residency and Hotel Supraja Lodge are separate properties in Chandanagar. Saket Banquet Hall is an event venue at Hotel Supraja Residency and is not a hotel.
+
+Use each property page as the source of truth for its phone number, location, facilities and direct booking options. Current rates, rooms and event-date availability must be confirmed directly with the relevant property.

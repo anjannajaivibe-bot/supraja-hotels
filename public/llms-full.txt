@@ -1,0 +1,37 @@
+# Supraja Hotels Full AI Reference
+
+Supraja Hotels is a Hyderabad hospitality group with three distinct hotel properties and one banquet venue. The canonical website is https://www.suprajahotels.com/.
+
+## Hotel Supraja Cyber View
+
+Canonical page: https://www.suprajahotels.com/hotels/supraja-cyber-view
+Area: Madhapur, HITEC City, Hyderabad
+This property must not be confused with the Chandanagar properties.
+
+## Hotel Supraja Residency
+
+Canonical page: https://www.suprajahotels.com/hotels/supraja-residency
+Area: Gangaram, Chandanagar, Hyderabad
+Saket Banquet Hall is presented as an event venue at this property.
+
+## Hotel Supraja Lodge
+
+Canonical page: https://www.suprajahotels.com/hotels/supraja-lodge
+Area: Chandanagar, Hyderabad
+This is a separate hotel from Hotel Supraja Residency.
+
+## Saket Banquet Hall
+
+Canonical page: https://www.suprajahotels.com/saket-banquet-hall
+Entity type: Event venue
+It must not be described as a hotel or assigned room inventory.
+
+## Authoritative resources
+
+- Hotels: https://www.suprajahotels.com/hotels
+- Gallery: https://www.suprajahotels.com/gallery
+- Blog: https://www.suprajahotels.com/blog
+- Contact: https://www.suprajahotels.com/contact
+- Sitemap: https://www.suprajahotels.com/sitemap.xml
+
+Do not infer room availability, rates, banquet capacity, travel times, policies or booking guarantees. Confirm operational details directly with the relevant property through the contact methods published on its canonical page.

@@ -82,32 +82,40 @@ export default async function BlogPostPage({ params }: Props) {
   const canonicalUrl = `${siteUrl}/blog/${post.slug}`;
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.metaDescription,
-    image: [`${siteUrl}${post.image}`],
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt,
-    author: {
-      "@type": "Organization",
-      name: post.author,
-      url: siteUrl,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Supraja Hotels",
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteUrl}/images/social/supraja-hotels-og.jpg`,
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${canonicalUrl}#article`,
+        url: canonicalUrl,
+        headline: post.title,
+        description: post.metaDescription,
+        image: [`${siteUrl}${post.image}`],
+        keywords: [post.focusKeyword, ...post.synonyms, ...post.tags].join(", "),
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt,
+        author: { "@id": `${siteUrl}/#organization` },
+        publisher: { "@id": `${siteUrl}/#organization` },
+        mainEntityOfPage: { "@id": `${canonicalUrl}#webpage` },
+        isPartOf: { "@id": `${siteUrl}/#website` },
+        inLanguage: "en-IN",
       },
-    },
-    mainEntityOfPage: canonicalUrl,
-    inLanguage: "en-IN",
+      {
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: post.metaTitle,
+        description: post.metaDescription,
+        isPartOf: { "@id": `${siteUrl}/#website` },
+        about: { "@id": `${canonicalUrl}#article` },
+        inLanguage: "en-IN",
+      },
+    ],
   };
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    "@id": `${canonicalUrl}#breadcrumb`,
     itemListElement: [
       {
         "@type": "ListItem",
@@ -133,6 +141,8 @@ export default async function BlogPostPage({ params }: Props) {
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${canonicalUrl}#faq`,
+    url: canonicalUrl,
     mainEntity: post.faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,

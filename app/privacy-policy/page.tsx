@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Privacy Policy for Supraja Hotels regarding guest information and website usage.",
+  alternates: { canonical: "/privacy-policy" }
 };
 
 export default function PrivacyPolicyPage() {
