@@ -4,6 +4,7 @@ import {
   adminCookieOptions,
   createAdminSessionValue,
 } from "@/lib/admin-auth";
+import { isMobileOrTabletUserAgent } from "@/lib/admin-device-access";
 import { findHotelAdminUser, verifyStoredPassword } from "@/lib/hotel-ops";
 
 export async function POST(request: NextRequest) {
@@ -37,6 +38,12 @@ export async function POST(request: NextRequest) {
     try {
       const user = await findHotelAdminUser(username);
       if (user?.is_active && verifyStoredPassword(password, user.password_hash)) {
+        if (isMobileOrTabletUserAgent(request.headers.get("user-agent"))) {
+          return NextResponse.json(
+            { error: "Hotel admin access is allowed only from a desktop or laptop computer." },
+            { status: 403 },
+          );
+        }
         sessionValue = createAdminSessionValue({
           username: user.username,
           displayName: user.display_name,
