@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Building2, Clock3, LogOut, Play, RefreshCw, UserPlus, Users } from "lucide-react";
 
 type Session = { username:string; displayName:string; role:"master"|"hotel_admin"; hotelId:string|null; hotelName:string|null };
@@ -91,6 +92,7 @@ export default function OperationsPage() {
         <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Supraja Hotels</p><h1 className="mt-1 text-2xl font-bold">Operations Control</h1><p className="mt-1 text-sm text-slate-600">Simple daily controls for attendance, shifts and hotel accountability.</p></div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm"><span className="font-semibold">{session.displayName}</span><span className="ml-2 text-slate-500">{session.role==="master"?"Master Admin":session.hotelName}</span></div>
+          {session.role==="master"&&<Link href="/admin/users" className={`${btn} border border-blue-200 bg-blue-50 text-blue-900 hover:bg-blue-100`}><Users size={16}/>Hotel Users</Link>}
           <button onClick={()=>void load()} className={`${btn} border border-slate-300 bg-white text-slate-800 hover:bg-slate-50`}><RefreshCw size={16}/>Refresh</button>
           <button onClick={()=>void logout()} className={`${btn} bg-slate-900 text-white hover:bg-slate-800`}><LogOut size={16}/>Logout</button>
         </div>
