@@ -7,7 +7,7 @@ import { ClipboardCheck, Home, ListChecks, LogOut, ShieldAlert, Users, BedDouble
 
 type Session = { role: "master" | "hotel_admin" };
 const CACHE_KEY="supraja-admin-nav-session";
-const baseItems=[{href:"/admin/home",label:"Home",icon:Home},{href:"/admin/checklists",label:"Checklists",icon:ListChecks},{href:"/admin/operations",label:"Attendance",icon:Users},{href:"/admin/controls",label:"Daily Controls",icon:ClipboardCheck},{href:"/admin/housekeeping",label:"Housekeeping",icon:DoorOpen},{href:"/admin/rooms",label:"Rooms",icon:BedDouble},{href:"/admin/exceptions",label:"Exceptions",icon:ShieldAlert}];
+const baseItems=[{href:"/admin/home",label:"Home",icon:Home},{href:"/admin/checklists",label:"Checklists",icon:ListChecks},{href:"/admin/attendance",label:"Attendance",icon:Users},{href:"/admin/controls",label:"Daily Controls",icon:ClipboardCheck},{href:"/admin/housekeeping",label:"Housekeeping",icon:DoorOpen},{href:"/admin/rooms",label:"Rooms",icon:BedDouble},{href:"/admin/exceptions",label:"Exceptions",icon:ShieldAlert}];
 
 export default function AdminGlobalNav(){
  const pathname=usePathname();const[session,setSession]=useState<Session|null>(null);
