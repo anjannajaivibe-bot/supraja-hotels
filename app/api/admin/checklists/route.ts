@@ -46,6 +46,13 @@ async function activeShift(hotelId:string, username:string) {
   return ((await r.json()) as Array<{id:string;employee_id:string|null;display_name:string}>)[0]??null;
 }
 
+function parseMoney(value:number|string|null|undefined,label:string){
+  if(value===undefined||value===null||String(value).trim()==="")return {error:`Enter the ${label}. Enter 0 if there is no cash.`};
+  const amount=Number(value);
+  if(!Number.isFinite(amount)||amount<0)return {error:`${label[0].toUpperCase()+label.slice(1)} must be 0 or more.`};
+  return {amount:Math.round(amount*100)/100};
+}
+
 export async function GET(request:NextRequest){
   const session=getAdminSession(request);
   if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});
@@ -65,23 +72,25 @@ export async function POST(request:NextRequest){
   const session=getAdminSession(request);
   if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});
   if(session.role!=="hotel_admin"||!session.hotelId)return NextResponse.json({error:"Hotel login required."},{status:403});
-  const body=await request.json().catch(()=>({})) as {checklistType?:ChecklistType;itemKey?:string;completed?:boolean;notes?:string;cashHandoverAmount?:number|string|null};
+  const body=await request.json().catch(()=>({})) as {checklistType?:ChecklistType;itemKey?:string;completed?:boolean;notes?:string;cashHandoverAmount?:number|string|null;openingCashAmount?:number|string|null};
   const type=body.checklistType;
   if(!type||!CHECKLISTS[type])return NextResponse.json({error:"Invalid checklist type."},{status:400});
   const item=CHECKLISTS[type].find(([key])=>key===body.itemKey);
   if(!item)return NextResponse.json({error:"Invalid checklist item."},{status:400});
 
+  const needsOpeningCash=type==="shift_start"&&item[0]==="cash_opening_verified"&&Boolean(body.completed);
   const needsCashHandover=type==="shift_end"&&item[0]==="cash_reconciled"&&Boolean(body.completed);
-  let cashHandoverAmount:number|null=null;
+  let openingCashAmount:number|null=null,cashHandoverAmount:number|null=null;
+
+  if(needsOpeningCash){
+    const parsed=parseMoney(body.openingCashAmount,"opening cash balance");
+    if(parsed.error)return NextResponse.json({error:parsed.error},{status:400});
+    openingCashAmount=parsed.amount!;
+  }
   if(needsCashHandover){
-    if(body.cashHandoverAmount===undefined||body.cashHandoverAmount===null||String(body.cashHandoverAmount).trim()===""){
-      return NextResponse.json({error:"Enter the cash handover amount. Enter 0 if there is no cash to hand over."},{status:400});
-    }
-    cashHandoverAmount=Number(body.cashHandoverAmount);
-    if(!Number.isFinite(cashHandoverAmount)||cashHandoverAmount<0){
-      return NextResponse.json({error:"Cash handover amount must be 0 or more."},{status:400});
-    }
-    cashHandoverAmount=Math.round(cashHandoverAmount*100)/100;
+    const parsed=parseMoney(body.cashHandoverAmount,"cash handover amount");
+    if(parsed.error)return NextResponse.json({error:parsed.error},{status:400});
+    cashHandoverAmount=parsed.amount!;
   }
 
   const shift=await activeShift(session.hotelId,session.username);
@@ -89,10 +98,10 @@ export async function POST(request:NextRequest){
   const date=indiaDate();
   const scopeKey=type==="daily"?`daily:${date}`:`shift:${shift.id}`;
   const now=new Date().toISOString();
-  const payload={hotel_id:session.hotelId,checklist_date:date,checklist_type:type,scope_key:scopeKey,item_key:item[0],item_label:item[1],is_completed:Boolean(body.completed),completed_at:body.completed?now:null,completed_by_employee_id:body.completed?shift.employee_id:null,completed_by_employee_name:body.completed?shift.display_name:null,shift_id:type==="daily"?null:shift.id,notes:body.notes?.trim()||null,cash_handover_amount:needsCashHandover?cashHandoverAmount:null,recorded_by:session.username,updated_at:now};
+  const payload={hotel_id:session.hotelId,checklist_date:date,checklist_type:type,scope_key:scopeKey,item_key:item[0],item_label:item[1],is_completed:Boolean(body.completed),completed_at:body.completed?now:null,completed_by_employee_id:body.completed?shift.employee_id:null,completed_by_employee_name:body.completed?shift.display_name:null,shift_id:type==="daily"?null:shift.id,notes:body.notes?.trim()||null,opening_cash_amount:needsOpeningCash?openingCashAmount:null,cash_handover_amount:needsCashHandover?cashHandoverAmount:null,recorded_by:session.username,updated_at:now};
   const r=await supabaseRequest("?on_conflict=hotel_id,scope_key,checklist_type,item_key",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify(payload)},"hotel_checklist_entries");
   if(!r.ok)return NextResponse.json({error:"Unable to update checklist."},{status:500});
   const row=(await r.json())[0];
-  await writeAuditLog(session,body.completed?"checklist_completed":"checklist_reopened","hotel_checklist",row?.id??null,session.hotelId,{checklistType:type,itemKey:item[0],employeeName:shift.display_name,shiftId:shift.id,cashHandoverAmount:needsCashHandover?cashHandoverAmount:undefined});
+  await writeAuditLog(session,body.completed?"checklist_completed":"checklist_reopened","hotel_checklist",row?.id??null,session.hotelId,{checklistType:type,itemKey:item[0],employeeName:shift.display_name,shiftId:shift.id,openingCashAmount:needsOpeningCash?openingCashAmount:undefined,cashHandoverAmount:needsCashHandover?cashHandoverAmount:undefined});
   return NextResponse.json({success:true,entry:row});
 }
