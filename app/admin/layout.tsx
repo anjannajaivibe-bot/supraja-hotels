@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AdminGlobalNav from "./AdminGlobalNav";
+import AdminDeviceGuard from "./AdminDeviceGuard";
 
 export const metadata: Metadata = {
   robots: {
@@ -11,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <><AdminGlobalNav />{children}</>;
+  return <AdminDeviceGuard><AdminGlobalNav />{children}</AdminDeviceGuard>;
 }
