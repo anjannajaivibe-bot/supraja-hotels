@@ -1,19 +1,25 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminSession } from "@/lib/admin-auth";
+import { getAdminSession, type AdminSession } from "@/lib/admin-auth";
 import { hashPassword, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
-function requireMaster(request: NextRequest) {
+function getMasterSession(request: NextRequest): AdminSession | null {
   const session = getAdminSession(request);
-  if (!session) return { error: NextResponse.json({ error: "Unauthorized." }, { status: 401 }) };
-  if (session.role !== "master") return { error: NextResponse.json({ error: "Master Admin access required." }, { status: 403 }) };
-  return { session };
+  return session?.role === "master" ? session : null;
+}
+
+function unauthorized(request: NextRequest) {
+  const session = getAdminSession(request);
+  return NextResponse.json(
+    { error: session ? "Master Admin access required." : "Unauthorized." },
+    { status: session ? 403 : 401 }
+  );
 }
 
 export async function GET(request: NextRequest) {
-  const auth = requireMaster(request);
-  if (auth.error) return auth.error;
+  const session = getMasterSession(request);
+  if (!session) return unauthorized(request);
 
   const response = await supabaseRequest(
     "?select=id,username,display_name,hotel_id,is_active,created_at,updated_at,hotels(name,code)&order=created_at.desc",
@@ -29,9 +35,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireMaster(request);
-  if (auth.error) return auth.error;
-  const session = auth.session;
+  const session = getMasterSession(request);
+  if (!session) return unauthorized(request);
 
   let body: { username?: string; displayName?: string; password?: string; hotelId?: string };
   try {
@@ -61,6 +66,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "This username is reserved for Master Admin." }, { status: 409 });
   }
 
+  const hotelRes = await supabaseRequest(`?select=id&id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true&limit=1`, {}, "hotels");
+  if (!hotelRes.ok) return NextResponse.json({ error: "Unable to verify hotel." }, { status: 500 });
+  const hotelRows = await hotelRes.json() as Array<{ id: string }>;
+  if (!hotelRows[0]) return NextResponse.json({ error: "Selected hotel is unavailable." }, { status: 400 });
+
   const passwordHash = hashPassword(password, randomBytes(16).toString("hex"));
   const response = await supabaseRequest("", {
     method: "POST",
@@ -70,7 +80,7 @@ export async function POST(request: NextRequest) {
 
   if (!response.ok) {
     const text = await response.text();
-    if (text.includes("hotel_admin_users_username_key")) {
+    if (text.includes("hotel_admin_users_username_key") || text.toLowerCase().includes("duplicate key")) {
       return NextResponse.json({ error: "That username already exists." }, { status: 409 });
     }
     return NextResponse.json({ error: "Unable to create hotel user." }, { status: 500 });
@@ -83,11 +93,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = requireMaster(request);
-  if (auth.error) return auth.error;
-  const session = auth.session;
+  const session = getMasterSession(request);
+  if (!session) return unauthorized(request);
 
-  let body: { id?: string; action?: "toggle_active" | "reset_password"; isActive?: boolean; password?: string; hotelId?: string };
+  let body: { id?: string; action?: "toggle_active" | "reset_password"; isActive?: boolean; password?: string };
   try {
     body = await request.json();
   } catch {
@@ -103,7 +112,7 @@ export async function PATCH(request: NextRequest) {
   const existing = (await existingRes.json() as Array<{ id:string; username:string; hotel_id:string; is_active:boolean }>)[0];
   if (!existing) return NextResponse.json({ error: "Hotel user not found." }, { status: 404 });
 
-  let update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (body.action === "toggle_active") {
     if (typeof body.isActive !== "boolean") return NextResponse.json({ error: "New status is required." }, { status: 400 });
     update.is_active = body.isActive;
