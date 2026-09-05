@@ -3,8 +3,6 @@ import { getAdminSession } from "@/lib/admin-auth";
 import { hotelScope, verifyStoredPassword, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
-const SHIFT_END_REQUIRED=8;
-
 export async function GET(request: NextRequest) {
   const session = getAdminSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,15 +42,14 @@ export async function POST(request: NextRequest) {
     const active = (await activeResponse.json()) as { id: string; hotel_id: string; employee_id?:string; display_name:string }[];
     if (!active[0]) return NextResponse.json({ error: "No active shift found." }, { status: 404 });
 
+    let shiftEndChecklistCompleted = 0;
     const checklistRes=await supabaseRequest(`?select=item_key&hotel_id=eq.${encodeURIComponent(session.hotelId)}&scope_key=eq.${encodeURIComponent(`shift:${active[0].id}`)}&checklist_type=eq.shift_end&is_completed=eq.true`,{},"hotel_checklist_entries");
-    if(!checklistRes.ok)return NextResponse.json({error:"Unable to verify Shift End checklist."},{status:500});
-    const completed=(await checklistRes.json() as Array<{item_key:string}>).length;
-    if(completed<SHIFT_END_REQUIRED)return NextResponse.json({error:`Complete the Shift End checklist before ending the shift (${completed}/${SHIFT_END_REQUIRED} completed).`},{status:409});
+    if(checklistRes.ok) shiftEndChecklistCompleted=(await checklistRes.json() as Array<{item_key:string}>).length;
 
     const response = await supabaseRequest(`?id=eq.${active[0].id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ended_at:new Date().toISOString(),status:"closed",end_note:body.note?.trim()||null,handover_note:body.handoverNote?.trim()||null}) }, "hotel_shifts");
     if (!response.ok) return NextResponse.json({ error: "Unable to end shift." }, { status: 500 });
-    await writeAuditLog(session, "shift_ended", "hotel_shift", active[0].id, session.hotelId, { employeeId: active[0].employee_id ?? null, employeeName: active[0].display_name });
-    return NextResponse.json({ success: true });
+    await writeAuditLog(session, "shift_ended", "hotel_shift", active[0].id, session.hotelId, { employeeId: active[0].employee_id ?? null, employeeName: active[0].display_name, shiftEndChecklistCompleted, shiftEndChecklistRequired: 8, checklistIncomplete: shiftEndChecklistCompleted < 8 });
+    return NextResponse.json({ success: true, checklistIncomplete: shiftEndChecklistCompleted < 8, shiftEndChecklistCompleted });
   }
 
   return NextResponse.json({ error: "Invalid action." }, { status: 400 });
