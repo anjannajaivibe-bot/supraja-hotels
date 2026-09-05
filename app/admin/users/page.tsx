@@ -4,112 +4,43 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Building2, KeyRound, RefreshCw, ShieldCheck, UserPlus, Users } from "lucide-react";
 
-type Session = { username:string; displayName:string; role:"master"|"hotel_admin"; hotelId:string|null; hotelName:string|null };
-type Hotel = { id:string; name:string; code?:string };
-type User = { id:string; username:string; display_name:string; hotel_id:string; is_active:boolean; created_at:string; hotels?:{name?:string;code?:string}|null };
+type Session={role:"master"|"hotel_admin"};
+type Hotel={id:string;name:string;code?:string};
+type User={id:string;username:string;display_name:string;hotel_id:string;is_active:boolean;hotels?:{name?:string}|null};
+type Employee={id:string;name:string;designation:string;is_active:boolean};
+const card="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+const input="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100";
+const btn="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50";
 
-const card = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
-const input = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+export default function AccessPage(){
+  const[session,setSession]=useState<Session|null>(null),[hotels,setHotels]=useState<Hotel[]>([]),[users,setUsers]=useState<User[]>([]),[employees,setEmployees]=useState<Employee[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
+  const[loginForm,setLoginForm]=useState({username:"",password:"",hotelId:""});
+  const[employeeForm,setEmployeeForm]=useState({name:"",designation:"Manager / Receptionist",pin:""});
+  const[resetPassword,setResetPassword]=useState<{id:string;password:string}|null>(null),[resetPin,setResetPin]=useState<{id:string;pin:string}|null>(null);
+  const activeUsers=useMemo(()=>users.filter(x=>x.is_active).length,[users]);
 
-export default function HotelUsersPage() {
-  const [session,setSession]=useState<Session|null>(null);
-  const [hotels,setHotels]=useState<Hotel[]>([]);
-  const [users,setUsers]=useState<User[]>([]);
-  const [busy,setBusy]=useState(false);
-  const [message,setMessage]=useState("");
-  const [form,setForm]=useState({displayName:"",username:"",password:"",hotelId:""});
-  const [reset,setReset]=useState<{id:string;password:string}|null>(null);
+  const load=useCallback(async()=>{setMessage("");const sr=await fetch("/api/admin/session",{cache:"no-store"});if(sr.status===401){location.href="/admin/login";return}const sd=await sr.json();if(sd.session.role!=="master"){location.href="/admin/home";return}setSession(sd.session);const[hr,ur,er]=await Promise.all([fetch("/api/admin/hotels",{cache:"no-store"}),fetch("/api/admin/hotel-users",{cache:"no-store"}),fetch("/api/admin/employees",{cache:"no-store"})]);const hd=await hr.json(),ud=await ur.json(),ed=await er.json();const hs=hd.hotels??[];setHotels(hs);setUsers(ud.users??[]);setEmployees(ed.employees??[]);setLoginForm(v=>({...v,hotelId:v.hotelId||hs[0]?.id||""}));if(!ur.ok||!er.ok)setMessage(ud.error||ed.error||"Unable to load access settings.");},[]);
+  useEffect(()=>{void load()},[load]);
 
-  const activeUsers=useMemo(()=>users.filter(u=>u.is_active).length,[users]);
+  async function createLogin(e:FormEvent){e.preventDefault();setBusy(true);const r=await fetch("/api/admin/hotel-users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(loginForm)}),d=await r.json();setMessage(r.ok?"Hotel login created.":d.error||"Unable to create login.");if(r.ok){setLoginForm(v=>({username:"",password:"",hotelId:v.hotelId}));await load()}setBusy(false)}
+  async function createEmployee(e:FormEvent){e.preventDefault();setBusy(true);const r=await fetch("/api/admin/employees",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(employeeForm)}),d=await r.json();setMessage(r.ok?"Employee added.":d.error||"Unable to add employee.");if(r.ok){setEmployeeForm({name:"",designation:"Manager / Receptionist",pin:""});await load()}setBusy(false)}
+  async function toggleLogin(u:User){setBusy(true);const r=await fetch("/api/admin/hotel-users",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:u.id,action:"toggle_active",isActive:!u.is_active})});const d=await r.json();setMessage(r.ok?(u.is_active?"Hotel login disabled.":"Hotel login enabled."):d.error);if(r.ok)await load();setBusy(false)}
+  async function toggleEmployee(e:Employee){setBusy(true);const r=await fetch("/api/admin/employees",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:e.id,action:"toggle_active",isActive:!e.is_active})});const d=await r.json();setMessage(r.ok?(e.is_active?"Employee disabled.":"Employee enabled."):d.error);if(r.ok)await load();setBusy(false)}
+  async function savePassword(e:FormEvent){e.preventDefault();if(!resetPassword)return;setBusy(true);const r=await fetch("/api/admin/hotel-users",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:resetPassword.id,action:"reset_password",password:resetPassword.password})});const d=await r.json();setMessage(r.ok?"Hotel password reset.":d.error);if(r.ok)setResetPassword(null);setBusy(false)}
+  async function savePin(e:FormEvent){e.preventDefault();if(!resetPin)return;setBusy(true);const r=await fetch("/api/admin/employees",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:resetPin.id,action:"reset_pin",pin:resetPin.pin})});const d=await r.json();setMessage(r.ok?"Employee PIN reset.":d.error);if(r.ok)setResetPin(null);setBusy(false)}
+  if(!session)return <main className="min-h-screen bg-slate-50 p-8">Loading...</main>;
 
-  const load=useCallback(async()=>{
-    setMessage("");
-    const sessionRes=await fetch("/api/admin/session",{cache:"no-store"});
-    if(sessionRes.status===401){window.location.href="/admin/login";return;}
-    const sessionData=await sessionRes.json() as {session:Session};
-    if(sessionData.session.role!=="master"){window.location.href="/admin/operations";return;}
-    setSession(sessionData.session);
-    const [hotelRes,userRes]=await Promise.all([
-      fetch("/api/admin/hotels",{cache:"no-store"}),
-      fetch("/api/admin/hotel-users",{cache:"no-store"}),
-    ]);
-    const hotelData=await hotelRes.json() as {hotels?:Hotel[]};
-    const userData=await userRes.json() as {users?:User[];error?:string};
-    const available=hotelData.hotels??[];
-    setHotels(available);
-    setUsers(userData.users??[]);
-    setForm(v=>({...v,hotelId:v.hotelId||available[0]?.id||""}));
-    if(!userRes.ok)setMessage(userData.error??"Unable to load hotel users.");
-  },[]);
+  return <main className="min-h-screen bg-slate-50 text-slate-950"><header className="border-b bg-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 sm:px-6"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-amber-600">Supraja Hotels</p><h1 className="text-2xl font-bold">Hotel Access & Employees</h1><p className="mt-1 text-sm text-slate-600">One static login per hotel. Actual employee identity is captured when the shift starts.</p></div><div className="flex gap-2"><Link href="/admin/home" className={`${btn} border bg-white`}>Admin Home</Link><button onClick={()=>void load()} className={`${btn} bg-slate-900 text-white`}><RefreshCw size={16}/>Refresh</button></div></div></header><div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">{message&&<div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">{message}</div>}
 
-  useEffect(()=>{void load();},[load]);
+  <section className="grid gap-4 md:grid-cols-3"><div className={card}><Users className="text-blue-800"/><p className="mt-2 text-sm text-slate-500">Hotel logins</p><p className="text-2xl font-bold">{users.length}</p></div><div className={card}><ShieldCheck className="text-emerald-700"/><p className="mt-2 text-sm text-slate-500">Active logins</p><p className="text-2xl font-bold">{activeUsers}</p></div><div className={card}><Building2 className="text-blue-800"/><p className="mt-2 text-sm text-slate-500">Operating hotels</p><p className="text-2xl font-bold">{hotels.length}</p></div></section>
 
-  async function createUser(e:FormEvent){
-    e.preventDefault(); setBusy(true); setMessage("");
-    const res=await fetch("/api/admin/hotel-users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
-    const data=await res.json() as {error?:string};
-    if(res.ok){setMessage("Hotel login created successfully.");setForm(v=>({displayName:"",username:"",password:"",hotelId:v.hotelId}));await load();}
-    else setMessage(data.error??"Unable to create hotel user.");
-    setBusy(false);
-  }
+  <section className={card}><h2 className="text-lg font-bold">Create hotel login</h2><p className="mt-1 text-sm text-slate-600">Create only one login for each hotel. Saket Banquet Hall is managed under Hotel Supraja Residency.</p><form onSubmit={createLogin} className="mt-4 grid gap-3 md:grid-cols-4"><select className={input} value={loginForm.hotelId} onChange={e=>setLoginForm(v=>({...v,hotelId:e.target.value}))}>{hotels.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}</select><input className={input} placeholder="Hotel username" value={loginForm.username} onChange={e=>setLoginForm(v=>({...v,username:e.target.value}))} required/><input className={input} type="password" minLength={8} placeholder="Hotel password" value={loginForm.password} onChange={e=>setLoginForm(v=>({...v,password:e.target.value}))} required/><button disabled={busy} className={`${btn} bg-blue-800 text-white`}><UserPlus size={16}/>Create Hotel Login</button></form></section>
 
-  async function toggleUser(user:User){
-    setBusy(true); setMessage("");
-    const res=await fetch("/api/admin/hotel-users",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:user.id,action:"toggle_active",isActive:!user.is_active})});
-    const data=await res.json() as {error?:string};
-    setMessage(res.ok?(user.is_active?"Login disabled.":"Login enabled."):data.error??"Unable to update login.");
-    if(res.ok)await load(); setBusy(false);
-  }
+  <section className={card}><h2 className="text-lg font-bold">Hotel logins</h2><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead><tr className="border-b text-slate-500"><th className="py-3">Hotel</th><th>Username</th><th>Status</th><th>Actions</th></tr></thead><tbody>{users.map(u=><tr key={u.id} className="border-b border-slate-100"><td className="py-3 font-semibold">{u.hotels?.name||u.display_name}</td><td>{u.username}</td><td><span className={`rounded-full px-2 py-1 text-xs font-bold ${u.is_active?"bg-emerald-100 text-emerald-800":"bg-slate-200"}`}>{u.is_active?"Active":"Disabled"}</span></td><td className="space-x-2"><button onClick={()=>void toggleLogin(u)} className="rounded-lg border px-2 py-1 text-xs font-semibold">{u.is_active?"Disable":"Enable"}</button><button onClick={()=>setResetPassword({id:u.id,password:""})} className="rounded-lg border px-2 py-1 text-xs font-semibold">Reset password</button></td></tr>)}{users.length===0&&<tr><td colSpan={4} className="py-8 text-center text-slate-500">No hotel logins created yet.</td></tr>}</tbody></table></div></section>
 
-  async function resetPassword(e:FormEvent){
-    e.preventDefault(); if(!reset)return;
-    setBusy(true); setMessage("");
-    const res=await fetch("/api/admin/hotel-users",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:reset.id,action:"reset_password",password:reset.password})});
-    const data=await res.json() as {error?:string};
-    setMessage(res.ok?"Password reset successfully.":data.error??"Unable to reset password.");
-    if(res.ok)setReset(null); setBusy(false);
-  }
+  <section className={card}><h2 className="text-lg font-bold">Employee master</h2><p className="mt-1 text-sm text-slate-600">Employees are not permanently tied to a hotel. They select their name and enter their personal PIN when starting a shift.</p><form onSubmit={createEmployee} className="mt-4 grid gap-3 md:grid-cols-4"><input className={input} placeholder="Employee name" value={employeeForm.name} onChange={e=>setEmployeeForm(v=>({...v,name:e.target.value}))} required/><input className={input} placeholder="Designation" value={employeeForm.designation} onChange={e=>setEmployeeForm(v=>({...v,designation:e.target.value}))}/><input className={input} inputMode="numeric" pattern="[0-9]{4,6}" placeholder="4-6 digit PIN" value={employeeForm.pin} onChange={e=>setEmployeeForm(v=>({...v,pin:e.target.value.replace(/\D/g,"").slice(0,6)}))} required/><button disabled={busy} className={`${btn} bg-blue-800 text-white`}><UserPlus size={16}/>Add Employee</button></form><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead><tr className="border-b text-slate-500"><th className="py-3">Employee</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead><tbody>{employees.map(e=><tr key={e.id} className="border-b border-slate-100"><td className="py-3 font-semibold">{e.name}</td><td>{e.designation}</td><td>{e.is_active?"Active":"Inactive"}</td><td className="space-x-2"><button onClick={()=>void toggleEmployee(e)} className="rounded-lg border px-2 py-1 text-xs font-semibold">{e.is_active?"Disable":"Enable"}</button><button onClick={()=>setResetPin({id:e.id,pin:""})} className="rounded-lg border px-2 py-1 text-xs font-semibold">Reset PIN</button></td></tr>)}{employees.length===0&&<tr><td colSpan={4} className="py-8 text-center text-slate-500">No employees added yet.</td></tr>}</tbody></table></div></section>
 
-  if(!session)return <main className="min-h-screen bg-slate-50 p-8 text-slate-600">Loading user management...</main>;
-
-  return <main className="min-h-screen bg-slate-50 text-slate-950">
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-        <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Supraja Hotels</p><h1 className="mt-1 text-2xl font-bold">Hotel User Access</h1><p className="mt-1 text-sm text-slate-600">Create one individual login for each manager / receptionist. Each login is restricted to one hotel.</p></div>
-        <div className="flex flex-wrap gap-2"><Link href="/admin/operations" className={`${btn} border border-slate-300 bg-white text-slate-800 hover:bg-slate-50`}>Operations</Link><button onClick={()=>void load()} className={`${btn} bg-slate-900 text-white hover:bg-slate-800`}><RefreshCw size={16}/>Refresh</button></div>
-      </div>
-    </header>
-
-    <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
-      {message&&<div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">{message}</div>}
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className={card}><div className="flex items-center gap-3"><Users className="text-blue-800"/><div><p className="text-sm text-slate-500">Hotel logins</p><p className="text-2xl font-bold">{users.length}</p></div></div></div>
-        <div className={card}><div className="flex items-center gap-3"><ShieldCheck className="text-emerald-700"/><div><p className="text-sm text-slate-500">Active logins</p><p className="text-2xl font-bold">{activeUsers}</p></div></div></div>
-        <div className={card}><div className="flex items-center gap-3"><Building2 className="text-blue-800"/><div><p className="text-sm text-slate-500">Properties</p><p className="text-2xl font-bold">{hotels.length}</p></div></div></div>
-      </section>
-
-      <section className={card}>
-        <div><h2 className="text-lg font-bold">Create hotel login</h2><p className="mt-1 text-sm text-slate-600">Use an employee-specific username. Do not share the same credentials between receptionists.</p></div>
-        <form onSubmit={createUser} className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-          <input className={input} placeholder="Employee name" value={form.displayName} onChange={e=>setForm(v=>({...v,displayName:e.target.value}))} required/>
-          <input className={input} placeholder="Username" autoCapitalize="none" value={form.username} onChange={e=>setForm(v=>({...v,username:e.target.value}))} required/>
-          <input className={input} type="password" placeholder="Initial password" minLength={8} value={form.password} onChange={e=>setForm(v=>({...v,password:e.target.value}))} required/>
-          <select className={input} value={form.hotelId} onChange={e=>setForm(v=>({...v,hotelId:e.target.value}))} required>{hotels.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}</select>
-          <button disabled={busy} className={`${btn} bg-blue-800 text-white hover:bg-blue-900`}><UserPlus size={16}/>Create Login</button>
-        </form>
-      </section>
-
-      <section className={card}>
-        <h2 className="text-lg font-bold">Current hotel users</h2>
-        <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[780px] text-left text-sm"><thead><tr className="border-b border-slate-200 text-slate-500"><th className="py-3 pr-4">Employee</th><th className="py-3 pr-4">Username</th><th className="py-3 pr-4">Hotel</th><th className="py-3 pr-4">Status</th><th className="py-3">Actions</th></tr></thead><tbody>
-          {users.map(user=><tr key={user.id} className="border-b border-slate-100"><td className="py-3 pr-4 font-semibold">{user.display_name}</td><td className="py-3 pr-4 text-slate-700">{user.username}</td><td className="py-3 pr-4 text-slate-700">{user.hotels?.name??"Assigned hotel"}</td><td className="py-3 pr-4"><span className={`rounded-full px-2 py-1 text-xs font-bold ${user.is_active?"bg-emerald-100 text-emerald-800":"bg-slate-200 text-slate-700"}`}>{user.is_active?"Active":"Disabled"}</span></td><td className="py-3"><div className="flex flex-wrap gap-2"><button disabled={busy} onClick={()=>void toggleUser(user)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">{user.is_active?"Disable":"Enable"}</button><button disabled={busy} onClick={()=>setReset({id:user.id,password:""})} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"><KeyRound size={13}/>Reset password</button></div></td></tr>)}
-          {users.length===0&&<tr><td colSpan={5} className="py-8 text-center text-slate-500">No hotel logins created yet.</td></tr>}
-        </tbody></table></div>
-      </section>
-
-      {reset&&<section className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-bold text-amber-950">Reset password</h2><p className="mt-1 text-sm text-amber-900">Enter a new password of at least 8 characters.</p><form onSubmit={resetPassword} className="mt-3 flex max-w-xl flex-col gap-2 sm:flex-row"><input className={input} type="password" minLength={8} placeholder="New password" value={reset.password} onChange={e=>setReset(v=>v?{...v,password:e.target.value}:v)} required/><button disabled={busy} className={`${btn} bg-amber-700 text-white hover:bg-amber-800`}>Save Password</button><button type="button" onClick={()=>setReset(null)} className={`${btn} border border-amber-300 bg-white text-amber-900`}>Cancel</button></form></section>}
-    </div>
-  </main>;
+  {resetPassword&&<section className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-bold">Reset hotel password</h2><form onSubmit={savePassword} className="mt-3 flex max-w-xl gap-2"><input className={input} type="password" minLength={8} placeholder="New password" value={resetPassword.password} onChange={e=>setResetPassword(v=>v?{...v,password:e.target.value}:v)} required/><button className={`${btn} bg-amber-700 text-white`}><KeyRound size={15}/>Save</button><button type="button" onClick={()=>setResetPassword(null)} className={`${btn} border bg-white`}>Cancel</button></form></section>}
+  {resetPin&&<section className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-bold">Reset employee PIN</h2><form onSubmit={savePin} className="mt-3 flex max-w-xl gap-2"><input className={input} inputMode="numeric" pattern="[0-9]{4,6}" placeholder="New 4-6 digit PIN" value={resetPin.pin} onChange={e=>setResetPin(v=>v?{...v,pin:e.target.value.replace(/\D/g,"").slice(0,6)}:v)} required/><button className={`${btn} bg-amber-700 text-white`}>Save PIN</button><button type="button" onClick={()=>setResetPin(null)} className={`${btn} border bg-white`}>Cancel</button></form></section>}
+  </div></main>;
 }
