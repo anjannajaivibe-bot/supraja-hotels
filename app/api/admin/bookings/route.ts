@@ -60,6 +60,16 @@ export async function POST(request: NextRequest) {
   if(approvedRate<0 || totalAmount<0 || amountReceived<0 || amountReceived>totalAmount) return NextResponse.json({error:"Check rate, total and received amount."},{status:400});
   if(amountReceived>0 && !allowedModes.includes(body.paymentMode??"")) return NextResponse.json({error:"Select payment mode."},{status:400});
 
+  const duplicateRes=await supabaseRequest(`?select=id,booking_code&hotel_id=eq.${encodeURIComponent(session.hotelId)}&room_no=eq.${encodeURIComponent(roomNo)}&status=eq.checked_in&limit=1`,{},"hotel_bookings");
+  if(!duplicateRes.ok)return NextResponse.json({error:"Unable to verify room occupancy."},{status:500});
+  const duplicate=(await duplicateRes.json() as Array<{id:string;booking_code:string}>)[0];
+  if(duplicate)return NextResponse.json({error:`Room ${roomNo} already has active booking ${duplicate.booking_code}.`},{status:409});
+
+  const roomRes=await supabaseRequest(`?select=id,status&hotel_id=eq.${encodeURIComponent(session.hotelId)}&room_no=eq.${encodeURIComponent(roomNo)}&is_active=eq.true&limit=1`,{},"hotel_rooms");
+  if(!roomRes.ok)return NextResponse.json({error:"Unable to verify room status."},{status:500});
+  const room=(await roomRes.json() as Array<{id:string;status:string}>)[0];
+  if(room && room.status!=="available")return NextResponse.json({error:`Room ${roomNo} is currently ${room.status}. Mark it available before check-in.`},{status:409});
+
   const code=bookingCode();
   const bookingRes=await supabaseRequest("",{
     method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({
@@ -84,6 +94,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if(room){await supabaseRequest(`?id=eq.${encodeURIComponent(room.id)}`,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"occupied",updated_by:session.username,updated_at:new Date().toISOString()})},"hotel_rooms");}
   await writeAuditLog(session,"booking_created","hotel_booking",booking.id,session.hotelId,{bookingCode:code,source,roomNo,totalAmount,amountReceived});
   return NextResponse.json({success:true,bookingId:booking.id,bookingCode:code});
 }
@@ -95,9 +106,9 @@ export async function PATCH(request: NextRequest){
   if(!(await hasActiveShift(session.username)))return NextResponse.json({error:"Start your shift before updating a booking."},{status:409});
   const body=await request.json().catch(()=>({})) as {id?:string;action?:"checkout"|"cancel"};
   if(!body.id||!body.action)return NextResponse.json({error:"Booking and action are required."},{status:400});
-  const existingRes=await supabaseRequest(`?select=id,hotel_id,status,booking_code&id=eq.${encodeURIComponent(body.id)}&hotel_id=eq.${encodeURIComponent(session.hotelId)}&limit=1`,{},"hotel_bookings");
+  const existingRes=await supabaseRequest(`?select=id,hotel_id,status,booking_code,room_no&id=eq.${encodeURIComponent(body.id)}&hotel_id=eq.${encodeURIComponent(session.hotelId)}&limit=1`,{},"hotel_bookings");
   if(!existingRes.ok)return NextResponse.json({error:"Unable to verify booking."},{status:500});
-  const existing=(await existingRes.json() as Array<{id:string;hotel_id:string;status:string;booking_code:string}>)[0];
+  const existing=(await existingRes.json() as Array<{id:string;hotel_id:string;status:string;booking_code:string;room_no:string}>)[0];
   if(!existing)return NextResponse.json({error:"Booking not found."},{status:404});
   if(body.action==="cancel" && existing.status==="checked_in")return NextResponse.json({error:"Checked-in bookings cannot be cancelled. Complete checkout or escalate to Master Admin."},{status:409});
   const status=body.action==="checkout"?"checked_out":"cancelled";
@@ -105,6 +116,9 @@ export async function PATCH(request: NextRequest){
   if(body.action==="checkout")update.checked_out_at=new Date().toISOString();
   const res=await supabaseRequest(`?id=eq.${existing.id}`,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(update)},"hotel_bookings");
   if(!res.ok)return NextResponse.json({error:"Unable to update booking."},{status:500});
-  await writeAuditLog(session,body.action==="checkout"?"booking_checked_out":"booking_cancelled","hotel_booking",existing.id,session.hotelId,{bookingCode:existing.booking_code});
+  if(body.action==="checkout"){
+    await supabaseRequest(`?hotel_id=eq.${encodeURIComponent(session.hotelId)}&room_no=eq.${encodeURIComponent(existing.room_no)}&is_active=eq.true`,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"dirty",updated_by:session.username,updated_at:new Date().toISOString()})},"hotel_rooms");
+  }
+  await writeAuditLog(session,body.action==="checkout"?"booking_checked_out":"booking_cancelled","hotel_booking",existing.id,session.hotelId,{bookingCode:existing.booking_code,roomNo:existing.room_no});
   return NextResponse.json({success:true});
 }
