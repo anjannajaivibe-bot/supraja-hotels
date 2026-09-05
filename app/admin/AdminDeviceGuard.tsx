@@ -32,6 +32,11 @@ export default function AdminDeviceGuard({ children }: { children: React.ReactNo
     return () => { cancelled = true; };
   }, []);
 
+  async function logout() {
+    await fetch("/api/admin-logout", { method: "POST" });
+    window.location.href = "/admin/login";
+  }
+
   if (state === "checking") {
     return <main className="min-h-screen bg-slate-50 p-8 text-slate-600">Checking device access...</main>;
   }
@@ -48,9 +53,9 @@ export default function AdminDeviceGuard({ children }: { children: React.ReactNo
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Hotel Manager / Receptionist access is restricted to a desktop or laptop computer. Mobile and tablet access is not permitted.
           </p>
-          <a href="/api/admin-logout" className="mt-6 inline-block rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700">
+          <button onClick={() => void logout()} className="mt-6 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Return to Login
-          </a>
+          </button>
         </section>
       </main>
     );
