@@ -1,71 +1,519 @@
 "use client";
 
-import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
-import {AlertTriangle,Building2,Clock3,Download,History,Play,UserPlus,Users} from "lucide-react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Building2,
+  Clock3,
+  Download,
+  History,
+  Play,
+  UserPlus,
+  Users,
+} from "lucide-react";
 
-type Session={username:string;displayName:string;role:"master"|"hotel_admin";hotelId:string|null;hotelName:string|null};
-type Hotel={id:string;name:string};
-type Shift={id:string;admin_username:string;display_name:string;employee_id?:string|null;started_at:string;ended_at?:string|null;status:string;hotel_name?:string;hotel_id?:string;shift_type?:"morning"|"night"|null;is_late?:boolean;late_minutes?:number;late_reason?:string|null};
-type Employee={id:string;name:string;designation:string;is_active:boolean};
-type Staff={id:string;name:string;staff_type:string};
-type Attendance={id:string;staff_member_id:string;status:string;marked_at?:string|null;recorded_by_employee_name?:string|null;attendance_date?:string;hotel_name?:string;hotel_staff_members?:{name:string;staff_type:string}|null};
-type ChecklistEntry={checklist_type:string;is_completed:boolean};
-const card="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm",input="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100",btn="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50";
-function indiaDate(offset=0){const d=new Date(Date.now()+offset*86400000);return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function currentLateMinutes(type:"morning"|"night"){
- const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());
- const hour=Number(parts.find(p=>p.type==="hour")?.value||0),minute=Number(parts.find(p=>p.type==="minute")?.value||0),now=hour*60+minute;
- if(type==="morning")return now>540?now-540:0;
- if(now>=1260)return now-1260;
- if(now<540)return 180+now;
- return 0;
+type Session = {
+  username: string;
+  displayName: string;
+  role: "master" | "hotel_admin";
+  hotelId: string | null;
+  hotelName: string | null;
+};
+
+type Hotel = { id: string; name: string };
+type Employee = { id: string; name: string; designation: string; is_active: boolean };
+type Staff = { id: string; name: string; staff_type: string };
+type ChecklistEntry = { checklist_type: string; is_completed: boolean };
+
+type Shift = {
+  id: string;
+  admin_username: string;
+  display_name: string;
+  employee_id?: string | null;
+  started_at: string;
+  ended_at?: string | null;
+  status: string;
+  hotel_name?: string;
+  hotel_id?: string;
+  shift_type?: "morning" | "night" | null;
+  is_late?: boolean;
+  late_minutes?: number;
+  late_reason?: string | null;
+};
+
+type Attendance = {
+  id: string;
+  staff_member_id: string;
+  status: string;
+  marked_at?: string | null;
+  recorded_by_employee_name?: string | null;
+  attendance_date?: string;
+  hotel_name?: string;
+  hotel_staff_members?: { name: string; staff_type: string } | null;
+};
+
+const card = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+const input = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50";
+
+function indiaDate(offset = 0) {
+  const d = new Date(Date.now() + offset * 86400000);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
 
-export default function OperationsPage(){
- const[session,setSession]=useState<Session|null>(null),[hotels,setHotels]=useState<Hotel[]>([]),[selectedHotel,setSelectedHotel]=useState(""),[shifts,setShifts]=useState<Shift[]>([]),[employees,setEmployees]=useState<Employee[]>([]),[staff,setStaff]=useState<Staff[]>([]),[attendance,setAttendance]=useState<Attendance[]>([]),[entries,setEntries]=useState<ChecklistEntry[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[newStaff,setNewStaff]=useState({name:"",phone:""}),[identity,setIdentity]=useState<{employeeId:string;pin:string;shiftType:"morning"|"night";lateReason:string}>({employeeId:"",pin:"",shiftType:"morning",lateReason:""}),[endPin,setEndPin]=useState(""),[note,setNote]=useState(""),[correction,setCorrection]=useState<{staffMemberId:string;status:string;reason:string}|null>(null);
- const[historyFrom,setHistoryFrom]=useState(indiaDate(-6)),[historyTo,setHistoryTo]=useState(indiaDate()),[historyHotel,setHistoryHotel]=useState(""),[historyAttendance,setHistoryAttendance]=useState<Attendance[]>([]),[historyShifts,setHistoryShifts]=useState<Shift[]>([]),[historyLoading,setHistoryLoading]=useState(false);
- const active=useMemo(()=>session?.role==="hotel_admin"?shifts.find(x=>x.status==="active"&&x.admin_username===session.username):shifts.find(x=>x.status==="active"),[shifts,session]);
- const startDone=entries.filter(x=>x.checklist_type==="shift_start"&&x.is_completed).length,endDone=entries.filter(x=>x.checklist_type==="shift_end"&&x.is_completed).length,startComplete=startDone>=6,endComplete=endDone>=8;
- const selectedLateMinutes=currentLateMinutes(identity.shiftType),lateReasonRequired=selectedLateMinutes>0;
-
- const loadHistory=useCallback(async(from=historyFrom,to=historyTo,hotelId=historyHotel)=>{setHistoryLoading(true);const q=new URLSearchParams({from,to});if(hotelId)q.set("hotelId",hotelId);const r=await fetch(`/api/admin/attendance-history?${q}`,{cache:"no-store"});const d=await r.json();if(r.ok){setHistoryAttendance(d.attendance??[]);setHistoryShifts(d.shifts??[])}else setMessage(d.error??"Unable to load attendance history.");setHistoryLoading(false)},[historyFrom,historyTo,historyHotel]);
-
- const load=useCallback(async()=>{setMessage("");const sr=await fetch("/api/admin/session",{cache:"no-store"});if(sr.status===401){location.href="/admin/login";return}const sd=await sr.json() as {session:Session};setSession(sd.session);const[hr,er]=await Promise.all([fetch("/api/admin/hotels",{cache:"no-store"}),fetch("/api/admin/employees",{cache:"no-store"})]);const hs=((await hr.json()).hotels??[]) as Hotel[],es=(((await er.json()).employees??[]) as Employee[]).filter(x=>x.is_active);setHotels(hs);setEmployees(es);setIdentity(v=>({...v,employeeId:v.employeeId||es[0]?.id||""}));const id=sd.session.role==="hotel_admin"?sd.session.hotelId??"":selectedHotel||hs[0]?.id||"";if(!selectedHotel&&id)setSelectedHotel(id);if(!id)return;const q=`?hotelId=${encodeURIComponent(id)}`;const[a,b,c,d]=await Promise.all([fetch(`/api/admin/shifts${q}`,{cache:"no-store"}),fetch(`/api/admin/staff${q}`,{cache:"no-store"}),fetch(`/api/admin/staff-attendance${q}`,{cache:"no-store"}),fetch(`/api/admin/checklists${q}`,{cache:"no-store"})]);setShifts((await a.json()).shifts??[]);setStaff((await b.json()).staff??[]);setAttendance((await c.json()).attendance??[]);setEntries((await d.json()).entries??[]);if(sd.session.role==="master")void loadHistory()},[selectedHotel,loadHistory]);
- useEffect(()=>{void load()},[load]);
-
- async function shiftAction(action:"start"|"end"){
-  if(action==="end"&&endPin.length<4){setMessage("Enter your employee PIN to end the shift.");return}
-  if(action==="start"&&lateReasonRequired&&identity.lateReason.trim().length<3){setMessage(`You are late for the ${identity.shiftType} shift. Enter the reason before starting duty.`);return}
-  setBusy(true);
-  const payload=action==="start"?{action,employeeId:identity.employeeId,pin:identity.pin,shiftType:identity.shiftType,lateReason:identity.lateReason,note}:{action,pin:endPin,note};
-  const r=await fetch("/api/admin/shifts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();
-  setMessage(r.ok?(action==="start"?(d.isLate?`Shift started. Late by ${d.lateMinutes} minutes; reason recorded.`:"Shift started on time."):"Shift ended successfully."):d.error??"Unable to update shift.");
-  if(r.ok){setIdentity(v=>({...v,pin:"",lateReason:""}));setEndPin("");setNote("")}await load();setBusy(false)
- }
- async function mark(staffMemberId:string,status:string,isCorrection=false,reason=""){setBusy(true);const r=await fetch("/api/admin/staff-attendance",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({staffMemberId,hotelId:selectedHotel,status,correction:isCorrection,correctionReason:reason})}),d=await r.json();setMessage(r.ok?(isCorrection?"Attendance corrected and audited.":"Attendance recorded with timestamp."):d.error??"Unable to save attendance.");if(r.ok)setCorrection(null);await load();setBusy(false)}
- async function addStaff(e:FormEvent){e.preventDefault();setBusy(true);const r=await fetch("/api/admin/staff",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...newStaff,hotelId:selectedHotel,staffType:"cleaning"})}),d=await r.json();setMessage(r.ok?"Cleaning staff added.":d.error??"Unable to add staff.");if(r.ok)setNewStaff({name:"",phone:""});await load();setBusy(false)}
-
- if(!session)return <main className="min-h-screen bg-slate-50 p-8 text-slate-600">Loading attendance...</main>;
- return <main className="min-h-screen bg-slate-50 text-slate-950"><header className="border-b bg-white"><div className="mx-auto max-w-7xl px-4 py-6 sm:px-6"><p className="text-xs font-bold uppercase tracking-[.18em] text-amber-600">Supraja Hotels</p><h1 className="mt-1 text-2xl font-bold">Attendance & Shift</h1><p className="mt-1 text-sm text-slate-600">{session.role==="master"?"Today by hotel, with full attendance history below":session.hotelName}</p></div></header><div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
- {session.role==="master"&&<section className={card}><label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">Today: view one hotel</label><select className={input} value={selectedHotel} onChange={e=>setSelectedHotel(e.target.value)}>{hotels.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}</select></section>}
- {message&&<div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">{message}</div>}
- <section className="grid gap-4 md:grid-cols-3"><Metric icon={<Clock3/>} label="Current shift" value={active?.display_name??"No active shift"}/><Metric icon={<Users/>} label="Cleaning staff" value={String(staff.length)}/><Metric icon={<Building2/>} label="Attendance marked" value={`${attendance.length}/${staff.length}`}/></section>
- {active?.is_late&&<div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900"><AlertTriangle size={18} className="mt-0.5 shrink-0"/><div><b>Late shift start: {active.late_minutes} minutes</b><p className="mt-1">{active.late_reason||"No reason recorded."}</p></div></div>}
-
- {session.role==="hotel_admin"&&<section className={card}><h2 className="text-lg font-bold">{active?"End current shift":"Start shift"}</h2>{!active?<><p className="mt-1 text-sm text-slate-600">Morning: 9:00 AM to 9:00 PM. Night: 9:00 PM to 9:00 AM. Late arrivals must record a reason.</p><div className="mt-4 grid gap-3 sm:grid-cols-3"><select className={input} value={identity.employeeId} onChange={e=>setIdentity(v=>({...v,employeeId:e.target.value}))}><option value="">Select employee</option>{employees.map(x=><option key={x.id} value={x.id}>{x.name} · {x.designation}</option>)}</select><select className={input} value={identity.shiftType} onChange={e=>setIdentity(v=>({...v,shiftType:e.target.value as "morning"|"night",lateReason:""}))}><option value="morning">Morning · 9 AM to 9 PM</option><option value="night">Night · 9 PM to 9 AM</option></select><input className={input} type="password" inputMode="numeric" placeholder="4–6 digit employee PIN" value={identity.pin} onChange={e=>setIdentity(v=>({...v,pin:e.target.value.replace(/\D/g,"").slice(0,6)}))}/></div>{lateReasonRequired&&<div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-4"><div className="flex items-center gap-2 text-sm font-bold text-red-800"><AlertTriangle size={16}/>Late by approximately {selectedLateMinutes} minutes</div><input className={`${input} mt-3 border-red-300`} placeholder="Reason for late arrival (mandatory)" value={identity.lateReason} onChange={e=>setIdentity(v=>({...v,lateReason:e.target.value}))}/></div>}<button disabled={busy||!identity.employeeId||identity.pin.length<4||(lateReasonRequired&&identity.lateReason.trim().length<3)} onClick={()=>void shiftAction("start")} className={`${btn} mt-3 bg-blue-800 text-white`}><Play size={16}/>Verify PIN & Start Shift</button></>:<><div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4"><div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-bold">{active.display_name}</p><p className="mt-1 text-xs text-slate-500">{active.shift_type?`${active.shift_type[0].toUpperCase()+active.shift_type.slice(1)} shift · `:""}Started {new Date(active.started_at).toLocaleString("en-IN")}</p></div>{active.is_late&&<span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">Late {active.late_minutes} min</span>}</div><div className="mt-3 flex flex-wrap gap-3 text-xs"><span>Start checklist <b>{startDone}/6</b></span><span>End checklist <b>{endDone}/8</b></span></div>{active.is_late&&active.late_reason&&<p className="mt-2 text-xs text-red-700">Reason: {active.late_reason}</p>}</div><p className="mt-4 text-sm text-slate-600"><b>{active.display_name}</b> must verify their PIN before ending this shift. All 8 Shift End checklist items are mandatory.</p><div className="mt-3 max-w-sm"><input className={input} type="password" inputMode="numeric" placeholder="Employee PIN" value={endPin} onChange={e=>setEndPin(e.target.value.replace(/\D/g,"").slice(0,6))}/></div><textarea className={`${input} mt-3 min-h-20`} placeholder="Optional shift note" value={note} onChange={e=>setNote(e.target.value)}/><button disabled={busy||endPin.length<4||!endComplete} onClick={()=>void shiftAction("end")} className={`${btn} mt-3 bg-slate-900 text-white`}><Clock3 size={16}/>Verify PIN & End Shift</button>{!endComplete&&<p className="mt-2 text-xs font-medium text-amber-700">Complete Shift End checklist first ({endDone}/8).</p>}</>}</section>}
-
- <section className={card}><div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-lg font-bold">Today&apos;s cleaning staff attendance</h2><p className="mt-1 text-sm text-slate-600">Every action records the exact time and employee on duty.</p></div>{active&&!startComplete&&<span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">Complete Shift Start checklist first</span>}</div><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead><tr className="border-b text-slate-500"><th className="py-3">Staff</th><th>Type</th><th>Status</th><th>Recorded</th><th>Action</th></tr></thead><tbody>{staff.map(m=>{const a=attendance.find(x=>x.staff_member_id===m.id);return <tr key={m.id} className="border-b"><td className="py-3 font-semibold">{m.name}</td><td className="capitalize text-slate-600">{m.staff_type}</td><td className="capitalize">{a?.status?.replace("_"," ")??"Not marked"}</td><td className="text-xs text-slate-600">{a?.marked_at?<>{new Date(a.marked_at).toLocaleString("en-IN")}<br/>by {a.recorded_by_employee_name||"On-duty employee"}</>:"—"}</td><td>{session.role==="hotel_admin"&&(!a?<div className="flex flex-wrap gap-1">{["present","absent","leave","half_day"].map(s=><button disabled={busy||!active||!startComplete} key={s} onClick={()=>void mark(m.id,s)} className="rounded-lg border px-2.5 py-1.5 text-xs font-semibold capitalize hover:bg-slate-50">{s.replace("_"," ")}</button>)}</div>:<button disabled={busy||!active} onClick={()=>setCorrection({staffMemberId:m.id,status:a.status,reason:""})} className="rounded-lg border px-3 py-1.5 text-xs font-semibold">Correct</button>)}</td></tr>})}</tbody></table></div></section>
-
- {correction&&<section className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-bold">Correct attendance</h2><div className="mt-3 grid gap-3 sm:grid-cols-3"><select className={input} value={correction.status} onChange={e=>setCorrection(v=>v?{...v,status:e.target.value}:v)}>{["present","absent","leave","half_day"].map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}</select><input className={input} placeholder="Mandatory correction reason" value={correction.reason} onChange={e=>setCorrection(v=>v?{...v,reason:e.target.value}:v)}/><div className="flex gap-2"><button disabled={busy||correction.reason.trim().length<3} onClick={()=>void mark(correction.staffMemberId,correction.status,true,correction.reason)} className={`${btn} bg-amber-700 text-white`}>Save</button><button onClick={()=>setCorrection(null)} className={`${btn} border bg-white`}>Cancel</button></div></div></section>}
-
- {session.role==="hotel_admin"&&<section className={card}><h2 className="text-lg font-bold">Cleaning staff master</h2><form onSubmit={addStaff} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]"><input className={input} placeholder="Staff name" value={newStaff.name} onChange={e=>setNewStaff(v=>({...v,name:e.target.value}))} required/><input className={input} placeholder="Phone (optional)" value={newStaff.phone} onChange={e=>setNewStaff(v=>({...v,phone:e.target.value}))}/><button disabled={busy||!selectedHotel} className={`${btn} bg-blue-800 text-white`}><UserPlus size={16}/>Add Staff</button></form></section>}
-
- {session.role==="master"?<MasterHistory hotels={hotels} from={historyFrom} to={historyTo} hotel={historyHotel} setFrom={setHistoryFrom} setTo={setHistoryTo} setHotel={setHistoryHotel} attendance={historyAttendance} shifts={historyShifts} loading={historyLoading} reload={()=>void loadHistory()}/>:<section className={card}><h2 className="text-lg font-bold">Recent shifts</h2><div className="mt-3 divide-y divide-slate-100">{shifts.slice(0,8).map(x=><div key={x.id} className="flex items-center justify-between gap-3 py-3 text-sm"><div><b>{x.display_name}</b><span className="ml-2 text-slate-500">{new Date(x.started_at).toLocaleString("en-IN")}</span></div><span className={`rounded-full px-2 py-1 text-xs font-bold ${x.is_late?"bg-red-100 text-red-800":x.status==="active"?"bg-emerald-100 text-emerald-800":"bg-slate-100 text-slate-600"}`}>{x.is_late?`late ${x.late_minutes}m`:x.status}</span></div>)}</div></section>}
- </div></main>
+function currentLateMinutes(type: "morning" | "night") {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const hour = Number(parts.find((p) => p.type === "hour")?.value || 0);
+  const minute = Number(parts.find((p) => p.type === "minute")?.value || 0);
+  const now = hour * 60 + minute;
+  if (type === "morning") return now > 540 ? now - 540 : 0;
+  if (now >= 1260) return now - 1260;
+  if (now < 540) return 180 + now;
+  return 0;
 }
 
-function MasterHistory({hotels,from,to,hotel,setFrom,setTo,setHotel,attendance,shifts,loading,reload}:{hotels:Hotel[];from:string;to:string;hotel:string;setFrom:(v:string)=>void;setTo:(v:string)=>void;setHotel:(v:string)=>void;attendance:Attendance[];shifts:Shift[];loading:boolean;reload:()=>void}){
- const exportParams=new URLSearchParams({from,to,format:"csv"});if(hotel)exportParams.set("hotelId",hotel);
- return <section className={card}><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><History size={19} className="text-blue-800"/><h2 className="text-lg font-bold">Attendance & shift history</h2></div><p className="mt-1 text-sm text-slate-600">All hotels by default. Filter only when you need to investigate a property or date range.</p></div><div className="flex gap-2"><a href={`/api/admin/attendance-history?${exportParams.toString()}`} className={`${btn} border border-blue-200 bg-blue-50 text-blue-800`}><Download size={15}/>Export CSV</a><button onClick={reload} disabled={loading} className={`${btn} bg-slate-900 text-white`}>{loading?"Loading…":"Apply Filters"}</button></div></div><div className="mt-4 grid gap-3 sm:grid-cols-3"><input className={input} type="date" value={from} onChange={e=>setFrom(e.target.value)}/><input className={input} type="date" value={to} onChange={e=>setTo(e.target.value)}/><select className={input} value={hotel} onChange={e=>setHotel(e.target.value)}><option value="">All 3 hotels</option>{hotels.map(h=><option key={h.id} value={h.id}>{h.name}</option>)}</select></div><div className="mt-5 grid gap-5 xl:grid-cols-2"><div><h3 className="font-bold">Cleaning staff attendance</h3><div className="mt-2 max-h-[430px] overflow-auto rounded-xl border"><table className="w-full min-w-[620px] text-left text-sm"><thead className="sticky top-0 bg-slate-50 text-slate-500"><tr><th className="p-3">Date</th><th>Hotel</th><th>Staff</th><th>Status</th><th>Recorded</th></tr></thead><tbody>{attendance.map(a=><tr key={a.id} className="border-t"><td className="p-3">{a.attendance_date}</td><td>{a.hotel_name}</td><td className="font-semibold">{a.hotel_staff_members?.name??"Staff"}</td><td className="capitalize">{a.status.replace("_"," ")}</td><td className="text-xs text-slate-600">{a.marked_at?new Date(a.marked_at).toLocaleString("en-IN"):"—"}<br/>{a.recorded_by_employee_name&&`by ${a.recorded_by_employee_name}`}</td></tr>)}{!attendance.length&&<tr><td colSpan={5} className="p-6 text-center text-slate-500">No attendance records in this period.</td></tr>}</tbody></table></div></div><div><h3 className="font-bold">Reception shifts</h3><div className="mt-2 max-h-[430px] overflow-auto rounded-xl border"><table className="w-full min-w-[760px] text-left text-sm"><thead className="sticky top-0 bg-slate-50 text-slate-500"><tr><th className="p-3">Hotel</th><th>Employee</th><th>Shift</th><th>Start</th><th>Punctuality</th><th>End</th></tr></thead><tbody>{shifts.map(s=><tr key={s.id} className={`border-t ${s.is_late?"bg-red-50":""}`}><td className="p-3">{s.hotel_name}</td><td className="font-semibold">{s.display_name}</td><td className="capitalize">{s.shift_type??"—"}</td><td>{new Date(s.started_at).toLocaleString("en-IN")}</td><td>{s.is_late?<div><span className="font-bold text-red-700">Late {s.late_minutes} min</span>{s.late_reason&&<p className="max-w-48 text-xs text-red-700">{s.late_reason}</p>}</div>:<span className="font-semibold text-emerald-700">On time</span>}</td><td>{s.ended_at?new Date(s.ended_at).toLocaleString("en-IN"):<span className="font-semibold text-emerald-700">Active</span>}</td></tr>)}{!shifts.length&&<tr><td colSpan={6} className="p-6 text-center text-slate-500">No shifts in this period.</td></tr>}</tbody></table></div></div></div></section>
+export default function OperationsPage() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [selectedHotel, setSelectedHotel] = useState("");
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [entries, setEntries] = useState<ChecklistEntry[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [newStaff, setNewStaff] = useState({ name: "", phone: "" });
+  const [identity, setIdentity] = useState<{
+    employeeId: string;
+    pin: string;
+    shiftType: "morning" | "night";
+    lateReason: string;
+  }>({ employeeId: "", pin: "", shiftType: "morning", lateReason: "" });
+  const [endPin, setEndPin] = useState("");
+  const [note, setNote] = useState("");
+  const [correction, setCorrection] = useState<{
+    staffMemberId: string;
+    status: string;
+    reason: string;
+  } | null>(null);
+
+  const [historyFrom, setHistoryFrom] = useState(indiaDate(-6));
+  const [historyTo, setHistoryTo] = useState(indiaDate());
+  const [historyHotel, setHistoryHotel] = useState("");
+  const [historyAttendance, setHistoryAttendance] = useState<Attendance[]>([]);
+  const [historyShifts, setHistoryShifts] = useState<Shift[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const active = useMemo(
+    () =>
+      session?.role === "hotel_admin"
+        ? shifts.find((x) => x.status === "active" && x.admin_username === session.username)
+        : shifts.find((x) => x.status === "active"),
+    [shifts, session],
+  );
+
+  const startDone = entries.filter((x) => x.checklist_type === "shift_start" && x.is_completed).length;
+  const endDone = entries.filter((x) => x.checklist_type === "shift_end" && x.is_completed).length;
+  const endComplete = endDone >= 8;
+  const selectedLateMinutes = currentLateMinutes(identity.shiftType);
+  const lateReasonRequired = selectedLateMinutes > 0;
+
+  const loadHistory = useCallback(
+    async (from = historyFrom, to = historyTo, hotelId = historyHotel) => {
+      setHistoryLoading(true);
+      const q = new URLSearchParams({ from, to });
+      if (hotelId) q.set("hotelId", hotelId);
+      const r = await fetch(`/api/admin/attendance-history?${q}`, { cache: "no-store" });
+      const d = await r.json();
+      if (r.ok) {
+        setHistoryAttendance(d.attendance ?? []);
+        setHistoryShifts(d.shifts ?? []);
+      } else {
+        setMessage(d.error ?? "Unable to load attendance history.");
+      }
+      setHistoryLoading(false);
+    },
+    [historyFrom, historyTo, historyHotel],
+  );
+
+  const load = useCallback(async () => {
+    setMessage("");
+    const sr = await fetch("/api/admin/session", { cache: "no-store" });
+    if (sr.status === 401) {
+      location.href = "/admin/login";
+      return;
+    }
+    const sd = (await sr.json()) as { session: Session };
+    setSession(sd.session);
+
+    const [hr, er] = await Promise.all([
+      fetch("/api/admin/hotels", { cache: "no-store" }),
+      fetch("/api/admin/employees", { cache: "no-store" }),
+    ]);
+    const hs = (((await hr.json()).hotels ?? []) as Hotel[]);
+    const es = ((((await er.json()).employees ?? []) as Employee[]).filter((x) => x.is_active));
+    setHotels(hs);
+    setEmployees(es);
+    setIdentity((v) => ({ ...v, employeeId: v.employeeId || es[0]?.id || "" }));
+
+    const id = sd.session.role === "hotel_admin" ? sd.session.hotelId ?? "" : selectedHotel || hs[0]?.id || "";
+    if (!selectedHotel && id) setSelectedHotel(id);
+    if (!id) return;
+
+    const q = `?hotelId=${encodeURIComponent(id)}`;
+    const [a, b, c, d] = await Promise.all([
+      fetch(`/api/admin/shifts${q}`, { cache: "no-store" }),
+      fetch(`/api/admin/staff${q}`, { cache: "no-store" }),
+      fetch(`/api/admin/staff-attendance${q}`, { cache: "no-store" }),
+      fetch(`/api/admin/checklists${q}`, { cache: "no-store" }),
+    ]);
+    setShifts((await a.json()).shifts ?? []);
+    setStaff((await b.json()).staff ?? []);
+    setAttendance((await c.json()).attendance ?? []);
+    setEntries((await d.json()).entries ?? []);
+    if (sd.session.role === "master") void loadHistory();
+  }, [selectedHotel, loadHistory]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function shiftAction(action: "start" | "end") {
+    if (action === "end" && endPin.length < 4) {
+      setMessage("Enter your employee PIN to end the shift.");
+      return;
+    }
+    if (action === "start" && lateReasonRequired && identity.lateReason.trim().length < 3) {
+      setMessage(`You are late for the ${identity.shiftType} shift. Enter the reason before starting duty.`);
+      return;
+    }
+    setBusy(true);
+    const payload = action === "start"
+      ? {
+          action,
+          employeeId: identity.employeeId,
+          pin: identity.pin,
+          shiftType: identity.shiftType,
+          lateReason: identity.lateReason,
+          note,
+        }
+      : { action, pin: endPin, note };
+    const r = await fetch("/api/admin/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    setMessage(
+      r.ok
+        ? action === "start"
+          ? d.isLate
+            ? `Shift started. Late by ${d.lateMinutes} minutes; reason recorded.`
+            : "Shift started on time."
+          : "Shift ended successfully."
+        : d.error ?? "Unable to update shift.",
+    );
+    if (r.ok) {
+      setIdentity((v) => ({ ...v, pin: "", lateReason: "" }));
+      setEndPin("");
+      setNote("");
+    }
+    await load();
+    setBusy(false);
+  }
+
+  async function mark(staffMemberId: string, status: string, isCorrection = false, reason = "") {
+    setBusy(true);
+    const r = await fetch("/api/admin/staff-attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        staffMemberId,
+        hotelId: selectedHotel,
+        status,
+        correction: isCorrection,
+        correctionReason: reason,
+      }),
+    });
+    const d = await r.json();
+    setMessage(
+      r.ok
+        ? isCorrection
+          ? "Attendance corrected and audited."
+          : "Attendance recorded with timestamp."
+        : d.error ?? "Unable to save attendance.",
+    );
+    if (r.ok) setCorrection(null);
+    await load();
+    setBusy(false);
+  }
+
+  async function addStaff(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const r = await fetch("/api/admin/staff", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newStaff, hotelId: selectedHotel, staffType: "cleaning" }),
+    });
+    const d = await r.json();
+    setMessage(r.ok ? "Cleaning staff added." : d.error ?? "Unable to add staff.");
+    if (r.ok) setNewStaff({ name: "", phone: "" });
+    await load();
+    setBusy(false);
+  }
+
+  if (!session) return <main className="min-h-screen bg-slate-50 p-8 text-slate-600">Loading attendance...</main>;
+
+  return (
+    <main className="min-h-screen bg-slate-50 text-slate-950">
+      <header className="border-b bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-600">Supraja Hotels</p>
+          <h1 className="mt-1 text-2xl font-bold">Attendance & Shift</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {session.role === "master" ? "Today by hotel, with full attendance history below" : session.hotelName}
+          </p>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
+        {session.role === "master" && (
+          <section className={card}>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">Today: view one hotel</label>
+            <select className={input} value={selectedHotel} onChange={(e) => setSelectedHotel(e.target.value)}>
+              {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </section>
+        )}
+
+        {message && <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">{message}</div>}
+
+        <section className="grid gap-4 md:grid-cols-3">
+          <Metric icon={<Clock3 />} label="Current shift" value={active?.display_name ?? "No active shift"} />
+          <Metric icon={<Users />} label="Cleaning staff" value={String(staff.length)} />
+          <Metric icon={<Building2 />} label="Attendance marked" value={`${attendance.length}/${staff.length}`} />
+        </section>
+
+        {active?.is_late && (
+          <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            <div>
+              <b>Late shift start: {active.late_minutes} minutes</b>
+              <p className="mt-1">{active.late_reason || "No reason recorded."}</p>
+            </div>
+          </div>
+        )}
+
+        {session.role === "hotel_admin" && (
+          <section className={card}>
+            <h2 className="text-lg font-bold">{active ? "End current shift" : "Start shift"}</h2>
+            {!active ? (
+              <>
+                <p className="mt-1 text-sm text-slate-600">Morning: 9:00 AM to 9:00 PM. Night: 9:00 PM to 9:00 AM. Late arrivals must record a reason.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <select className={input} value={identity.employeeId} onChange={(e) => setIdentity((v) => ({ ...v, employeeId: e.target.value }))}>
+                    <option value="">Select employee</option>
+                    {employees.map((x) => <option key={x.id} value={x.id}>{x.name} · {x.designation}</option>)}
+                  </select>
+                  <select className={input} value={identity.shiftType} onChange={(e) => setIdentity((v) => ({ ...v, shiftType: e.target.value as "morning" | "night", lateReason: "" }))}>
+                    <option value="morning">Morning · 9 AM to 9 PM</option>
+                    <option value="night">Night · 9 PM to 9 AM</option>
+                  </select>
+                  <input className={input} type="password" inputMode="numeric" placeholder="4–6 digit employee PIN" value={identity.pin} onChange={(e) => setIdentity((v) => ({ ...v, pin: e.target.value.replace(/\D/g, "").slice(0, 6) }))} />
+                </div>
+                {lateReasonRequired && (
+                  <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-red-800"><AlertTriangle size={16} />Late by approximately {selectedLateMinutes} minutes</div>
+                    <input className={`${input} mt-3 border-red-300`} placeholder="Reason for late arrival (mandatory)" value={identity.lateReason} onChange={(e) => setIdentity((v) => ({ ...v, lateReason: e.target.value }))} />
+                  </div>
+                )}
+                <button disabled={busy || !identity.employeeId || identity.pin.length < 4 || (lateReasonRequired && identity.lateReason.trim().length < 3)} onClick={() => void shiftAction("start")} className={`${btn} mt-3 bg-blue-800 text-white`}>
+                  <Play size={16} />Verify PIN & Start Shift
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-bold">{active.display_name}</p>
+                      <p className="mt-1 text-xs text-slate-500">{active.shift_type ? `${active.shift_type[0].toUpperCase() + active.shift_type.slice(1)} shift · ` : ""}Started {new Date(active.started_at).toLocaleString("en-IN")}</p>
+                    </div>
+                    {active.is_late && <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">Late {active.late_minutes} min</span>}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                    <span>Start checklist <b>{startDone}/6</b></span>
+                    <span>End checklist <b>{endDone}/8</b></span>
+                  </div>
+                  {active.is_late && active.late_reason && <p className="mt-2 text-xs text-red-700">Reason: {active.late_reason}</p>}
+                </div>
+                <p className="mt-4 text-sm text-slate-600"><b>{active.display_name}</b> must verify their PIN before ending this shift. All 8 Shift End checklist items are mandatory.</p>
+                <div className="mt-3 max-w-sm"><input className={input} type="password" inputMode="numeric" placeholder="Employee PIN" value={endPin} onChange={(e) => setEndPin(e.target.value.replace(/\D/g, "").slice(0, 6))} /></div>
+                <textarea className={`${input} mt-3 min-h-20`} placeholder="Optional shift note" value={note} onChange={(e) => setNote(e.target.value)} />
+                <button disabled={busy || endPin.length < 4 || !endComplete} onClick={() => void shiftAction("end")} className={`${btn} mt-3 bg-slate-900 text-white`}><Clock3 size={16} />Verify PIN & End Shift</button>
+                {!endComplete && <p className="mt-2 text-xs font-medium text-amber-700">Complete Shift End checklist first ({endDone}/8).</p>}
+              </>
+            )}
+          </section>
+        )}
+
+        <section className={card}>
+          <div>
+            <h2 className="text-lg font-bold">Today&apos;s cleaning staff attendance</h2>
+            <p className="mt-1 text-sm text-slate-600">Attendance can be recorded as soon as the receptionist starts the shift. Checklist completion is tracked separately.</p>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead><tr className="border-b text-slate-500"><th className="py-3">Staff</th><th>Type</th><th>Status</th><th>Recorded</th><th>Action</th></tr></thead>
+              <tbody>
+                {staff.map((m) => {
+                  const a = attendance.find((x) => x.staff_member_id === m.id);
+                  return (
+                    <tr key={m.id} className="border-b">
+                      <td className="py-3 font-semibold">{m.name}</td>
+                      <td className="capitalize text-slate-600">{m.staff_type}</td>
+                      <td className="capitalize">{a?.status?.replace("_", " ") ?? "Not marked"}</td>
+                      <td className="text-xs text-slate-600">{a?.marked_at ? <>{new Date(a.marked_at).toLocaleString("en-IN")}<br />by {a.recorded_by_employee_name || "On-duty employee"}</> : "—"}</td>
+                      <td>
+                        {session.role === "hotel_admin" && (!a ? (
+                          <div className="flex flex-wrap gap-1">
+                            {["present", "absent", "leave", "half_day"].map((s) => (
+                              <button disabled={busy || !active} key={s} onClick={() => void mark(m.id, s)} className="rounded-lg border px-2.5 py-1.5 text-xs font-semibold capitalize hover:bg-slate-50 disabled:opacity-40">{s.replace("_", " ")}</button>
+                            ))}
+                          </div>
+                        ) : (
+                          <button disabled={busy || !active} onClick={() => setCorrection({ staffMemberId: m.id, status: a.status, reason: "" })} className="rounded-lg border px-3 py-1.5 text-xs font-semibold">Correct</button>
+                        ))}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {correction && (
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <h2 className="font-bold">Correct attendance</h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <select className={input} value={correction.status} onChange={(e) => setCorrection((v) => v ? { ...v, status: e.target.value } : v)}>
+                {["present", "absent", "leave", "half_day"].map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+              <input className={input} placeholder="Mandatory correction reason" value={correction.reason} onChange={(e) => setCorrection((v) => v ? { ...v, reason: e.target.value } : v)} />
+              <div className="flex gap-2">
+                <button disabled={busy || correction.reason.trim().length < 3} onClick={() => void mark(correction.staffMemberId, correction.status, true, correction.reason)} className={`${btn} bg-amber-700 text-white`}>Save</button>
+                <button onClick={() => setCorrection(null)} className={`${btn} border bg-white`}>Cancel</button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {session.role === "hotel_admin" && (
+          <section className={card}>
+            <h2 className="text-lg font-bold">Cleaning staff master</h2>
+            <form onSubmit={addStaff} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+              <input className={input} placeholder="Staff name" value={newStaff.name} onChange={(e) => setNewStaff((v) => ({ ...v, name: e.target.value }))} required />
+              <input className={input} placeholder="Phone (optional)" value={newStaff.phone} onChange={(e) => setNewStaff((v) => ({ ...v, phone: e.target.value }))} />
+              <button disabled={busy || !selectedHotel} className={`${btn} bg-blue-800 text-white`}><UserPlus size={16} />Add Staff</button>
+            </form>
+          </section>
+        )}
+
+        {session.role === "master" ? (
+          <MasterHistory hotels={hotels} from={historyFrom} to={historyTo} hotel={historyHotel} setFrom={setHistoryFrom} setTo={setHistoryTo} setHotel={setHistoryHotel} attendance={historyAttendance} shifts={historyShifts} loading={historyLoading} reload={() => void loadHistory()} />
+        ) : (
+          <section className={card}>
+            <h2 className="text-lg font-bold">Recent shifts</h2>
+            <div className="mt-3 divide-y divide-slate-100">
+              {shifts.slice(0, 8).map((x) => (
+                <div key={x.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                  <div><b>{x.display_name}</b><span className="ml-2 text-slate-500">{new Date(x.started_at).toLocaleString("en-IN")}</span></div>
+                  <span className={`rounded-full px-2 py-1 text-xs font-bold ${x.is_late ? "bg-red-100 text-red-800" : x.status === "active" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"}`}>{x.is_late ? `late ${x.late_minutes}m` : x.status}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </main>
+  );
 }
-function Metric({icon,label,value}:{icon:React.ReactNode;label:string;value:string}){return <div className={card}><div className="text-blue-800">{icon}</div><p className="mt-2 text-sm text-slate-500">{label}</p><p className="text-xl font-bold">{value}</p></div>}
+
+function MasterHistory({ hotels, from, to, hotel, setFrom, setTo, setHotel, attendance, shifts, loading, reload }: {
+  hotels: Hotel[];
+  from: string;
+  to: string;
+  hotel: string;
+  setFrom: (v: string) => void;
+  setTo: (v: string) => void;
+  setHotel: (v: string) => void;
+  attendance: Attendance[];
+  shifts: Shift[];
+  loading: boolean;
+  reload: () => void;
+}) {
+  const exportParams = new URLSearchParams({ from, to, format: "csv" });
+  if (hotel) exportParams.set("hotelId", hotel);
+  return (
+    <section className={card}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2"><History size={19} className="text-blue-800" /><h2 className="text-lg font-bold">Attendance & shift history</h2></div>
+          <p className="mt-1 text-sm text-slate-600">All hotels by default. Filter only when you need to investigate a property or date range.</p>
+        </div>
+        <div className="flex gap-2">
+          <a href={`/api/admin/attendance-history?${exportParams.toString()}`} className={`${btn} border border-blue-200 bg-blue-50 text-blue-800`}><Download size={15} />Export CSV</a>
+          <button onClick={reload} disabled={loading} className={`${btn} bg-slate-900 text-white`}>{loading ? "Loading…" : "Apply Filters"}</button>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <input className={input} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        <input className={input} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        <select className={input} value={hotel} onChange={(e) => setHotel(e.target.value)}><option value="">All 3 hotels</option>{hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select>
+      </div>
+      <div className="mt-5 grid gap-5 xl:grid-cols-2">
+        <div>
+          <h3 className="font-bold">Cleaning staff attendance</h3>
+          <div className="mt-2 max-h-[430px] overflow-auto rounded-xl border">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead className="sticky top-0 bg-slate-50 text-slate-500"><tr><th className="p-3">Date</th><th>Hotel</th><th>Staff</th><th>Status</th><th>Recorded</th></tr></thead>
+              <tbody>
+                {attendance.map((a) => <tr key={a.id} className="border-t"><td className="p-3">{a.attendance_date}</td><td>{a.hotel_name}</td><td className="font-semibold">{a.hotel_staff_members?.name ?? "Staff"}</td><td className="capitalize">{a.status.replace("_", " ")}</td><td className="text-xs text-slate-600">{a.marked_at ? new Date(a.marked_at).toLocaleString("en-IN") : "—"}<br />{a.recorded_by_employee_name && `by ${a.recorded_by_employee_name}`}</td></tr>)}
+                {!attendance.length && <tr><td colSpan={5} className="p-6 text-center text-slate-500">No attendance records in this period.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-bold">Reception shifts</h3>
+          <div className="mt-2 max-h-[430px] overflow-auto rounded-xl border">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="sticky top-0 bg-slate-50 text-slate-500"><tr><th className="p-3">Hotel</th><th>Employee</th><th>Shift</th><th>Start</th><th>Punctuality</th><th>End</th></tr></thead>
+              <tbody>
+                {shifts.map((s) => <tr key={s.id} className={`border-t ${s.is_late ? "bg-red-50" : ""}`}><td className="p-3">{s.hotel_name}</td><td className="font-semibold">{s.display_name}</td><td className="capitalize">{s.shift_type ?? "—"}</td><td>{new Date(s.started_at).toLocaleString("en-IN")}</td><td>{s.is_late ? <div><span className="font-bold text-red-700">Late {s.late_minutes} min</span>{s.late_reason && <p className="max-w-48 text-xs text-red-700">{s.late_reason}</p>}</div> : <span className="font-semibold text-emerald-700">On time</span>}</td><td>{s.ended_at ? new Date(s.ended_at).toLocaleString("en-IN") : <span className="font-semibold text-emerald-700">Active</span>}</td></tr>)}
+                {!shifts.length && <tr><td colSpan={6} className="p-6 text-center text-slate-500">No shifts in this period.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return <div className={card}><div className="text-blue-800">{icon}</div><p className="mt-2 text-sm text-slate-500">{label}</p><p className="text-xl font-bold">{value}</p></div>;
+}
