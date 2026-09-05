@@ -9,12 +9,6 @@ async function activeShift(hotelId:string, username:string){
   return ((await r.json()) as Array<{id:string;employee_id:string|null;display_name:string}>)[0]??null;
 }
 
-async function shiftStartComplete(hotelId:string, shiftId:string){
-  const r=await supabaseRequest(`?select=item_key,is_completed&hotel_id=eq.${encodeURIComponent(hotelId)}&scope_key=eq.${encodeURIComponent(`shift:${shiftId}`)}&checklist_type=eq.shift_start&is_completed=eq.true`,{},"hotel_checklist_entries");
-  if(!r.ok)return false;
-  return ((await r.json()) as Array<{item_key:string}>).length>=6;
-}
-
 export async function GET(request: NextRequest) {
   const session = getAdminSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,7 +34,6 @@ export async function POST(request: NextRequest) {
 
   const shift=await activeShift(hotelId,session.username);
   if(!shift)return NextResponse.json({error:"Start a shift before recording staff attendance."},{status:409});
-  if(!(await shiftStartComplete(hotelId,shift.id)))return NextResponse.json({error:"Complete the Shift Start checklist before recording attendance."},{status:409});
 
   const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date());
   const existingRes=await supabaseRequest(`?select=id,status,marked_at,recorded_by_employee_name,remarks&hotel_id=eq.${encodeURIComponent(hotelId)}&staff_member_id=eq.${encodeURIComponent(body.staffMemberId)}&attendance_date=eq.${date}&limit=1`,{},"hotel_staff_attendance");
