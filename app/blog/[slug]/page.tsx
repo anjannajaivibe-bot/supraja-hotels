@@ -118,24 +118,9 @@ export default async function BlogPostPage({ params }: Props) {
     "@type": "BreadcrumbList",
     "@id": `${canonicalUrl}#breadcrumb`,
     itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: siteUrl,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Blog",
-        item: `${siteUrl}/blog`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: post.title,
-        item: canonicalUrl,
-      },
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}/blog` },
+      { "@type": "ListItem", position: 3, name: post.title, item: canonicalUrl },
     ],
   };
 
@@ -147,10 +132,7 @@ export default async function BlogPostPage({ params }: Props) {
     mainEntity: post.faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
 
@@ -160,122 +142,70 @@ export default async function BlogPostPage({ params }: Props) {
         <script
           key={index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }}
         />
       ))}
 
       <article>
         <header className="bg-slate-950 px-4 py-16 text-white md:py-20">
           <div className="container-custom max-w-5xl">
-            <Link
-              href="/blog"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10"
-            >
+            <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">
               <ArrowLeft size={17} aria-hidden="true" />
               All hotel guides
             </Link>
-
-            <p className="mt-8 font-semibold uppercase tracking-[0.2em] text-amber-400">
-              {post.category}
-            </p>
-            <h1 className="mt-4 max-w-5xl text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-              {post.title}
-            </h1>
-            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
-              {post.excerpt}
-            </p>
-
+            <p className="mt-8 font-semibold uppercase tracking-[0.2em] text-amber-400">{post.category}</p>
+            <h1 className="mt-4 max-w-5xl text-4xl font-semibold leading-tight tracking-tight md:text-6xl">{post.title}</h1>
+            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">{post.excerpt}</p>
             <div className="mt-7 flex flex-wrap gap-5 text-sm text-slate-300">
               <span className="inline-flex items-center gap-2">
                 <CalendarDays size={17} aria-hidden="true" />
                 Published{" "}
-                {new Intl.DateTimeFormat("en-IN", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(`${post.publishedAt}T00:00:00`))}
+                {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${post.publishedAt}T00:00:00`))}
               </span>
-              <span className="inline-flex items-center gap-2">
-                <BookOpen size={17} aria-hidden="true" />
-                {post.readingTime}
-              </span>
+              <span className="inline-flex items-center gap-2"><BookOpen size={17} aria-hidden="true" />{post.readingTime}</span>
             </div>
           </div>
         </header>
 
         <div className="container-custom max-w-5xl px-4 py-12 md:py-16">
           <div className="relative aspect-[16/9] overflow-hidden rounded-3xl bg-slate-100 shadow-xl">
-            <Image
-              src={post.image}
-              alt={post.imageAlt}
-              fill
-              priority
-              unoptimized={bypassOptimizer}
-              sizes="(max-width: 1100px) 100vw, 1000px"
-              className="object-cover"
-            />
+            <Image src={post.image} alt={post.imageAlt} fill priority unoptimized={bypassOptimizer} sizes="(max-width: 1100px) 100vw, 1000px" className="object-cover" />
           </div>
 
           <div className="mx-auto mt-12 max-w-3xl">
             <div className="space-y-6 text-lg leading-9 text-slate-700">
-              {post.introduction.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
+              {post.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </div>
 
             <aside className="my-10 rounded-3xl border border-blue-100 bg-blue-50 p-7">
-              <h2 className="text-xl font-bold text-slate-950">
-                Quick recommendation
-              </h2>
+              <h2 className="text-xl font-bold text-slate-950">Quick recommendation</h2>
               <p className="mt-3 leading-8 text-slate-700">
                 {post.recommendation.text}{" "}
-                <Link
-                  href={post.recommendation.href}
-                  className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
-                >
-                  {post.recommendation.anchor}
-                </Link>
-                .
+                <Link href={post.recommendation.href} className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4">{post.recommendation.anchor}</Link>.
               </p>
             </aside>
 
             {post.sections.map((section, sectionIndex) => {
               const Heading = section.level === 2 ? "h2" : "h3";
               const supportingImage =
-                sectionIndex === 1 || sectionIndex === 5
-                  ? post.supportingImages[sectionIndex === 1 ? 0 : 1]
-                  : null;
+                sectionIndex === 1
+                  ? post.supportingImages[0]
+                  : sectionIndex === 3
+                    ? post.supportingImages[1]
+                    : null;
+
               return (
                 <section key={section.heading} className="mt-12">
-                  <Heading
-                    className={
-                      section.level === 2
-                        ? "text-3xl font-bold leading-tight text-slate-950"
-                        : "text-2xl font-bold leading-tight text-slate-950"
-                    }
-                  >
-                    {section.heading}
-                  </Heading>
-
+                  <Heading className={section.level === 2 ? "text-3xl font-bold leading-tight text-slate-950" : "text-2xl font-bold leading-tight text-slate-950"}>{section.heading}</Heading>
                   <div className="mt-5 space-y-5 text-lg leading-9 text-slate-700">
-                    {section.paragraphs?.map((paragraph) => (
-                      <p key={paragraph}>{paragraph}</p>
-                    ))}
+                    {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
                   </div>
 
                   {section.bullets ? (
                     <ul className="mt-6 space-y-3">
                       {section.bullets.map((bullet) => (
-                        <li
-                          key={bullet}
-                          className="flex items-start gap-3 leading-7 text-slate-700"
-                        >
-                          <CheckCircle2
-                            className="mt-1 h-5 w-5 shrink-0 text-green-600"
-                            aria-hidden="true"
-                          />
+                        <li key={bullet} className="flex items-start gap-3 leading-7 text-slate-700">
+                          <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-green-600" aria-hidden="true" />
                           <span>{bullet}</span>
                         </li>
                       ))}
@@ -294,9 +224,7 @@ export default async function BlogPostPage({ params }: Props) {
                           className="object-cover"
                         />
                       </div>
-                      <figcaption className="mt-3 text-sm leading-6 text-slate-500">
-                        {supportingImage.caption}
-                      </figcaption>
+                      <figcaption className="mt-3 text-sm leading-6 text-slate-500">{supportingImage.caption}</figcaption>
                     </figure>
                   ) : null}
                 </section>
@@ -305,79 +233,39 @@ export default async function BlogPostPage({ params }: Props) {
 
             <div className="mt-12 space-y-3 text-lg leading-9 text-slate-700">
               {post.internalLinks?.map((link) => (
-                <p key={link.href}>
-                  {link.context}{" "}
-                  <Link href={link.href} className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4">
-                    {link.anchor}
-                  </Link>
-                  .
-                </p>
+                <p key={link.href}>{link.context}{" "}<Link href={link.href} className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4">{link.anchor}</Link>.</p>
               ))}
               {post.externalLinks.map((link) => (
-                <p key={link.href}>
-                  {link.context}{" "}
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4"
-                  >
-                    {link.anchor}
-                  </a>
-                  .
-                </p>
+                <p key={link.href}>{link.context}{" "}<a href={link.href} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-800 underline decoration-blue-300 underline-offset-4">{link.anchor}</a>.</p>
               ))}
             </div>
 
             <section className="mt-14">
-              <h2 className="text-3xl font-bold text-slate-950">
-                Frequently Asked Questions
-              </h2>
+              <h2 className="text-3xl font-bold text-slate-950">Frequently Asked Questions</h2>
               <div className="mt-6 space-y-4">
                 {post.faqs.map((faq) => (
-                  <details
-                    key={faq.question}
-                    className="group rounded-2xl border border-slate-200 bg-slate-50 p-5"
-                  >
-                    <summary className="cursor-pointer list-none font-bold text-slate-950">
-                      {faq.question}
-                    </summary>
-                    <p className="mt-3 leading-7 text-slate-700">
-                      {faq.answer}
-                    </p>
+                  <details key={faq.question} className="group rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <summary className="cursor-pointer list-none font-bold text-slate-950">{faq.question}</summary>
+                    <p className="mt-3 leading-7 text-slate-700">{faq.answer}</p>
                   </details>
                 ))}
               </div>
             </section>
 
-            <p className="mt-12 text-lg font-medium leading-9 text-slate-800">
-              {post.conclusion}
-            </p>
+            <p className="mt-12 text-lg font-medium leading-9 text-slate-800">{post.conclusion}</p>
           </div>
         </div>
 
         <section className="bg-slate-950 px-4 py-16 text-white">
           <div className="container-custom max-w-4xl text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">
-              {post.cta.title}
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-300">
-              {post.cta.text}
-            </p>
+            <h2 className="text-3xl font-bold md:text-4xl">{post.cta.title}</h2>
+            <p className="mx-auto mt-5 max-w-2xl leading-8 text-slate-300">{post.cta.text}</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a
-                href={`tel:+91${post.cta.phone}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-700 px-7 py-3 font-bold text-white hover:bg-blue-600"
-              >
+              <a href={`tel:+91${post.cta.phone}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-700 px-7 py-3 font-bold text-white hover:bg-blue-600">
                 <Phone size={18} aria-hidden="true" />
                 Call {post.cta.phone}
               </a>
-              <a
-                href={`https://wa.me/91${post.cta.phone}?text=${encodeURIComponent(post.cta.whatsappText)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 font-bold text-white hover:bg-green-500"
-              >
+              <a href={`https://wa.me/91${post.cta.phone}?text=${encodeURIComponent(post.cta.whatsappText)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-green-600 px-7 py-3 font-bold text-white hover:bg-green-500">
                 <MessageCircle size={18} aria-hidden="true" />
                 WhatsApp Booking
               </a>
