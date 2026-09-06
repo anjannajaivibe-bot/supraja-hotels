@@ -43,6 +43,7 @@ import { additionalBlogPosts } from "./more-blog-posts";
 import { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
 import { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
 import { seoBlogPostsAug29 } from "./seo-blog-posts-aug-29";
+import { seoBlogPostsSep06 } from "./seo-blog-posts-sep-06";
 
 export const blogPosts: BlogPost[] = [
   {
@@ -98,12 +99,14 @@ export const blogPosts: BlogPost[] = [
   ...seoBlogPostsAug22,
   ...seoBlogPostsAug22B,
   ...seoBlogPostsAug29,
+  ...seoBlogPostsSep06,
 ];
 
 export { additionalBlogPosts } from "./more-blog-posts";
 export { seoBlogPostsAug22 } from "./seo-blog-posts-aug-22";
 export { seoBlogPostsAug22B } from "./seo-blog-posts-aug-22-b";
 export { seoBlogPostsAug29 } from "./seo-blog-posts-aug-29";
+export { seoBlogPostsSep06 } from "./seo-blog-posts-sep-06";
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug);
