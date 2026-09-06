@@ -6,10 +6,18 @@ import {
   isClickEventType,
   type ClickEventInput,
 } from "@/lib/click-events";
+import {
+  checkPublicApiRateLimit,
+  isBodyWithinLimit,
+  isJsonRequest,
+  isSameOriginRequest,
+  recordPublicApiRequest,
+} from "@/lib/public-api-security";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
 
+const CLICK_ENDPOINT = "click-events";
 const EXCLUDED_IPS = new Set(
   (process.env.TRACKING_EXCLUDED_IPS ?? "115.98.88.203")
     .split(",")
@@ -30,6 +38,26 @@ export async function POST(request: NextRequest) {
   if (EXCLUDED_IPS.has(ip)) {
     return new NextResponse(null, { status: 204 });
   }
+
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+  if (!isJsonRequest(request) || !isBodyWithinLimit(request, 16 * 1024)) {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  const rateLimit = await checkPublicApiRateLimit(request, {
+    endpoint: CLICK_ENDPOINT,
+    windowMinutes: 5,
+    maxRequests: 300,
+  });
+  if (!rateLimit.allowed) {
+    return new NextResponse(null, {
+      status: 429,
+      headers: { "Retry-After": "300" },
+    });
+  }
+  await recordPublicApiRequest(CLICK_ENDPOINT, rateLimit.ipHash);
 
   let body: ClickEventInput;
 
