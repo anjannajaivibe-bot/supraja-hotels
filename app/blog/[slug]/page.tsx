@@ -80,6 +80,7 @@ export default async function BlogPostPage({ params }: Props) {
   }
 
   const canonicalUrl = `${siteUrl}/blog/${post.slug}`;
+  const bypassOptimizer = post.image.includes("/images/blog/sep-06/");
   const articleSchema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -211,6 +212,7 @@ export default async function BlogPostPage({ params }: Props) {
               alt={post.imageAlt}
               fill
               priority
+              unoptimized={bypassOptimizer}
               sizes="(max-width: 1100px) 100vw, 1000px"
               className="object-cover"
             />
@@ -241,6 +243,10 @@ export default async function BlogPostPage({ params }: Props) {
 
             {post.sections.map((section, sectionIndex) => {
               const Heading = section.level === 2 ? "h2" : "h3";
+              const supportingImage =
+                sectionIndex === 1 || sectionIndex === 5
+                  ? post.supportingImages[sectionIndex === 1 ? 0 : 1]
+                  : null;
               return (
                 <section key={section.heading} className="mt-12">
                   <Heading
@@ -276,28 +282,20 @@ export default async function BlogPostPage({ params }: Props) {
                     </ul>
                   ) : null}
 
-                  {sectionIndex === 1 || sectionIndex === 5 ? (
+                  {supportingImage ? (
                     <figure className="mt-9">
                       <div className="relative aspect-[16/10] overflow-hidden rounded-3xl bg-slate-100">
                         <Image
-                          src={
-                            post.supportingImages[sectionIndex === 1 ? 0 : 1]
-                              .src
-                          }
-                          alt={
-                            post.supportingImages[sectionIndex === 1 ? 0 : 1]
-                              .alt
-                          }
+                          src={supportingImage.src}
+                          alt={supportingImage.alt}
                           fill
+                          unoptimized={supportingImage.src.includes("/images/blog/sep-06/")}
                           sizes="(max-width: 800px) 100vw, 760px"
                           className="object-cover"
                         />
                       </div>
                       <figcaption className="mt-3 text-sm leading-6 text-slate-500">
-                        {
-                          post.supportingImages[sectionIndex === 1 ? 0 : 1]
-                            .caption
-                        }
+                        {supportingImage.caption}
                       </figcaption>
                     </figure>
                   ) : null}

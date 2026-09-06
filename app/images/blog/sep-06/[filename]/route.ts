@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 
 export const dynamic = "force-static";
-export const runtime = "nodejs";
 
 const art: Record<string, { title: string; subtitle: string; scene: "city" | "room" | "family" | "rail" | "local"; accent: string }> = {
   "shilparamam-hyderabad-featured.webp": { title: "Shilparamam & Madhapur", subtitle: "Culture, events and HITEC City stays", scene: "city", accent: "#d6a73b" },
@@ -38,13 +36,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ filename: 
   const item = art[filename];
   if (!item) return new NextResponse("Not found", { status: 404 });
 
-  const webp = await sharp(Buffer.from(svg(item)))
-    .webp({ quality: 84, effort: 4 })
-    .toBuffer();
-
-  return new NextResponse(new Uint8Array(webp), {
+  return new NextResponse(svg(item), {
     headers: {
-      "Content-Type": "image/webp",
+      "Content-Type": "image/svg+xml; charset=utf-8",
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
