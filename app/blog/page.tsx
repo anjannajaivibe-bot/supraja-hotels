@@ -49,11 +49,12 @@ export default function BlogPage() {
             {sortedPosts.map((post) => {
               const featuredImage = getBlogFeaturedImage(post.slug, post.image);
               const isArtwork = featuredImage.endsWith(".svg");
+              const bypassOptimizer = featuredImage.includes("/images/blog/sep-06/");
               return (
                 <article key={post.slug} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                   <Link href={`/blog/${post.slug}`} className="group block">
                     <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                      <Image src={featuredImage} alt={post.imageAlt} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className={`${isArtwork ? "object-contain" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`} />
+                      <Image src={featuredImage} alt={post.imageAlt} fill unoptimized={bypassOptimizer} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className={`${isArtwork ? "object-contain" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`} />
                     </div>
                     <div className="p-7">
                       <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
