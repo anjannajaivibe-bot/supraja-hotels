@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const COOKIE_NAME = "supraja_admin_auth";
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const MAX_ADMIN_REQUEST_BYTES = 128 * 1024;
 
 async function sign(value: string, secret: string) {
   const key = await crypto.subtle.importKey(
@@ -56,6 +57,13 @@ function isSameOrigin(request: NextRequest) {
   }
 }
 
+function requestBodyWithinLimit(request: NextRequest) {
+  const raw = request.headers.get("content-length");
+  if (!raw) return true;
+  const length = Number(raw);
+  return Number.isFinite(length) && length >= 0 && length <= MAX_ADMIN_REQUEST_BYTES;
+}
+
 function jsonError(message: string, status: number) {
   return NextResponse.json(
     { error: message },
@@ -69,13 +77,16 @@ export async function proxy(request: NextRequest) {
   const isAdminApi = pathname.startsWith("/api/admin/");
   const isAdminLogin = pathname === "/api/admin-login";
   const isAdminLogout = pathname === "/api/admin-logout";
-
-  if (
+  const isUnsafeAdminRequest =
     UNSAFE_METHODS.has(request.method) &&
-    (isAdminApi || isAdminLogin || isAdminLogout) &&
-    !isSameOrigin(request)
-  ) {
+    (isAdminApi || isAdminLogin || isAdminLogout);
+
+  if (isUnsafeAdminRequest && !isSameOrigin(request)) {
     return jsonError("Invalid request origin.", 403);
+  }
+
+  if (isUnsafeAdminRequest && !requestBodyWithinLimit(request)) {
+    return jsonError("Request is too large.", 413);
   }
 
   const needsSession =
