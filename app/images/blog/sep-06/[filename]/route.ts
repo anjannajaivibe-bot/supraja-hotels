@@ -20,6 +20,15 @@ const art: Record<string, { title: string; subtitle: string; scene: "city" | "ro
   "chandanagar-hotel-room.webp": { title: "Comfort in Chandanagar", subtitle: "Simple, practical stay planning", scene: "room", accent: "#8f73b5" },
 };
 
+function escapeXml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
 function sceneMarkup(scene: string, accent: string) {
   if (scene === "room") return `<rect x="120" y="300" width="960" height="280" rx="28" fill="#fff" opacity=".94"/><rect x="190" y="365" width="600" height="160" rx="20" fill="#dbe6f0"/><rect x="210" y="330" width="260" height="90" rx="18" fill="#fff"/><rect x="500" y="330" width="260" height="90" rx="18" fill="#fff"/><rect x="825" y="340" width="150" height="190" rx="12" fill="${accent}" opacity=".22"/><circle cx="900" cy="385" r="34" fill="${accent}"/><rect x="890" y="418" width="20" height="70" fill="#18314f"/>`;
   if (scene === "rail") return `<path d="M80 540 C300 430 900 430 1120 540" stroke="#fff" stroke-width="20" fill="none" opacity=".75"/><rect x="350" y="285" width="500" height="210" rx="34" fill="#fff" opacity=".95"/><rect x="400" y="330" width="120" height="80" rx="10" fill="${accent}" opacity=".35"/><rect x="540" y="330" width="120" height="80" rx="10" fill="${accent}" opacity=".35"/><rect x="680" y="330" width="120" height="80" rx="10" fill="${accent}" opacity=".35"/><circle cx="470" cy="500" r="38" fill="#18314f"/><circle cx="730" cy="500" r="38" fill="#18314f"/>`;
@@ -28,7 +37,9 @@ function sceneMarkup(scene: string, accent: string) {
 }
 
 function svg(item: (typeof art)[string]) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="${item.title}"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c2848"/><stop offset=".62" stop-color="#174a70"/><stop offset="1" stop-color="${item.accent}"/></linearGradient></defs><rect width="1200" height="675" fill="url(#bg)"/><circle cx="1040" cy="100" r="220" fill="#fff" opacity=".07"/><circle cx="100" cy="620" r="260" fill="${item.accent}" opacity=".10"/>${sceneMarkup(item.scene, item.accent)}<rect x="0" y="0" width="1200" height="185" fill="#071b31" opacity=".78"/><text x="70" y="70" fill="${item.accent}" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="4">SUPRAJA HOTELS · HYDERABAD</text><text x="70" y="125" fill="#fff" font-family="Georgia, serif" font-size="46" font-weight="700">${item.title}</text><text x="72" y="166" fill="#e9f1f7" font-family="Arial, sans-serif" font-size="24">${item.subtitle}</text><text x="70" y="635" fill="#fff" font-family="Arial, sans-serif" font-size="20" opacity=".9">Comfortable stays · Convenient locations · Direct booking</text></svg>`;
+  const title = escapeXml(item.title);
+  const subtitle = escapeXml(item.subtitle);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="${title}"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c2848"/><stop offset=".62" stop-color="#174a70"/><stop offset="1" stop-color="${item.accent}"/></linearGradient></defs><rect width="1200" height="675" fill="url(#bg)"/><circle cx="1040" cy="100" r="220" fill="#fff" opacity=".07"/><circle cx="100" cy="620" r="260" fill="${item.accent}" opacity=".10"/>${sceneMarkup(item.scene, item.accent)}<rect x="0" y="0" width="1200" height="185" fill="#071b31" opacity=".78"/><text x="70" y="70" fill="${item.accent}" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="4">SUPRAJA HOTELS · HYDERABAD</text><text x="70" y="125" fill="#fff" font-family="Georgia, serif" font-size="46" font-weight="700">${title}</text><text x="72" y="166" fill="#e9f1f7" font-family="Arial, sans-serif" font-size="24">${subtitle}</text><text x="70" y="635" fill="#fff" font-family="Arial, sans-serif" font-size="20" opacity=".9">Comfortable stays · Convenient locations · Direct booking</text></svg>`;
 }
 
 export async function GET(_: Request, { params }: { params: Promise<{ filename: string }> }) {
