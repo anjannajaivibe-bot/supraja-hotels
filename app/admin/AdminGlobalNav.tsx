@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ClipboardCheck, Home, ListChecks, LogOut, ShieldAlert, Users, BedDouble, DoorOpen, Download } from "lucide-react";
+import { ClipboardCheck, Home, ListChecks, LogOut, ShieldAlert, Users, BedDouble, DoorOpen, Download, Shirt, PackageSearch } from "lucide-react";
 
 type Session = { role: "master" | "hotel_admin" };
 const CACHE_KEY="supraja-admin-nav-session";
-const baseItems=[{href:"/admin/home",label:"Home",icon:Home},{href:"/admin/checklists",label:"Checklists",icon:ListChecks},{href:"/admin/attendance",label:"Attendance",icon:Users},{href:"/admin/controls",label:"Daily Controls",icon:ClipboardCheck},{href:"/admin/housekeeping",label:"Housekeeping",icon:DoorOpen},{href:"/admin/rooms",label:"Rooms",icon:BedDouble},{href:"/admin/exceptions",label:"Exceptions",icon:ShieldAlert}];
+const baseItems=[{href:"/admin/home",label:"Home",icon:Home},{href:"/admin/checklists",label:"Checklists",icon:ListChecks},{href:"/admin/attendance",label:"Attendance",icon:Users},{href:"/admin/controls",label:"Daily Controls",icon:ClipboardCheck},{href:"/admin/housekeeping",label:"Housekeeping",icon:DoorOpen},{href:"/admin/rooms",label:"Rooms",icon:BedDouble},{href:"/admin/laundry",label:"Laundry",icon:Shirt},{href:"/admin/inventory",label:"Inventory",icon:PackageSearch},{href:"/admin/exceptions",label:"Exceptions",icon:ShieldAlert}];
 
 export default function AdminGlobalNav(){
  const pathname=usePathname();const[session,setSession]=useState<Session|null>(null);
