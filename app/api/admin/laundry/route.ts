@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     vendorName?: string;
     note?: string;
     batchId?: string;
+    correctionReason?: string;
     items?: LaundryItemInput[];
   };
   const hotelId = resolveHotel(session, body.hotelId ?? null);
@@ -118,11 +119,27 @@ export async function POST(request: NextRequest) {
     const batch = (await batchRes.json() as Array<{ id: string; status: string }>)[0];
     if (!batch) return NextResponse.json({ error: "Laundry batch not found." }, { status: 404 });
 
+    const isClosedCorrection = batch.status === "closed";
+    if (isClosedCorrection && session.role !== "master") {
+      return NextResponse.json({ error: "Closed laundry records can only be corrected by Master Admin." }, { status: 403 });
+    }
+    if (isClosedCorrection && (!body.correctionReason || body.correctionReason.trim().length < 3)) {
+      return NextResponse.json({ error: "Enter a correction reason for the closed laundry record." }, { status: 400 });
+    }
+
+    const existingRes = await supabaseRequest(`?select=id,item_name,quantity_sent,quantity_received,rewash_qty,missing_qty,damaged_qty,remarks&batch_id=eq.${encodeURIComponent(batch.id)}`, {}, "hotel_laundry_items");
+    if (!existingRes.ok) return NextResponse.json({ error: "Unable to load laundry items for validation." }, { status: 500 });
+    const existing = await existingRes.json() as Array<{id:string;item_name:string;quantity_sent:number;quantity_received:number;rewash_qty:number;missing_qty:number;damaged_qty:number;remarks:string|null}>;
+    const existingMap = new Map(existing.map((item) => [item.id, item]));
+
     const updates = body.items ?? [];
     for (const item of updates) {
       const id = (item as LaundryItemInput & { id?: string }).id;
       if (!id) continue;
+      const current = existingMap.get(id);
+      if (!current) return NextResponse.json({ error: "Laundry item does not belong to this batch." }, { status: 400 });
       const quantityReceived = Math.max(0, Number(item.quantityReceived) || 0);
+      if (quantityReceived > current.quantity_sent) return NextResponse.json({ error: `${current.item_name}: quantity received cannot exceed quantity sent.` }, { status: 400 });
       const rewashQty = Math.max(0, Number(item.rewashQty) || 0);
       const missingQty = Math.max(0, Number(item.missingQty) || 0);
       const damagedQty = Math.max(0, Number(item.damagedQty) || 0);
@@ -138,14 +155,23 @@ export async function POST(request: NextRequest) {
       if (!patchRes.ok) return NextResponse.json({ error: "Unable to update received laundry." }, { status: 500 });
     }
 
-    const itemsRes = await supabaseRequest(`?select=quantity_sent,quantity_received,rewash_qty,missing_qty,damaged_qty&batch_id=eq.${encodeURIComponent(batch.id)}`, {}, "hotel_laundry_items");
-    const saved = itemsRes.ok ? await itemsRes.json() as Array<{quantity_sent:number;quantity_received:number;rewash_qty:number;missing_qty:number;damaged_qty:number}> : [];
+    const itemsRes = await supabaseRequest(`?select=id,item_name,quantity_sent,quantity_received,rewash_qty,missing_qty,damaged_qty,remarks&batch_id=eq.${encodeURIComponent(batch.id)}`, {}, "hotel_laundry_items");
+    const saved = itemsRes.ok ? await itemsRes.json() as Array<{id:string;item_name:string;quantity_sent:number;quantity_received:number;rewash_qty:number;missing_qty:number;damaged_qty:number;remarks:string|null}> : [];
     const unresolved = saved.reduce((sum, item) => sum + Math.max(0, item.quantity_sent - item.quantity_received) + item.rewash_qty + item.missing_qty + item.damaged_qty, 0);
     const anyReceived = saved.some((item) => item.quantity_received > 0 || item.rewash_qty > 0 || item.missing_qty > 0 || item.damaged_qty > 0);
     const status = unresolved === 0 ? "closed" : anyReceived ? "partial" : "open";
-    const batchPatch = await supabaseRequest(`?id=eq.${encodeURIComponent(batch.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status, received_at: status === "closed" ? new Date().toISOString() : null, updated_at: new Date().toISOString() }) }, "hotel_laundry_batches");
+    const now = new Date().toISOString();
+    const batchPatch = await supabaseRequest(`?id=eq.${encodeURIComponent(batch.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status, received_at: status === "closed" ? now : null, updated_at: now }) }, "hotel_laundry_batches");
     if (!batchPatch.ok) return NextResponse.json({ error: "Laundry items updated, but batch status could not be saved." }, { status: 500 });
-    await writeAuditLog(session, "laundry_received_updated", "hotel_laundry_batch", batch.id, hotelId, { status, unresolved });
+
+    await writeAuditLog(session, isClosedCorrection ? "laundry_closed_record_corrected" : "laundry_received_updated", "hotel_laundry_batch", batch.id, hotelId, {
+      previousStatus: batch.status,
+      status,
+      unresolved,
+      correctionReason: isClosedCorrection ? body.correctionReason?.trim() : null,
+      before: existing,
+      after: saved,
+    });
     return NextResponse.json({ success: true, status, unresolved });
   }
 
