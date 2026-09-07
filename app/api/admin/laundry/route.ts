@@ -33,16 +33,10 @@ export async function GET(request: NextRequest) {
   if (!batches.length) return NextResponse.json({ batches: [] });
 
   const ids = batches.map((b) => encodeURIComponent(b.id)).join(",");
-  const itemsRes = await supabaseRequest(
-    `?select=*&batch_id=in.(${ids})&order=created_at.asc`,
-    {},
-    "hotel_laundry_items",
-  );
+  const itemsRes = await supabaseRequest(`?select=*&batch_id=in.(${ids})&order=created_at.asc`, {}, "hotel_laundry_items");
   if (!itemsRes.ok) return NextResponse.json({ error: "Unable to load laundry items." }, { status: 500 });
   const items = await itemsRes.json() as Array<{ batch_id: string }>;
-  return NextResponse.json({
-    batches: batches.map((batch) => ({ ...batch, items: items.filter((item) => item.batch_id === batch.id) })),
-  });
+  return NextResponse.json({ batches: batches.map((batch) => ({ ...batch, items: items.filter((item) => item.batch_id === batch.id) })) });
 }
 
 export async function POST(request: NextRequest) {
@@ -62,47 +56,59 @@ export async function POST(request: NextRequest) {
   if (body.action === "dispatch") {
     const items = (body.items ?? []).filter((item) => item.itemName?.trim() && Number(item.quantitySent) > 0);
     if (!items.length) return NextResponse.json({ error: "Add at least one laundry item with quantity sent." }, { status: 400 });
+    const invalidReceived = items.some((item) => Math.max(0, Number(item.quantityReceived) || 0) > Math.max(0, Number(item.quantitySent) || 0));
+    if (invalidReceived) return NextResponse.json({ error: "Quantity received cannot be greater than quantity sent." }, { status: 400 });
 
-    const batchRes = await supabaseRequest(
-      "?select=*",
-      {
-        method: "POST",
-        headers: { Prefer: "return=representation" },
-        body: JSON.stringify({
-          hotel_id: hotelId,
-          vendor_name: body.vendorName?.trim() || null,
-          dispatch_note: body.note?.trim() || null,
-          status: "open",
-          created_by: session.displayName || session.username,
-        }),
-      },
-      "hotel_laundry_batches",
-    );
+    const normalized = items.map((item) => ({
+      itemName: item.itemName!.trim(),
+      quantitySent: Math.max(0, Number(item.quantitySent) || 0),
+      quantityReceived: Math.max(0, Number(item.quantityReceived) || 0),
+      remarks: item.remarks?.trim() || null,
+    }));
+    const allReceived = normalized.every((item) => item.quantityReceived === item.quantitySent);
+    const anyReceived = normalized.some((item) => item.quantityReceived > 0);
+    const initialStatus = allReceived ? "closed" : anyReceived ? "partial" : "open";
+    const now = new Date().toISOString();
+
+    const batchRes = await supabaseRequest("?select=*", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        hotel_id: hotelId,
+        vendor_name: body.vendorName?.trim() || null,
+        dispatch_note: body.note?.trim() || null,
+        status: initialStatus,
+        received_at: allReceived ? now : null,
+        created_by: session.displayName || session.username,
+      }),
+    }, "hotel_laundry_batches");
     if (!batchRes.ok) return NextResponse.json({ error: "Unable to create laundry dispatch." }, { status: 500 });
     const batch = (await batchRes.json() as Array<{ id: string }>)[0];
     if (!batch?.id) return NextResponse.json({ error: "Laundry dispatch was not created." }, { status: 500 });
 
-    const rows = items.map((item) => ({
+    const rows = normalized.map((item) => ({
       batch_id: batch.id,
-      item_name: item.itemName!.trim(),
-      quantity_sent: Math.max(0, Number(item.quantitySent) || 0),
-      quantity_received: 0,
+      item_name: item.itemName,
+      quantity_sent: item.quantitySent,
+      quantity_received: item.quantityReceived,
       rewash_qty: 0,
       missing_qty: 0,
       damaged_qty: 0,
-      remarks: item.remarks?.trim() || null,
+      remarks: item.remarks,
     }));
-    const itemsRes = await supabaseRequest(
-      "",
-      { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(rows) },
-      "hotel_laundry_items",
-    );
+    const itemsRes = await supabaseRequest("", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(rows) }, "hotel_laundry_items");
     if (!itemsRes.ok) {
       await supabaseRequest(`?id=eq.${encodeURIComponent(batch.id)}`, { method: "DELETE" }, "hotel_laundry_batches");
       return NextResponse.json({ error: "Unable to save laundry items." }, { status: 500 });
     }
-    await writeAuditLog(session, "laundry_dispatched", "hotel_laundry_batch", batch.id, hotelId, { itemCount: rows.length, vendorName: body.vendorName?.trim() || null });
-    return NextResponse.json({ success: true, batchId: batch.id });
+    await writeAuditLog(session, "laundry_dispatched", "hotel_laundry_batch", batch.id, hotelId, {
+      itemCount: rows.length,
+      vendorName: body.vendorName?.trim() || null,
+      status: initialStatus,
+      sentTotal: rows.reduce((sum, item) => sum + item.quantity_sent, 0),
+      receivedTotal: rows.reduce((sum, item) => sum + item.quantity_received, 0),
+    });
+    return NextResponse.json({ success: true, batchId: batch.id, status: initialStatus });
   }
 
   if (body.action === "receive") {
@@ -137,11 +143,7 @@ export async function POST(request: NextRequest) {
     const unresolved = saved.reduce((sum, item) => sum + Math.max(0, item.quantity_sent - item.quantity_received) + item.rewash_qty + item.missing_qty + item.damaged_qty, 0);
     const anyReceived = saved.some((item) => item.quantity_received > 0 || item.rewash_qty > 0 || item.missing_qty > 0 || item.damaged_qty > 0);
     const status = unresolved === 0 ? "closed" : anyReceived ? "partial" : "open";
-    const batchPatch = await supabaseRequest(
-      `?id=eq.${encodeURIComponent(batch.id)}`,
-      { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status, received_at: status === "closed" ? new Date().toISOString() : null, updated_at: new Date().toISOString() }) },
-      "hotel_laundry_batches",
-    );
+    const batchPatch = await supabaseRequest(`?id=eq.${encodeURIComponent(batch.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status, received_at: status === "closed" ? new Date().toISOString() : null, updated_at: new Date().toISOString() }) }, "hotel_laundry_batches");
     if (!batchPatch.ok) return NextResponse.json({ error: "Laundry items updated, but batch status could not be saved." }, { status: 500 });
     await writeAuditLog(session, "laundry_received_updated", "hotel_laundry_batch", batch.id, hotelId, { status, unresolved });
     return NextResponse.json({ success: true, status, unresolved });
