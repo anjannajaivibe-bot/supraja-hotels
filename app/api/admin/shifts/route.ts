@@ -21,7 +21,9 @@ function shiftSchedule(shiftType: ShiftType) {
     startD = previous.getUTCDate();
   }
 
-  const scheduledStart = new Date(Date.UTC(startY, startM, startD, startHour - 5, 30));
+  // Convert the scheduled IST wall-clock time to the equivalent UTC instant.
+  // IST is UTC+05:30, so 09:00 IST = 03:30 UTC and 21:00 IST = 15:30 UTC.
+  const scheduledStart = new Date(Date.UTC(startY, startM, startD, startHour, 0) - 330 * 60 * 1000);
   const scheduledEnd = new Date(scheduledStart.getTime() + 12 * 60 * 60 * 1000);
   const lateMinutes = now > scheduledStart ? Math.max(1, Math.ceil((now.getTime() - scheduledStart.getTime()) / 60000)) : 0;
   return { now, scheduledStart, scheduledEnd, lateMinutes };
