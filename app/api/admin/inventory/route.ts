@@ -3,68 +3,26 @@ import { getAdminSession } from "@/lib/admin-auth";
 import { hotelScope, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
-function mondayIst(date = new Date()) {
-  const ist = new Date(date.getTime() + 330 * 60 * 1000);
-  const day = ist.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  ist.setUTCDate(ist.getUTCDate() + diff);
-  return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,"0")}-${String(ist.getUTCDate()).padStart(2,"0")}`;
-}
-
-export async function GET(request: NextRequest) {
-  const session = getAdminSession(request);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const hotelId = hotelScope(session, request.nextUrl.searchParams.get("hotelId"));
-  if (!hotelId) return NextResponse.json({ error: "Select a hotel." }, { status: 400 });
-  const [itemsRes, checksRes] = await Promise.all([
-    supabaseRequest(`?select=*&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true&order=category.asc,item_name.asc`, {}, "hotel_inventory_items"),
-    supabaseRequest(`?select=id,hotel_id,week_start,checked_by,checked_at,notes&hotel_id=eq.${encodeURIComponent(hotelId)}&order=week_start.desc&limit=8`, {}, "hotel_inventory_checks"),
-  ]);
-  if (!itemsRes.ok || !checksRes.ok) return NextResponse.json({ error: "Unable to load inventory." }, { status: 500 });
-  const items = await itemsRes.json() as Array<{ id: string }>;
-  const checks = await checksRes.json() as Array<{ id: string }>;
-  const ids = checks.map((c) => encodeURIComponent(c.id)).join(",");
-  let checkItems: Array<{check_id:string;inventory_item_id:string;expected_qty:number;physical_qty:number;condition:string;remarks:string|null}> = [];
-  if (ids) { const ciRes=await supabaseRequest(`?select=check_id,inventory_item_id,expected_qty,physical_qty,condition,remarks&check_id=in.(${ids})`,{},"hotel_inventory_check_items"); if(ciRes.ok)checkItems=await ciRes.json(); }
-  return NextResponse.json({weekStart:mondayIst(),items,checks:checks.map(check=>({...check,items:checkItems.filter(x=>x.check_id===check.id)}))});
-}
-
-export async function POST(request: NextRequest) {
-  const session=getAdminSession(request); if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});
-  const body=await request.json().catch(()=>({})) as {action?:"add_item"|"update_item"|"weekly_check";hotelId?:string;itemId?:string;category?:string;itemName?:string;expectedQty?:number;location?:string;notes?:string;entries?:Array<{inventoryItemId?:string;physicalQty?:number;condition?:string;remarks?:string}>};
-  const hotelId=hotelScope(session,body.hotelId??null); if(!hotelId)return NextResponse.json({error:"Select a hotel."},{status:400});
-
-  if(body.action==="add_item"){
-    if(!body.category?.trim()||!body.itemName?.trim())return NextResponse.json({error:"Category and item name are required."},{status:400});
-    const expectedQty=Math.max(0,Number(body.expectedQty)||0), now=new Date().toISOString();
-    const res=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({hotel_id:hotelId,category:body.category.trim(),item_name:body.itemName.trim(),expected_qty:expectedQty,location:body.location?.trim()||null,created_by:session.displayName||session.username,created_at:now,updated_at:now})},"hotel_inventory_items");
-    if(!res.ok)return NextResponse.json({error:"Unable to add inventory item. It may already exist."},{status:409});
-    const row=(await res.json() as Array<{id:string;created_at?:string}>)[0];
-    await writeAuditLog(session,"inventory_item_added","hotel_inventory_item",row?.id??null,hotelId,{category:body.category.trim(),itemName:body.itemName.trim(),expectedQty,location:body.location?.trim()||null,savedAt:now});
-    return NextResponse.json({success:true,savedAt:row?.created_at??now});
-  }
-
-  if(body.action==="update_item"){
-    if(!body.itemId||!body.category?.trim()||!body.itemName?.trim())return NextResponse.json({error:"Item, category and item name are required."},{status:400});
-    const currentRes=await supabaseRequest(`?select=*&id=eq.${encodeURIComponent(body.itemId)}&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true&limit=1`,{},"hotel_inventory_items");
-    if(!currentRes.ok)return NextResponse.json({error:"Unable to load inventory item."},{status:500});
-    const current=(await currentRes.json() as Array<Record<string,unknown>>)[0]; if(!current)return NextResponse.json({error:"Inventory item not found."},{status:404});
-    const expectedQty=Math.max(0,Number(body.expectedQty)||0), now=new Date().toISOString();
-    const res=await supabaseRequest(`?id=eq.${encodeURIComponent(body.itemId)}&hotel_id=eq.${encodeURIComponent(hotelId)}`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify({category:body.category.trim(),item_name:body.itemName.trim(),expected_qty:expectedQty,location:body.location?.trim()||null,updated_at:now})},"hotel_inventory_items");
-    if(!res.ok)return NextResponse.json({error:"Unable to update inventory item."},{status:500});
-    await writeAuditLog(session,"inventory_item_updated","hotel_inventory_item",body.itemId,hotelId,{before:current,after:{category:body.category.trim(),itemName:body.itemName.trim(),expectedQty,location:body.location?.trim()||null},savedAt:now});
-    return NextResponse.json({success:true,savedAt:now});
-  }
-
-  if(body.action==="weekly_check"){
-    const entries=(body.entries??[]).filter(e=>e.inventoryItemId);if(!entries.length)return NextResponse.json({error:"There are no inventory items to verify."},{status:400});
-    const weekStart=mondayIst();const existsRes=await supabaseRequest(`?select=id&hotel_id=eq.${encodeURIComponent(hotelId)}&week_start=eq.${weekStart}&limit=1`,{},"hotel_inventory_checks");if(existsRes.ok&&(await existsRes.json() as Array<{id:string}>).length)return NextResponse.json({error:"This week's inventory verification is already submitted."},{status:409});
-    const itemsRes=await supabaseRequest(`?select=id,expected_qty&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true`,{},"hotel_inventory_items");if(!itemsRes.ok)return NextResponse.json({error:"Unable to verify inventory master."},{status:500});
-    const master=await itemsRes.json() as Array<{id:string;expected_qty:number}>;const map=new Map(master.map(x=>[x.id,x]));
-    const checkRes=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({hotel_id:hotelId,week_start:weekStart,checked_by:session.displayName||session.username,notes:body.notes?.trim()||null})},"hotel_inventory_checks");if(!checkRes.ok)return NextResponse.json({error:"Unable to create weekly inventory verification."},{status:500});
-    const check=(await checkRes.json() as Array<{id:string}>)[0];const rows=entries.map(entry=>{const item=map.get(entry.inventoryItemId!);return{check_id:check.id,inventory_item_id:entry.inventoryItemId,expected_qty:item?.expected_qty??0,physical_qty:Math.max(0,Number(entry.physicalQty)||0),condition:["good","repair_required","damaged","missing","replace_soon"].includes(entry.condition||"")?entry.condition:"good",remarks:entry.remarks?.trim()||null}});
-    const ciRes=await supabaseRequest("",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(rows)},"hotel_inventory_check_items");if(!ciRes.ok){await supabaseRequest(`?id=eq.${encodeURIComponent(check.id)}`,{method:"DELETE"},"hotel_inventory_checks");return NextResponse.json({error:"Unable to save weekly inventory quantities."},{status:500});}
-    const variances=rows.filter(x=>x.physical_qty!==x.expected_qty||x.condition!=="good").length;await writeAuditLog(session,"inventory_weekly_check_submitted","hotel_inventory_check",check.id,hotelId,{weekStart,itemCount:rows.length,varianceCount:variances});return NextResponse.json({success:true,varianceCount:variances});
-  }
-  return NextResponse.json({error:"Invalid inventory action."},{status:400});
+function mondayIst(date = new Date()) { const ist=new Date(date.getTime()+330*60000);const day=ist.getUTCDay(),diff=day===0?-6:1-day;ist.setUTCDate(ist.getUTCDate()+diff);return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,"0")}-${String(ist.getUTCDate()).padStart(2,"0")}`; }
+export async function GET(request:NextRequest){const session=getAdminSession(request);if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});const hotelId=hotelScope(session,request.nextUrl.searchParams.get("hotelId"));if(!hotelId)return NextResponse.json({error:"Select a hotel."},{status:400});const[itemsRes,checksRes]=await Promise.all([supabaseRequest(`?select=*&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true&order=category.asc,item_name.asc`,{},"hotel_inventory_items"),supabaseRequest(`?select=id,hotel_id,week_start,checked_by,checked_at,notes&hotel_id=eq.${encodeURIComponent(hotelId)}&order=week_start.desc&limit=8`,{},"hotel_inventory_checks")]);if(!itemsRes.ok||!checksRes.ok)return NextResponse.json({error:"Unable to load inventory."},{status:500});const items=await itemsRes.json() as Array<{id:string}>,checks=await checksRes.json() as Array<{id:string}>;const ids=checks.map(c=>encodeURIComponent(c.id)).join(",");let checkItems:Array<{check_id:string;inventory_item_id:string;expected_qty:number;physical_qty:number;condition:string;remarks:string|null}>=[];if(ids){const r=await supabaseRequest(`?select=check_id,inventory_item_id,expected_qty,physical_qty,condition,remarks&check_id=in.(${ids})`,{},"hotel_inventory_check_items");if(r.ok)checkItems=await r.json()}return NextResponse.json({weekStart:mondayIst(),items,checks:checks.map(c=>({...c,items:checkItems.filter(x=>x.check_id===c.id)}))})}
+export async function POST(request:NextRequest){
+ const session=getAdminSession(request);if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});
+ const body=await request.json().catch(()=>({})) as {action?:"add_item"|"add_items"|"update_item"|"weekly_check";hotelId?:string;itemId?:string;category?:string;itemName?:string;expectedQty?:number;location?:string;notes?:string;items?:Array<{category?:string;itemName?:string;expectedQty?:number;location?:string}>;entries?:Array<{inventoryItemId?:string;physicalQty?:number;condition?:string;remarks?:string}>};
+ const hotelId=hotelScope(session,body.hotelId??null);if(!hotelId)return NextResponse.json({error:"Select a hotel."},{status:400});
+ if(body.action==="add_item"||body.action==="add_items"){
+  const incoming=body.action==="add_items"?(body.items??[]):[{category:body.category,itemName:body.itemName,expectedQty:body.expectedQty,location:body.location}];
+  const valid=incoming.filter(x=>x.category?.trim()&&x.itemName?.trim()&&Number.isFinite(Number(x.expectedQty))&&Number(x.expectedQty)>=0);
+  if(!valid.length)return NextResponse.json({error:"Add at least one item with category, item name and quantity."},{status:400});
+  if(valid.length!==incoming.length)return NextResponse.json({error:"Complete category, item name and quantity for every added row before saving."},{status:400});
+  const now=new Date().toISOString(),creator=session.displayName||session.username;const rows=valid.map(x=>({hotel_id:hotelId,category:x.category!.trim(),item_name:x.itemName!.trim(),expected_qty:Math.max(0,Number(x.expectedQty)||0),location:x.location?.trim()||null,created_by:creator,created_at:now,updated_at:now}));
+  const res=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(rows)},"hotel_inventory_items");if(!res.ok)return NextResponse.json({error:"Unable to save inventory. Check for duplicate items."},{status:409});const saved=await res.json() as Array<{id:string}>;
+  await writeAuditLog(session,"inventory_items_added","hotel_inventory_item",null,hotelId,{itemCount:rows.length,itemIds:saved.map(x=>x.id),items:rows.map(x=>({category:x.category,itemName:x.item_name,expectedQty:x.expected_qty,location:x.location})),savedAt:now});return NextResponse.json({success:true,savedAt:now,count:rows.length});
+ }
+ if(body.action==="update_item"){
+  if(!body.itemId||!body.category?.trim()||!body.itemName?.trim())return NextResponse.json({error:"Item, category and item name are required."},{status:400});const currentRes=await supabaseRequest(`?select=*&id=eq.${encodeURIComponent(body.itemId)}&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true&limit=1`,{},"hotel_inventory_items");if(!currentRes.ok)return NextResponse.json({error:"Unable to load inventory item."},{status:500});const current=(await currentRes.json() as Array<Record<string,unknown>>)[0];if(!current)return NextResponse.json({error:"Inventory item not found."},{status:404});const expectedQty=Math.max(0,Number(body.expectedQty)||0),now=new Date().toISOString();const res=await supabaseRequest(`?id=eq.${encodeURIComponent(body.itemId)}&hotel_id=eq.${encodeURIComponent(hotelId)}`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify({category:body.category.trim(),item_name:body.itemName.trim(),expected_qty:expectedQty,location:body.location?.trim()||null,updated_at:now})},"hotel_inventory_items");if(!res.ok)return NextResponse.json({error:"Unable to update inventory item."},{status:500});await writeAuditLog(session,"inventory_item_updated","hotel_inventory_item",body.itemId,hotelId,{before:current,after:{category:body.category.trim(),itemName:body.itemName.trim(),expectedQty,location:body.location?.trim()||null},savedAt:now});return NextResponse.json({success:true,savedAt:now});
+ }
+ if(body.action==="weekly_check"){
+  const entries=(body.entries??[]).filter(e=>e.inventoryItemId);if(!entries.length)return NextResponse.json({error:"There are no inventory items to verify."},{status:400});const weekStart=mondayIst();const existsRes=await supabaseRequest(`?select=id&hotel_id=eq.${encodeURIComponent(hotelId)}&week_start=eq.${weekStart}&limit=1`,{},"hotel_inventory_checks");if(existsRes.ok&&(await existsRes.json() as Array<{id:string}>).length)return NextResponse.json({error:"This week's inventory verification is already submitted."},{status:409});const itemsRes=await supabaseRequest(`?select=id,expected_qty&hotel_id=eq.${encodeURIComponent(hotelId)}&is_active=eq.true`,{},"hotel_inventory_items");if(!itemsRes.ok)return NextResponse.json({error:"Unable to verify inventory master."},{status:500});const master=await itemsRes.json() as Array<{id:string;expected_qty:number}>,map=new Map(master.map(x=>[x.id,x]));const checkRes=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({hotel_id:hotelId,week_start:weekStart,checked_by:session.displayName||session.username,notes:body.notes?.trim()||null})},"hotel_inventory_checks");if(!checkRes.ok)return NextResponse.json({error:"Unable to create weekly inventory verification."},{status:500});const check=(await checkRes.json() as Array<{id:string}>)[0];const rows=entries.map(e=>{const item=map.get(e.inventoryItemId!);return{check_id:check.id,inventory_item_id:e.inventoryItemId,expected_qty:item?.expected_qty??0,physical_qty:Math.max(0,Number(e.physicalQty)||0),condition:["good","repair_required","damaged","missing","replace_soon"].includes(e.condition||"")?e.condition:"good",remarks:e.remarks?.trim()||null}});const ciRes=await supabaseRequest("",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(rows)},"hotel_inventory_check_items");if(!ciRes.ok){await supabaseRequest(`?id=eq.${encodeURIComponent(check.id)}`,{method:"DELETE"},"hotel_inventory_checks");return NextResponse.json({error:"Unable to save weekly inventory quantities."},{status:500})}const variances=rows.filter(x=>x.physical_qty!==x.expected_qty||x.condition!=="good").length;await writeAuditLog(session,"inventory_weekly_check_submitted","hotel_inventory_check",check.id,hotelId,{weekStart,itemCount:rows.length,varianceCount:variances});return NextResponse.json({success:true,varianceCount:variances});
+ }
+ return NextResponse.json({error:"Invalid inventory action."},{status:400});
 }
