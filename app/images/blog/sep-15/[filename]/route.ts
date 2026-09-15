@@ -29,7 +29,7 @@ export async function GET(
 
   const sourcePath = path.join(process.cwd(), "public", source);
   const image = await sharp(sourcePath)
-    .resize(1200, 675, {
+    .resize(1200, 800, {
       fit: "cover",
       position: sharp.strategy.attention,
       withoutEnlargement: false,
