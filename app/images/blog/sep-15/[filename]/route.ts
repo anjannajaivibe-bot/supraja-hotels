@@ -4,46 +4,16 @@ import sharp from "sharp";
 
 export const runtime = "nodejs";
 
-const images: Record<
-  string,
-  { source: string; position?: sharp.Gravity | sharp.Strategy }
-> = {
-  "hicc-hyderabad-featured.webp": {
-    source: "images/cyber-view/exterior.webp",
-    position: sharp.strategy.attention,
-  },
-  "hicc-business-stay.webp": {
-    source: "images/cyber-view/reception.webp",
-    position: sharp.strategy.attention,
-  },
-  "hicc-madhapur-room.webp": {
-    source: "images/cyber-view/room-2.webp",
-    position: sharp.strategy.attention,
-  },
-  "patancheru-industrial-area-featured.webp": {
-    source: "images/residency/exterior.webp",
-    position: sharp.strategy.attention,
-  },
-  "patancheru-business-stay.webp": {
-    source: "images/residency/reception.webp",
-    position: sharp.strategy.attention,
-  },
-  "patancheru-chandanagar-room.webp": {
-    source: "images/residency/room-1.webp",
-    position: sharp.strategy.attention,
-  },
-  "banquet-hall-rooms-chandanagar-featured.webp": {
-    source: "images/banquet-hall/banquet-hall-overview.webp",
-    position: sharp.strategy.attention,
-  },
-  "saket-banquet-event-space.webp": {
-    source: "images/banquet-hall/banquet-hall-stage.webp",
-    position: sharp.strategy.attention,
-  },
-  "residency-event-guest-room.webp": {
-    source: "images/residency/room-3.webp",
-    position: sharp.strategy.attention,
-  },
+const images: Record<string, string> = {
+  "hicc-hyderabad-featured.webp": "images/cyber-view/exterior.webp",
+  "hicc-business-stay.webp": "images/cyber-view/reception.webp",
+  "hicc-madhapur-room.webp": "images/cyber-view/room-2.webp",
+  "patancheru-industrial-area-featured.webp": "images/residency/exterior.webp",
+  "patancheru-business-stay.webp": "images/residency/reception.webp",
+  "patancheru-chandanagar-room.webp": "images/residency/room-1.webp",
+  "banquet-hall-rooms-chandanagar-featured.webp": "images/banquet-hall/banquet-hall-overview.webp",
+  "saket-banquet-event-space.webp": "images/banquet-hall/banquet-hall-stage.webp",
+  "residency-event-guest-room.webp": "images/residency/room-3.webp",
 };
 
 export async function GET(
@@ -51,17 +21,17 @@ export async function GET(
   { params }: { params: Promise<{ filename: string }> },
 ) {
   const { filename } = await params;
-  const config = images[filename];
+  const source = images[filename];
 
-  if (!config) {
+  if (!source) {
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const sourcePath = path.join(process.cwd(), "public", config.source);
+  const sourcePath = path.join(process.cwd(), "public", source);
   const image = await sharp(sourcePath)
     .resize(1200, 675, {
       fit: "cover",
-      position: config.position ?? sharp.strategy.attention,
+      position: sharp.strategy.attention,
       withoutEnlargement: false,
     })
     .webp({ quality: 84, effort: 5 })
