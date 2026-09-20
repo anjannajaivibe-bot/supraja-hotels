@@ -140,9 +140,6 @@ export default function DayUseGuestsPage() {
 
     if (response.ok) {
       setForm({ name: "", phone: "", aadhaarNo: "", stayHours: "3", price: "" });
-      setStatus("all");
-      setFrom(firstDayOfMonth());
-      setTo(todayIndia());
       await load();
     }
     setBusy(false);
