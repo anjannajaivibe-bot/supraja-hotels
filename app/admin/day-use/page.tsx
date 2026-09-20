@@ -81,7 +81,7 @@ export default function DayUseGuestsPage() {
     price: "",
   });
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (options?: { statusOverride?: string }) => {
     const sessionRes = await fetch("/api/admin/session", { cache: "no-store" });
     if (sessionRes.status === 401) {
       location.href = "/admin/login";
@@ -109,14 +109,16 @@ export default function DayUseGuestsPage() {
         setRooms((roomsData.rooms ?? []) as Room[]);
       } else {
         setRooms([]);
+        setMessage("Unable to load the room list. Refresh this page before registering a day-use guest.");
       }
     } else {
       setRooms([]);
     }
 
+    const effectiveStatus = options?.statusOverride ?? status;
     const params = new URLSearchParams({
       hotelId: selectedHotel,
-      status,
+      status: effectiveStatus,
       from,
       to,
     });
@@ -164,12 +166,21 @@ export default function DayUseGuestsPage() {
       body: JSON.stringify(form),
     });
     const data = await response.json();
-    setMessage(response.ok ? "Day-use guest checked in successfully." : data.error || "Unable to check in guest.");
 
-    if (response.ok) {
-      setForm({ name: "", phone: "", aadhaarNo: "", roomId: "", stayHours: "3", price: "" });
-      await load();
+    if (!response.ok) {
+      setMessage(data.error || "Unable to check in guest.");
+      if (data.code === "PAGE_REFRESH_REQUIRED") {
+        window.setTimeout(() => window.location.reload(), 1200);
+      }
+      setBusy(false);
+      return;
     }
+
+    setMessage("Day-use guest checked in successfully. The check-in time has been recorded automatically.");
+    setForm({ name: "", phone: "", aadhaarNo: "", roomId: "", stayHours: "3", price: "" });
+    setSearch("");
+    setStatus("checked_in");
+    await load({ statusOverride: "checked_in" });
     setBusy(false);
   }
 
@@ -184,8 +195,8 @@ export default function DayUseGuestsPage() {
       body: JSON.stringify({ id, action: "checkout" }),
     });
     const data = await response.json();
-    setMessage(response.ok ? "Guest checked out. Checkout time has been recorded." : data.error || "Unable to check out guest.");
-    await load();
+    setMessage(response.ok ? "Guest checked out successfully. The checkout time has been recorded automatically." : data.error || "Unable to check out guest.");
+    await load({ statusOverride: status });
     setBusy(false);
   }
 
@@ -226,7 +237,7 @@ export default function DayUseGuestsPage() {
               <div>
                 <h2 className="font-bold">Check In Day Use Guest</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  Hours and price are fixed when the record is created. Check-in time is captured automatically.
+                  Room, hours and price are fixed when the record is created. Check-in time is captured automatically.
                 </p>
               </div>
             </div>
@@ -321,7 +332,7 @@ export default function DayUseGuestsPage() {
                   <Clock3 size={14} />
                   No manual time entry. The server records the exact check-in timestamp.
                 </p>
-                <button disabled={busy} className={`${button} bg-blue-800 text-white hover:bg-blue-900`}>
+                <button disabled={busy || !form.roomId} className={`${button} bg-blue-800 text-white hover:bg-blue-900`}>
                   <Clock3 size={16} />
                   Check In Guest
                 </button>
@@ -334,7 +345,7 @@ export default function DayUseGuestsPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="font-bold">Day Use Register</h2>
-              <p className="mt-1 text-xs text-slate-500">Completed records remain stored for future audit and cannot be deleted from this panel.</p>
+              <p className="mt-1 text-xs text-slate-500">Checked-in guests show a Check Out button. Check-in and checkout times are recorded automatically by the server and completed records remain stored for audit.</p>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">

@@ -139,7 +139,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Aadhaar number must contain exactly 12 digits." }, { status: 400 });
   }
   if (!roomId) {
-    return NextResponse.json({ error: "Select the room number assigned to this guest." }, { status: 400 });
+    console.warn("[day-use] Check-in rejected because the client page did not send a room assignment.");
+    return NextResponse.json(
+      {
+        code: "PAGE_REFRESH_REQUIRED",
+        error: "This Day Use Guests page was updated. Refresh the page once, select Room Number Assigned, and check in again.",
+      },
+      { status: 409 },
+    );
   }
   if (!Number.isInteger(stayHours) || stayHours < 1 || stayHours > 24) {
     return NextResponse.json({ error: "Stay hours must be between 1 and 24." }, { status: 400 });
@@ -214,7 +221,12 @@ export async function POST(request: NextRequest) {
     if (errorText.includes("hotel_day_use_guests_active_room_unique")) {
       return NextResponse.json({ error: `Room ${room.room_no} already has an active day-use guest.` }, { status: 409 });
     }
-    return NextResponse.json({ error: "Unable to check in day-use guest." }, { status: 500 });
+    let databaseCode = "unknown";
+    try {
+      databaseCode = String((JSON.parse(errorText) as { code?: string }).code || "unknown");
+    } catch {}
+    console.error("[day-use] Database check-in failed.", { status: response.status, code: databaseCode });
+    return NextResponse.json({ error: "Unable to check in day-use guest. Please retry once." }, { status: 500 });
   }
 
   const row = ((await response.json()) as DayUseRow[])[0];
@@ -259,7 +271,8 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (!response.ok) {
-    return NextResponse.json({ error: "Unable to check out this guest." }, { status: 500 });
+    console.error("[day-use] Database checkout failed.", { status: response.status });
+    return NextResponse.json({ error: "Unable to check out this guest. Please retry once." }, { status: 500 });
   }
 
   const rows = (await response.json()) as DayUseRow[];
