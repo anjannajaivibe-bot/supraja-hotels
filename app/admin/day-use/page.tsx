@@ -17,6 +17,7 @@ type DayUseRecord = {
   hotelId: string;
   roomId: string;
   roomNo: string;
+  bookingId: string;
   name: string;
   phone: string;
   aadhaarMasked: string;
@@ -73,6 +74,7 @@ export default function DayUseGuestsPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
+    bookingId: "",
     name: "",
     phone: "",
     aadhaarNo: "",
@@ -142,6 +144,7 @@ export default function DayUseGuestsPage() {
     if (!q) return records;
     return records.filter((record) =>
       [
+        record.bookingId,
         record.name,
         record.phone,
         record.aadhaarMasked,
@@ -177,7 +180,7 @@ export default function DayUseGuestsPage() {
     }
 
     setMessage("Day-use guest checked in successfully. The check-in time has been recorded automatically.");
-    setForm({ name: "", phone: "", aadhaarNo: "", roomId: "", stayHours: "3", price: "" });
+    setForm({ bookingId: "", name: "", phone: "", aadhaarNo: "", roomId: "", stayHours: "3", price: "" });
     setSearch("");
     setStatus("checked_in");
     await load({ statusOverride: "checked_in" });
@@ -237,12 +240,25 @@ export default function DayUseGuestsPage() {
               <div>
                 <h2 className="font-bold">Check In Day Use Guest</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  Room, hours and price are fixed when the record is created. Check-in time is captured automatically.
+                  Booking ID, room, hours and price are fixed when the record is created. Check-in time is captured automatically.
                 </p>
               </div>
             </div>
 
-            <form onSubmit={checkIn} className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-6">
+            <form onSubmit={checkIn} className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+              <label className="text-xs font-semibold text-slate-700">
+                Booking ID
+                <input
+                  className={`${input} mt-1.5`}
+                  value={form.bookingId}
+                  onChange={(e) => setForm((value) => ({ ...value, bookingId: e.target.value }))}
+                  maxLength={60}
+                  autoComplete="off"
+                  placeholder="Booking ID"
+                  required
+                />
+              </label>
+
               <label className="text-xs font-semibold text-slate-700">
                 Name
                 <input
@@ -327,12 +343,12 @@ export default function DayUseGuestsPage() {
                 </div>
               </label>
 
-              <div className="md:col-span-2 lg:col-span-6 flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="md:col-span-2 lg:col-span-4 xl:col-span-7 flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="flex items-center gap-1.5 text-xs text-slate-500">
                   <Clock3 size={14} />
                   No manual time entry. The server records the exact check-in timestamp.
                 </p>
-                <button disabled={busy || !form.roomId} className={`${button} bg-blue-800 text-white hover:bg-blue-900`}>
+                <button disabled={busy || !form.bookingId.trim() || !form.roomId} className={`${button} bg-blue-800 text-white hover:bg-blue-900`}>
                   <Clock3 size={16} />
                   Check In Guest
                 </button>
@@ -384,7 +400,7 @@ export default function DayUseGuestsPage() {
                   <Search className="absolute left-3 top-3 text-slate-400" size={15} />
                   <input
                     className={`${input} pl-8 normal-case`}
-                    placeholder="Name / room / phone / Aadhaar"
+                    placeholder="Booking ID / name / room / phone / Aadhaar"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -400,6 +416,7 @@ export default function DayUseGuestsPage() {
               <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
                 <tr>
                   {session.role === "master" && <th className="px-4 py-3">Hotel</th>}
+                  <th className="px-4 py-3">Booking ID</th>
                   <th className="px-4 py-3">Guest</th>
                   <th className="px-4 py-3">Room No.</th>
                   <th className="px-4 py-3">Phone</th>
@@ -420,6 +437,7 @@ export default function DayUseGuestsPage() {
                         {hotelNameById.get(record.hotelId) || "Unknown hotel"}
                       </td>
                     )}
+                    <td className="px-4 py-3 whitespace-nowrap font-bold text-slate-900">{record.bookingId}</td>
                     <td className="px-4 py-3 font-semibold">{record.name}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="inline-flex rounded-lg bg-blue-50 px-2.5 py-1 font-bold text-blue-900">
@@ -456,7 +474,7 @@ export default function DayUseGuestsPage() {
                 ))}
                 {visible.length === 0 && (
                   <tr>
-                    <td colSpan={session.role === "master" ? 11 : 10} className="px-4 py-10 text-center text-sm text-slate-500">
+                    <td colSpan={session.role === "master" ? 12 : 11} className="px-4 py-10 text-center text-sm text-slate-500">
                       No day-use guest records found for the selected filters.
                     </td>
                   </tr>
