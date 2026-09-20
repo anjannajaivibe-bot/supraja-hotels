@@ -9,6 +9,7 @@ type DayUseRow = {
   hotel_id: string;
   room_id: string;
   room_no: string;
+  booking_id: string;
   guest_name: string;
   phone: string;
   aadhaar_no: string;
@@ -33,6 +34,7 @@ function clientRow(row: DayUseRow) {
     hotelId: row.hotel_id,
     roomId: row.room_id,
     roomNo: row.room_no,
+    bookingId: row.booking_id,
     name: row.guest_name,
     phone: row.phone,
     aadhaarMasked: maskAadhaar(row.aadhaar_no),
@@ -73,7 +75,7 @@ export async function GET(request: NextRequest) {
   }
 
   const parts = [
-    "?select=id,hotel_id,room_id,room_no,guest_name,phone,aadhaar_no,stay_hours,price,checked_in_at,checked_out_at,status,created_by,created_by_employee_name,checked_out_by",
+    "?select=id,hotel_id,room_id,room_no,booking_id,guest_name,phone,aadhaar_no,stay_hours,price,checked_in_at,checked_out_at,status,created_by,created_by_employee_name,checked_out_by",
   ];
   if (hotelId) parts.push(`&hotel_id=eq.${encodeURIComponent(hotelId)}`);
 
@@ -114,6 +116,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = (await request.json().catch(() => ({}))) as {
+    bookingId?: string;
     name?: string;
     phone?: string;
     roomId?: string;
@@ -122,6 +125,7 @@ export async function POST(request: NextRequest) {
     price?: number | string;
   };
 
+  const bookingId = body.bookingId?.replace(/\s+/g, " ").trim() || "";
   const name = body.name?.replace(/\s+/g, " ").trim() || "";
   const phone = String(body.phone || "").replace(/\D/g, "");
   const aadhaarNo = String(body.aadhaarNo || "").replace(/\D/g, "");
@@ -129,6 +133,19 @@ export async function POST(request: NextRequest) {
   const stayHours = Number(body.stayHours);
   const price = Number(body.price);
 
+  if (!bookingId) {
+    console.warn("[day-use] Check-in rejected because the client page did not send a booking ID.");
+    return NextResponse.json(
+      {
+        code: "PAGE_REFRESH_REQUIRED",
+        error: "This Day Use Guests page was updated. Refresh the page once, enter Booking ID, and check in again.",
+      },
+      { status: 409 },
+    );
+  }
+  if (bookingId.length < 2 || bookingId.length > 60) {
+    return NextResponse.json({ error: "Booking ID must be between 2 and 60 characters." }, { status: 400 });
+  }
   if (name.length < 2 || name.length > 120) {
     return NextResponse.json({ error: "Enter a valid guest name." }, { status: 400 });
   }
@@ -204,6 +221,7 @@ export async function POST(request: NextRequest) {
         shift_id: shiftId,
         room_id: room.id,
         room_no: room.room_no,
+        booking_id: bookingId,
         guest_name: name,
         phone,
         aadhaar_no: aadhaarNo,
@@ -221,6 +239,9 @@ export async function POST(request: NextRequest) {
     if (errorText.includes("hotel_day_use_guests_active_room_unique")) {
       return NextResponse.json({ error: `Room ${room.room_no} already has an active day-use guest.` }, { status: 409 });
     }
+    if (errorText.includes("hotel_day_use_guests_hotel_booking_id_unique")) {
+      return NextResponse.json({ error: "This Booking ID is already used for this hotel." }, { status: 409 });
+    }
     let databaseCode = "unknown";
     try {
       databaseCode = String((JSON.parse(errorText) as { code?: string }).code || "unknown");
@@ -236,7 +257,7 @@ export async function POST(request: NextRequest) {
     "hotel_day_use_guest",
     row?.id ?? null,
     session.hotelId,
-    { roomNo: room.room_no, stayHours, price, shiftId },
+    { bookingId, roomNo: room.room_no, stayHours, price, shiftId },
   );
 
   return NextResponse.json({ success: true, record: row ? clientRow(row) : null });
