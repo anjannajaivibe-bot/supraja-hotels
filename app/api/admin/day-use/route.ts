@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
+import { isMobileOrTabletUserAgent } from "@/lib/admin-device-access";
 import { hotelScope, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
@@ -53,6 +54,9 @@ function dateBoundary(date: string, end = false) {
 export async function GET(request: NextRequest) {
   const session = getAdminSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  if (session.role === "hotel_admin" && isMobileOrTabletUserAgent(request.headers.get("user-agent"))) {
+    return NextResponse.json({ error: "Hotel admin access is allowed only from a desktop or laptop computer." }, { status: 403 });
+  }
 
   const hotelId = hotelScope(session, request.nextUrl.searchParams.get("hotelId"));
   if (!hotelId) return NextResponse.json({ error: "Hotel required." }, { status: 400 });
@@ -96,6 +100,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const session = getAdminSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  if (session.role === "hotel_admin" && isMobileOrTabletUserAgent(request.headers.get("user-agent"))) {
+    return NextResponse.json({ error: "Hotel admin access is allowed only from a desktop or laptop computer." }, { status: 403 });
+  }
   if (session.role !== "hotel_admin" || !session.hotelId) {
     return NextResponse.json({ error: "Hotel login required." }, { status: 403 });
   }
@@ -183,6 +190,9 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const session = getAdminSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  if (session.role === "hotel_admin" && isMobileOrTabletUserAgent(request.headers.get("user-agent"))) {
+    return NextResponse.json({ error: "Hotel admin access is allowed only from a desktop or laptop computer." }, { status: 403 });
+  }
   if (session.role !== "hotel_admin" || !session.hotelId) {
     return NextResponse.json({ error: "Hotel login required." }, { status: 403 });
   }
