@@ -355,7 +355,7 @@ export default function DayUseGuestsPage() {
                   <Search className="absolute left-3 top-3 text-slate-400" size={15} />
                   <input
                     className={`${input} pl-8 normal-case`}
-                    placeholder="Name / phone / Aadhaar"
+                    placeholder="Name / room / phone / Aadhaar"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
