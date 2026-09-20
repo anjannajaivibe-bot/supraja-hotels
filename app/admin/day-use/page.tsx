@@ -10,10 +10,13 @@ type Session = {
 };
 
 type Hotel = { id: string; name: string };
+type Room = { id: string; room_no: string; status: string };
 
 type DayUseRecord = {
   id: string;
   hotelId: string;
+  roomId: string;
+  roomNo: string;
   name: string;
   phone: string;
   aadhaarMasked: string;
@@ -60,6 +63,7 @@ function fmtDateTime(value: string | null) {
 export default function DayUseGuestsPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [hotelId, setHotelId] = useState("");
   const [records, setRecords] = useState<DayUseRecord[]>([]);
   const [status, setStatus] = useState("all");
@@ -72,6 +76,7 @@ export default function DayUseGuestsPage() {
     name: "",
     phone: "",
     aadhaarNo: "",
+    roomId: "",
     stayHours: "3",
     price: "",
   });
@@ -98,6 +103,14 @@ export default function DayUseGuestsPage() {
     if (!hotelId && selectedHotel) setHotelId(selectedHotel);
     if (!selectedHotel) return;
 
+    const roomsRes = await fetch(`/api/admin/rooms?hotelId=${encodeURIComponent(selectedHotel)}`, { cache: "no-store" });
+    if (roomsRes.ok) {
+      const roomsData = await roomsRes.json();
+      setRooms((roomsData.rooms ?? []) as Room[]);
+    } else {
+      setRooms([]);
+    }
+
     const params = new URLSearchParams({
       hotelId: selectedHotel,
       status,
@@ -118,7 +131,7 @@ export default function DayUseGuestsPage() {
     const q = search.trim().toLowerCase();
     if (!q) return records;
     return records.filter((record) =>
-      [record.name, record.phone, record.aadhaarMasked, record.employeeName || ""]
+      [record.name, record.phone, record.aadhaarMasked, record.roomNo, record.employeeName || ""]
         .join(" ")
         .toLowerCase()
         .includes(q),
@@ -139,7 +152,7 @@ export default function DayUseGuestsPage() {
     setMessage(response.ok ? "Day-use guest checked in successfully." : data.error || "Unable to check in guest.");
 
     if (response.ok) {
-      setForm({ name: "", phone: "", aadhaarNo: "", stayHours: "3", price: "" });
+      setForm({ name: "", phone: "", aadhaarNo: "", roomId: "", stayHours: "3", price: "" });
       await load();
     }
     setBusy(false);
@@ -201,7 +214,7 @@ export default function DayUseGuestsPage() {
               </div>
             </div>
 
-            <form onSubmit={checkIn} className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+            <form onSubmit={checkIn} className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-6">
               <label className="text-xs font-semibold text-slate-700">
                 Name
                 <input
@@ -239,6 +252,23 @@ export default function DayUseGuestsPage() {
               </label>
 
               <label className="text-xs font-semibold text-slate-700">
+                Room Number Assigned
+                <select
+                  className={`${input} mt-1.5`}
+                  value={form.roomId}
+                  onChange={(e) => setForm((value) => ({ ...value, roomId: e.target.value }))}
+                  required
+                >
+                  <option value="">Select room</option>
+                  {rooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      Room {room.room_no} · {room.status}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-xs font-semibold text-slate-700">
                 No. of Hours Stay
                 <input
                   className={`${input} mt-1.5`}
@@ -269,7 +299,7 @@ export default function DayUseGuestsPage() {
                 </div>
               </label>
 
-              <div className="md:col-span-2 lg:col-span-5 flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="md:col-span-2 lg:col-span-6 flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="flex items-center gap-1.5 text-xs text-slate-500">
                   <Clock3 size={14} />
                   No manual time entry. The server records the exact check-in timestamp.
@@ -325,7 +355,7 @@ export default function DayUseGuestsPage() {
                   <Search className="absolute left-3 top-3 text-slate-400" size={15} />
                   <input
                     className={`${input} pl-8 normal-case`}
-                    placeholder="Name / phone / Aadhaar"
+                    placeholder="Name / room / phone / Aadhaar"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -341,6 +371,7 @@ export default function DayUseGuestsPage() {
               <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
                 <tr>
                   <th className="px-4 py-3">Guest</th>
+                  <th className="px-4 py-3">Room</th>
                   <th className="px-4 py-3">Phone</th>
                   <th className="px-4 py-3">Aadhaar</th>
                   <th className="px-4 py-3">Hours</th>
@@ -355,6 +386,7 @@ export default function DayUseGuestsPage() {
                 {visible.map((record) => (
                   <tr key={record.id} className="align-top hover:bg-slate-50">
                     <td className="px-4 py-3 font-semibold">{record.name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap font-bold text-blue-900">Room {record.roomNo}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{record.phone}</td>
                     <td className="px-4 py-3 whitespace-nowrap font-mono text-xs">{record.aadhaarMasked}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{record.stayHours} hr{record.stayHours === 1 ? "" : "s"}</td>
@@ -385,7 +417,7 @@ export default function DayUseGuestsPage() {
                 ))}
                 {visible.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
+                    <td colSpan={10} className="px-4 py-10 text-center text-sm text-slate-500">
                       No day-use guest records found for the selected filters.
                     </td>
                   </tr>

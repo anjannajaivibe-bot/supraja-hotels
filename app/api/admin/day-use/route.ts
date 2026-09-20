@@ -7,6 +7,8 @@ import { supabaseRequest } from "@/lib/supabase-rest";
 type DayUseRow = {
   id: string;
   hotel_id: string;
+  room_id: string;
+  room_no: string;
   guest_name: string;
   phone: string;
   aadhaar_no: string;
@@ -29,6 +31,8 @@ function clientRow(row: DayUseRow) {
   return {
     id: row.id,
     hotelId: row.hotel_id,
+    roomId: row.room_id,
+    roomNo: row.room_no,
     name: row.guest_name,
     phone: row.phone,
     aadhaarMasked: maskAadhaar(row.aadhaar_no),
@@ -67,7 +71,7 @@ export async function GET(request: NextRequest) {
   }
 
   const parts = [
-    "?select=id,hotel_id,guest_name,phone,aadhaar_no,stay_hours,price,checked_in_at,checked_out_at,status,created_by,created_by_employee_name,checked_out_by",
+    "?select=id,hotel_id,room_id,room_no,guest_name,phone,aadhaar_no,stay_hours,price,checked_in_at,checked_out_at,status,created_by,created_by_employee_name,checked_out_by",
     `&hotel_id=eq.${encodeURIComponent(hotelId)}`,
   ];
 
@@ -110,6 +114,7 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as {
     name?: string;
     phone?: string;
+    roomId?: string;
     aadhaarNo?: string;
     stayHours?: number | string;
     price?: number | string;
@@ -118,6 +123,7 @@ export async function POST(request: NextRequest) {
   const name = body.name?.replace(/\s+/g, " ").trim() || "";
   const phone = String(body.phone || "").replace(/\D/g, "");
   const aadhaarNo = String(body.aadhaarNo || "").replace(/\D/g, "");
+  const roomId = String(body.roomId || "").trim();
   const stayHours = Number(body.stayHours);
   const price = Number(body.price);
 
@@ -130,11 +136,40 @@ export async function POST(request: NextRequest) {
   if (!/^\d{12}$/.test(aadhaarNo)) {
     return NextResponse.json({ error: "Aadhaar number must contain exactly 12 digits." }, { status: 400 });
   }
+  if (!roomId) {
+    return NextResponse.json({ error: "Select the room number assigned to this guest." }, { status: 400 });
+  }
   if (!Number.isInteger(stayHours) || stayHours < 1 || stayHours > 24) {
     return NextResponse.json({ error: "Stay hours must be between 1 and 24." }, { status: 400 });
   }
   if (!Number.isFinite(price) || price < 0 || price > 100000) {
     return NextResponse.json({ error: "Enter a valid price." }, { status: 400 });
+  }
+
+  const roomRes = await supabaseRequest(
+    `?select=id,room_no,status&hotel_id=eq.${encodeURIComponent(session.hotelId)}&id=eq.${encodeURIComponent(roomId)}&is_active=eq.true&limit=1`,
+    {},
+    "hotel_rooms",
+  );
+  if (!roomRes.ok) {
+    return NextResponse.json({ error: "Unable to validate the assigned room." }, { status: 500 });
+  }
+  const roomRows = (await roomRes.json()) as { id: string; room_no: string; status: string }[];
+  const room = roomRows[0];
+  if (!room) {
+    return NextResponse.json({ error: "Select a valid room assigned to this hotel." }, { status: 400 });
+  }
+
+  const activeRoomRes = await supabaseRequest(
+    `?select=id&hotel_id=eq.${encodeURIComponent(session.hotelId)}&room_id=eq.${encodeURIComponent(roomId)}&status=eq.checked_in&limit=1`,
+    {},
+    "hotel_day_use_guests",
+  );
+  if (activeRoomRes.ok) {
+    const activeRows = (await activeRoomRes.json()) as { id: string }[];
+    if (activeRows.length) {
+      return NextResponse.json({ error: `Room ${room.room_no} already has an active day-use guest.` }, { status: 409 });
+    }
   }
 
   let shiftId: string | null = null;
@@ -158,6 +193,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         hotel_id: session.hotelId,
         shift_id: shiftId,
+        room_id: room.id,
+        room_no: room.room_no,
         guest_name: name,
         phone,
         aadhaar_no: aadhaarNo,
@@ -171,6 +208,10 @@ export async function POST(request: NextRequest) {
   );
 
   if (!response.ok) {
+    const errorText = await response.text();
+    if (errorText.includes("hotel_day_use_guests_active_room_unique")) {
+      return NextResponse.json({ error: `Room ${room.room_no} already has an active day-use guest.` }, { status: 409 });
+    }
     return NextResponse.json({ error: "Unable to check in day-use guest." }, { status: 500 });
   }
 
@@ -181,7 +222,7 @@ export async function POST(request: NextRequest) {
     "hotel_day_use_guest",
     row?.id ?? null,
     session.hotelId,
-    { stayHours, price, shiftId },
+    { roomNo: room.room_no, stayHours, price, shiftId },
   );
 
   return NextResponse.json({ success: true, record: row ? clientRow(row) : null });
