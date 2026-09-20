@@ -62,8 +62,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Hotel admin access is allowed only from a desktop or laptop computer." }, { status: 403 });
   }
 
-  const hotelId = hotelScope(session, request.nextUrl.searchParams.get("hotelId"));
-  if (!hotelId) return NextResponse.json({ error: "Hotel required." }, { status: 400 });
+  const requestedHotelId = request.nextUrl.searchParams.get("hotelId");
+  const allHotels = session.role === "master" && (!requestedHotelId || requestedHotelId === "all");
+  const hotelId = allHotels ? null : hotelScope(session, requestedHotelId);
+  if (!allHotels && !hotelId) return NextResponse.json({ error: "Hotel required." }, { status: 400 });
 
   const status = request.nextUrl.searchParams.get("status") || "all";
   if (!["all", "checked_in", "checked_out"].includes(status)) {
@@ -72,8 +74,8 @@ export async function GET(request: NextRequest) {
 
   const parts = [
     "?select=id,hotel_id,room_id,room_no,guest_name,phone,aadhaar_no,stay_hours,price,checked_in_at,checked_out_at,status,created_by,created_by_employee_name,checked_out_by",
-    `&hotel_id=eq.${encodeURIComponent(hotelId)}`,
   ];
+  if (hotelId) parts.push(`&hotel_id=eq.${encodeURIComponent(hotelId)}`);
 
   if (status !== "all") parts.push(`&status=eq.${status}`);
 

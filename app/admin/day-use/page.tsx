@@ -64,7 +64,7 @@ export default function DayUseGuestsPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [hotelId, setHotelId] = useState("");
+  const [hotelId, setHotelId] = useState("all");
   const [records, setRecords] = useState<DayUseRecord[]>([]);
   const [status, setStatus] = useState("all");
   const [from, setFrom] = useState(firstDayOfMonth());
@@ -98,15 +98,18 @@ export default function DayUseGuestsPage() {
     const selectedHotel =
       currentSession.role === "hotel_admin"
         ? currentSession.hotelId || ""
-        : hotelId || hotelRows[0]?.id || "";
+        : hotelId || "all";
 
-    if (!hotelId && selectedHotel) setHotelId(selectedHotel);
     if (!selectedHotel) return;
 
-    const roomsRes = await fetch(`/api/admin/rooms?hotelId=${encodeURIComponent(selectedHotel)}`, { cache: "no-store" });
-    if (roomsRes.ok) {
-      const roomsData = await roomsRes.json();
-      setRooms((roomsData.rooms ?? []) as Room[]);
+    if (currentSession.role === "hotel_admin") {
+      const roomsRes = await fetch(`/api/admin/rooms?hotelId=${encodeURIComponent(selectedHotel)}`, { cache: "no-store" });
+      if (roomsRes.ok) {
+        const roomsData = await roomsRes.json();
+        setRooms((roomsData.rooms ?? []) as Room[]);
+      } else {
+        setRooms([]);
+      }
     } else {
       setRooms([]);
     }
@@ -127,16 +130,28 @@ export default function DayUseGuestsPage() {
     void load();
   }, [load]);
 
+  const hotelNameById = useMemo(
+    () => new Map(hotels.map((hotel) => [hotel.id, hotel.name])),
+    [hotels],
+  );
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return records;
     return records.filter((record) =>
-      [record.name, record.phone, record.aadhaarMasked, record.roomNo, record.employeeName || ""]
+      [
+        record.name,
+        record.phone,
+        record.aadhaarMasked,
+        record.roomNo,
+        record.employeeName || "",
+        hotelNameById.get(record.hotelId) || "",
+      ]
         .join(" ")
         .toLowerCase()
         .includes(q),
     );
-  }, [records, search]);
+  }, [hotelNameById, records, search]);
 
   async function checkIn(event: FormEvent) {
     event.preventDefault();
@@ -179,7 +194,9 @@ export default function DayUseGuestsPage() {
   const selectedHotelName =
     session.role === "hotel_admin"
       ? session.hotelName || "Your hotel"
-      : hotels.find((hotel) => hotel.id === hotelId)?.name || "Selected hotel";
+      : hotelId === "all"
+        ? "All Hotels"
+        : hotels.find((hotel) => hotel.id === hotelId)?.name || "Selected hotel";
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -325,6 +342,7 @@ export default function DayUseGuestsPage() {
                 <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                   Hotel
                   <select className={`${input} mt-1 normal-case`} value={hotelId} onChange={(e) => setHotelId(e.target.value)}>
+                    <option value="all">All Hotels</option>
                     {hotels.map((hotel) => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}
                   </select>
                 </label>
@@ -370,8 +388,9 @@ export default function DayUseGuestsPage() {
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
                 <tr>
+                  {session.role === "master" && <th className="px-4 py-3">Hotel</th>}
                   <th className="px-4 py-3">Guest</th>
-                  <th className="px-4 py-3">Room</th>
+                  <th className="px-4 py-3">Room No.</th>
                   <th className="px-4 py-3">Phone</th>
                   <th className="px-4 py-3">Aadhaar</th>
                   <th className="px-4 py-3">Hours</th>
@@ -385,8 +404,17 @@ export default function DayUseGuestsPage() {
               <tbody className="divide-y divide-slate-100">
                 {visible.map((record) => (
                   <tr key={record.id} className="align-top hover:bg-slate-50">
+                    {session.role === "master" && (
+                      <td className="px-4 py-3 min-w-44 font-semibold text-slate-700">
+                        {hotelNameById.get(record.hotelId) || "Unknown hotel"}
+                      </td>
+                    )}
                     <td className="px-4 py-3 font-semibold">{record.name}</td>
-                    <td className="px-4 py-3 whitespace-nowrap font-bold text-blue-900">Room {record.roomNo}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="inline-flex rounded-lg bg-blue-50 px-2.5 py-1 font-bold text-blue-900">
+                        {record.roomNo}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">{record.phone}</td>
                     <td className="px-4 py-3 whitespace-nowrap font-mono text-xs">{record.aadhaarMasked}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{record.stayHours} hr{record.stayHours === 1 ? "" : "s"}</td>
@@ -417,7 +445,7 @@ export default function DayUseGuestsPage() {
                 ))}
                 {visible.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-10 text-center text-sm text-slate-500">
+                    <td colSpan={session.role === "master" ? 11 : 10} className="px-4 py-10 text-center text-sm text-slate-500">
                       No day-use guest records found for the selected filters.
                     </td>
                   </tr>
