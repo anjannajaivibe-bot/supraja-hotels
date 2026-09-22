@@ -128,6 +128,23 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="bg-white px-4 py-8">
+        <div className="container-custom">
+          <div className="grid gap-6 rounded-[1.75rem] border border-amber-200 bg-amber-50 p-7 shadow-sm md:grid-cols-[1fr_auto] md:items-center md:p-9">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-900">Supraja Direct Advantage</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">Direct, Corporate, Long-Stay, Group and Day-Use Options</h2>
+              <p className="mt-3 max-w-3xl leading-7 text-slate-700">
+                Tell us what kind of stay you need and check the current direct option for your dates and preferred Supraja Hotel.
+              </p>
+            </div>
+            <Link href="/offers" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-7 text-sm font-bold text-white transition hover:bg-slate-800">
+              Explore Direct Advantages <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section id="choose-hotel" className="bg-[#f7f5f1] px-4 py-14 lg:py-20">
         <div className="container-custom">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
