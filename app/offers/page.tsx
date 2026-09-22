@@ -108,7 +108,7 @@ export default function OffersPage() {
               Supraja Direct Advantage
             </p>
             <h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl">
-              More Ways to Stay, Book and Save Directly
+              More Ways to Stay and Book Directly
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">
               Explore direct booking, corporate, long-stay, group, day-use and event stay options across our Madhapur and Chandanagar hotels. Share your requirement and we will help you identify the most suitable current option.
