@@ -160,8 +160,45 @@ export default function DayUseGuestsPage() {
 
   async function checkIn(event: FormEvent) {
     event.preventDefault();
-    setBusy(true);
     setMessage("");
+
+    const bookingId = form.bookingId.trim();
+    const name = form.name.trim();
+    const phone = form.phone.replace(/\\D/g, "");
+    const aadhaarNo = form.aadhaarNo.replace(/\\D/g, "");
+    const stayHours = Number(form.stayHours);
+    const price = Number(form.price);
+
+    if (!bookingId) {
+      setMessage("Enter the Booking ID before check-in.");
+      return;
+    }
+    if (!name) {
+      setMessage("Enter the guest name before check-in.");
+      return;
+    }
+    if (!/^\\d{7,15}$/.test(phone)) {
+      setMessage("Enter a valid phone number using 7 to 15 digits.");
+      return;
+    }
+    if (!/^\\d{12}$/.test(aadhaarNo)) {
+      setMessage("Enter the 12-digit Aadhaar number.");
+      return;
+    }
+    if (!form.roomId) {
+      setMessage("Select the room number assigned to this guest.");
+      return;
+    }
+    if (!Number.isInteger(stayHours) || stayHours < 1 || stayHours > 24) {
+      setMessage("Enter stay hours between 1 and 24.");
+      return;
+    }
+    if (!form.price.trim() || !Number.isFinite(price) || price < 0) {
+      setMessage("Enter the day-use price.");
+      return;
+    }
+
+    setBusy(true);
 
     const response = await fetch("/api/admin/day-use", {
       method: "POST",
@@ -245,7 +282,7 @@ export default function DayUseGuestsPage() {
               </div>
             </div>
 
-            <form onSubmit={checkIn} className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <form onSubmit={checkIn} noValidate className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
               <label className="text-xs font-semibold text-slate-700">
                 Booking ID
                 <input
