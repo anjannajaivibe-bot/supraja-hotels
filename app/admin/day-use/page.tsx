@@ -164,8 +164,8 @@ export default function DayUseGuestsPage() {
 
     const bookingId = form.bookingId.trim();
     const name = form.name.trim();
-    const phone = form.phone.replace(/\\D/g, "");
-    const aadhaarNo = form.aadhaarNo.replace(/\\D/g, "");
+    const phone = form.phone.replace(/\D/g, "");
+    const aadhaarNo = form.aadhaarNo.replace(/\D/g, "");
     const stayHours = Number(form.stayHours);
     const price = Number(form.price);
 
@@ -177,11 +177,11 @@ export default function DayUseGuestsPage() {
       setMessage("Enter the guest name before check-in.");
       return;
     }
-    if (!/^\\d{7,15}$/.test(phone)) {
+    if (!/^\d{7,15}$/.test(phone)) {
       setMessage("Enter a valid phone number using 7 to 15 digits.");
       return;
     }
-    if (!/^\\d{12}$/.test(aadhaarNo)) {
+    if (!/^\d{12}$/.test(aadhaarNo)) {
       setMessage("Enter the 12-digit Aadhaar number.");
       return;
     }
