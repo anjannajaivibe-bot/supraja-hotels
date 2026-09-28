@@ -324,10 +324,14 @@ export default function DayUseGuestsPage() {
                   className={`${input} mt-1.5`}
                   inputMode="numeric"
                   autoComplete="off"
-                  maxLength={14}
+                  maxLength={12}
+                  pattern="[0-9]{12}"
                   placeholder="12 digits"
                   value={form.aadhaarNo}
-                  onChange={(e) => setForm((value) => ({ ...value, aadhaarNo: e.target.value }))}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
+                    setForm((value) => ({ ...value, aadhaarNo: digits }));
+                  }}
                   required
                 />
               </label>
