@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
-import { consumeAttendanceVerification, validateAttendanceVerification } from "@/lib/attendance-verification";
 import { hotelScope, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as {
     action?: "start_shift" | "end_shift" | "set_status";
     staffMemberId?: string; hotelId?: string; status?: "present" | "absent" | "leave" | "half_day";
-    remarks?: string; correction?: boolean; correctionReason?: string; verificationId?: string;
+    remarks?: string; correction?: boolean; correctionReason?: string;
   };
   const hotelId = hotelScope(session, body.hotelId);
   if (!hotelId || !body.staffMemberId) return NextResponse.json({ error: "Staff member and hotel are required." }, { status: 400 });
@@ -56,14 +55,11 @@ export async function POST(request: NextRequest) {
   if(body.action==="start_shift"){
     if(existing?.check_in_time)return NextResponse.json({error:"Cleaning staff shift is already started."},{status:409});
     if(existing&&existing.status!=="present")return NextResponse.json({error:"Attendance is already marked as absent/leave/half day. Use correction first."},{status:409});
-    const verification=await validateAttendanceVerification({hotelId,verificationId:body.verificationId,subjectType:"staff",subjectId:body.staffMemberId,action:"cleaning_start"});
-    if(!verification.ok)return NextResponse.json({error:verification.error,verificationRequired:"required" in verification?verification.required:true},{status:409});
-    const payload={hotel_id:hotelId,staff_member_id:body.staffMemberId,attendance_date:date,status:"present",shift_label:null,check_in_time:time,check_out_time:null,remarks:body.remarks?.trim()||existing?.remarks||null,recorded_by:session.username,marked_at:existing?.marked_at||now,recorded_by_employee_id:shift.employee_id,recorded_by_employee_name:shift.display_name,shift_id:shift.id,attendance_verification_id:verification.verificationId,updated_at:now};
+    const payload={hotel_id:hotelId,staff_member_id:body.staffMemberId,attendance_date:date,status:"present",shift_label:null,check_in_time:time,check_out_time:null,remarks:body.remarks?.trim()||existing?.remarks||null,recorded_by:session.username,marked_at:existing?.marked_at||now,recorded_by_employee_id:shift.employee_id,recorded_by_employee_name:shift.display_name,shift_id:shift.id,updated_at:now};
     const response=await supabaseRequest("?on_conflict=staff_member_id,attendance_date",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify(payload)},"hotel_staff_attendance");
     if(!response.ok)return NextResponse.json({error:"Unable to start cleaning staff shift."},{status:500});
     const row=(await response.json() as Array<{id:string}>)[0];
-    await consumeAttendanceVerification(verification.verificationId);
-    await writeAuditLog(session,"cleaning_shift_started","staff_attendance",row?.id??existing?.id??null,hotelId,{staffMemberId:body.staffMemberId,checkInTime:time,recordedAt:now,employeeName:shift.display_name,shiftId:shift.id,attendanceVerificationId:verification.verificationId,attendanceReviewRequired:verification.reviewRequired});
+    await writeAuditLog(session,"cleaning_shift_started","staff_attendance",row?.id??existing?.id??null,hotelId,{staffMemberId:body.staffMemberId,checkInTime:time,recordedAt:now,employeeName:shift.display_name,shiftId:shift.id});
     return NextResponse.json({success:true,checkInTime:time});
   }
 
