@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Camera, CheckCircle2, LocateFixed, RefreshCw, ShieldCheck } from "lucide-react";
 
 type Lookup = {
@@ -9,6 +9,15 @@ type Lookup = {
   hotelName: string;
   action: string;
   expiresAt: string;
+  locationMode: "hotel_geofence" | "record_only";
+};
+
+type Verified = {
+  reviewRequired: boolean;
+  photoCaptured: boolean;
+  distanceM: number;
+  locationMode: "hotel_geofence" | "record_only";
+  withinHotelGeofence: boolean;
 };
 
 const input = "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg tracking-[.2em] text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100";
@@ -24,22 +33,47 @@ function deviceId() {
   return value;
 }
 
+async function imageFileToJpeg(file: File) {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Unable to read this photo. Please take another one."));
+      img.src = objectUrl;
+    });
+
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+    if (!sourceWidth || !sourceHeight) throw new Error("The captured photo is empty.");
+
+    const size = Math.min(sourceWidth, sourceHeight);
+    const sx = (sourceWidth - size) / 2;
+    const sy = (sourceHeight - size) / 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = 420;
+    canvas.height = 420;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Unable to prepare the captured photo.");
+
+    ctx.drawImage(image, sx, sy, size, size, 0, 0, 420, 420);
+    let data = canvas.toDataURL("image/jpeg", 0.72);
+    if (data.length > 300000) data = canvas.toDataURL("image/jpeg", 0.55);
+    if (!data || data.length < 2000) throw new Error("Photo capture failed. Please try again.");
+    return data;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function AttendanceVerifyPage() {
   const [code, setCode] = useState("");
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [cameraStarting, setCameraStarting] = useState(false);
-  const [cameraReady, setCameraReady] = useState(false);
-  const [cameraUnavailable, setCameraUnavailable] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [photoData, setPhotoData] = useState<string | null>(null);
-  const [verified, setVerified] = useState<{ reviewRequired: boolean; photoCaptured: boolean; distanceM: number } | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach(track => track.stop());
-  }, []);
+  const [verified, setVerified] = useState<Verified | null>(null);
 
   async function lookupCode(event: FormEvent) {
     event.preventDefault();
@@ -47,10 +81,6 @@ export default function AttendanceVerifyPage() {
     setMessage("");
     setVerified(null);
     setPhotoData(null);
-    setCameraReady(false);
-    setCameraUnavailable(false);
-    streamRef.current?.getTracks().forEach(track => track.stop());
-    streamRef.current = null;
 
     const response = await fetch("/api/attendance-verification", {
       method: "POST",
@@ -58,6 +88,7 @@ export default function AttendanceVerifyPage() {
       body: JSON.stringify({ step: "lookup", code }),
     });
     const data = await response.json();
+
     if (!response.ok) {
       setLookup(null);
       setMessage(data.error || "Unable to verify this code.");
@@ -66,104 +97,37 @@ export default function AttendanceVerifyPage() {
     }
 
     setLookup(data.verification);
-    setMessage("Code accepted. Tap Start Front Camera, capture your live photo, then verify your location.");
+    setMessage("Code accepted. Take a fresh photo using your phone camera.");
     setBusy(false);
   }
 
-  async function startCamera() {
-    setCameraStarting(true);
-    setCameraUnavailable(false);
-    setCameraReady(false);
-    setPhotoData(null);
+  async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setPhotoBusy(true);
+    setMessage("Preparing captured photo...");
 
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Camera unavailable");
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 720 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      });
-
-      streamRef.current?.getTracks().forEach(track => track.stop());
-      streamRef.current = stream;
-
-      const video = videoRef.current;
-      if (!video) throw new Error("Camera preview is not ready. Please try again.");
-
-      video.srcObject = stream;
-      await video.play();
-
-      if (video.videoWidth < 10 || video.videoHeight < 10) {
-        await new Promise<void>((resolve, reject) => {
-          const timer = window.setTimeout(() => reject(new Error("Camera took too long to start.")), 6000);
-          const ready = () => {
-            window.clearTimeout(timer);
-            video.removeEventListener("loadedmetadata", ready);
-            resolve();
-          };
-          video.addEventListener("loadedmetadata", ready, { once: true });
-        });
-      }
-
-      setCameraReady(true);
-      setMessage("Front camera is ready. Position your face clearly and tap Capture Photo.");
-    } catch {
-      streamRef.current?.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-      setCameraUnavailable(true);
-      setCameraReady(false);
-      setMessage("Camera could not be started or permission was denied. You may continue with GPS only, but the attendance will be flagged for Master Admin review.");
+      const data = await imageFileToJpeg(file);
+      setPhotoData(data);
+      setMessage("Photo captured successfully. Check the preview, then verify your current location.");
+    } catch (error) {
+      setPhotoData(null);
+      setMessage(error instanceof Error ? error.message : "Unable to process the captured photo.");
     } finally {
-      setCameraStarting(false);
+      setPhotoBusy(false);
     }
-  }
-
-  function capturePhoto() {
-    const video = videoRef.current;
-    if (!video || !cameraReady || video.videoWidth < 10 || video.videoHeight < 10) {
-      setMessage("Camera is still loading. Wait a moment and tap Capture Photo again.");
-      return;
-    }
-
-    const size = Math.min(video.videoWidth, video.videoHeight);
-    const canvas = document.createElement("canvas");
-    canvas.width = 360;
-    canvas.height = 360;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      setMessage("Unable to capture the camera image. Please try again.");
-      return;
-    }
-
-    const sx = (video.videoWidth - size) / 2;
-    const sy = (video.videoHeight - size) / 2;
-    ctx.drawImage(video, sx, sy, size, size, 0, 0, 360, 360);
-    const captured = canvas.toDataURL("image/jpeg", 0.68);
-
-    if (!captured || captured.length < 2000) {
-      setMessage("Photo capture failed. Please try again.");
-      return;
-    }
-
-    setPhotoData(captured);
-    setMessage("Photo captured successfully. Check the preview below, then tap Verify Location & Submit.");
-  }
-
-  function retakePhoto() {
-    setPhotoData(null);
-    setMessage("Position your face clearly and tap Capture Photo again.");
   }
 
   async function livePosition() {
     if (!navigator.geolocation) throw new Error("Location is not supported on this phone.");
+
     return new Promise<GeolocationPosition>((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: true,
-        timeout: 18000,
+        timeout: 20000,
         maximumAge: 0,
       });
     });
@@ -171,16 +135,17 @@ export default function AttendanceVerifyPage() {
 
   async function verifyPresence() {
     if (!lookup) return;
-    if (cameraReady && !photoData) {
-      setMessage("Capture your live photo before verifying attendance.");
+    if (!photoData) {
+      setMessage("Take a fresh photo before verifying attendance.");
       return;
     }
 
     setBusy(true);
-    setMessage("Checking your live GPS location...");
+    setMessage("Capturing your current GPS location...");
 
     try {
       const position = await livePosition();
+
       const response = await fetch("/api/attendance-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -197,16 +162,14 @@ export default function AttendanceVerifyPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Unable to verify physical presence.");
+        setMessage(data.error || "Unable to verify attendance.");
         return;
       }
 
-      streamRef.current?.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
       setVerified(data.verification);
-      setMessage(data.verification.reviewRequired
-        ? "Location verified. This record is flagged for review because the live photo was unavailable or another check needs attention."
-        : "Physical presence verified successfully.");
+      setMessage(data.verification.locationMode === "record_only"
+        ? "Photo and your current GPS location were recorded successfully."
+        : "Physical presence at the hotel was verified successfully.");
     } catch (error) {
       const geoError = typeof error === "object" && error !== null && "code" in error;
       const text = geoError
@@ -219,14 +182,10 @@ export default function AttendanceVerifyPage() {
   }
 
   function resetVerification() {
-    streamRef.current?.getTracks().forEach(track => track.stop());
-    streamRef.current = null;
     setLookup(null);
     setCode("");
     setMessage("");
     setPhotoData(null);
-    setCameraReady(false);
-    setCameraUnavailable(false);
     setVerified(null);
   }
 
@@ -242,7 +201,7 @@ export default function AttendanceVerifyPage() {
         </div>
 
         <p className="mt-4 text-sm leading-6 text-slate-600">
-          Use this page only while you are physically at the hotel. Your live GPS location and live camera photo are attached to the attendance record.
+          Take a fresh phone-camera photo and allow GPS so the attendance record contains both your photo and current location.
         </p>
 
         {!lookup && <form onSubmit={lookupCode} className="mt-6 space-y-3">
@@ -265,65 +224,51 @@ export default function AttendanceVerifyPage() {
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="font-bold">{lookup.subjectName}</p>
             <p className="text-sm text-slate-600">{lookup.hotelName}</p>
+            <p className={`mt-2 text-xs font-semibold ${lookup.locationMode === "record_only" ? "text-blue-800" : "text-amber-800"}`}>
+              {lookup.locationMode === "record_only"
+                ? "Test mode: your current GPS location will be recorded, even when you are away from the hotel."
+                : "Manager mode: your GPS location must be within the hotel attendance radius."}
+            </p>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border bg-slate-950">
-            {photoData && <img src={photoData} alt="Captured attendance selfie" className="aspect-square w-full object-cover" />}
-            <video
-              ref={videoRef}
-              playsInline
-              muted
-              className={`${photoData ? "hidden" : "block"} aspect-square w-full object-cover`}
-            />
-          </div>
-
-          {!cameraReady && !cameraUnavailable && <button
-            type="button"
-            onClick={() => void startCamera()}
-            disabled={cameraStarting}
-            className={`${button} bg-blue-800 text-white`}
-          >
-            <Camera size={18}/>
-            {cameraStarting ? "Starting Camera..." : "Start Front Camera"}
-          </button>}
-
-          {cameraReady && !photoData && <>
-            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-              <Camera size={17}/>Live front camera ready
+          {photoData ? <div className="overflow-hidden rounded-2xl border border-emerald-300 bg-slate-950">
+            <img src={photoData} alt="Captured attendance photo" className="aspect-square w-full object-cover" />
+          </div> : <div className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center text-slate-500">
+            <div className="px-6">
+              <Camera className="mx-auto" size={42}/>
+              <p className="mt-2 text-sm font-semibold">No photo captured yet</p>
+              <p className="mt-1 text-xs">Tap the button below to open your phone camera.</p>
             </div>
-            <button type="button" onClick={capturePhoto} className={`${button} bg-emerald-700 text-white`}>
-              <Camera size={18}/>Capture Photo
-            </button>
-          </>}
+          </div>}
 
-          {photoData && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <label className={`${button} cursor-pointer bg-blue-800 text-white`}>
+            {photoData ? <><RefreshCw size={18}/>Retake Photo</> : <><Camera size={18}/>{photoBusy ? "Preparing Photo..." : "Take Photo"}</>}
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              onChange={e => void handlePhoto(e)}
+              disabled={photoBusy || busy}
+              className="sr-only"
+            />
+          </label>
+
+          {photoData && <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
             <div className="flex items-center gap-2 font-bold text-emerald-900">
               <CheckCircle2 size={18}/>Photo captured
             </div>
-            <p className="mt-1 text-sm text-emerald-800">Confirm your face is clear in the preview above.</p>
-            <button type="button" onClick={retakePhoto} className={`${button} mt-3 border border-emerald-300 bg-white text-emerald-900`}>
-              <RefreshCw size={17}/>Retake Photo
-            </button>
+            <p className="mt-1 text-sm text-emerald-800">Your captured photo is shown above. Retake it if the face is not clear.</p>
           </div>}
 
-          {cameraUnavailable && <div className="space-y-3">
-            <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-              Camera is unavailable. GPS-only verification is allowed, but the record will be flagged for review.
-            </div>
-            <button type="button" onClick={() => void startCamera()} className={`${button} border border-slate-300 bg-white text-slate-800`}>
-              <Camera size={18}/>Try Camera Again
-            </button>
-          </div>}
-
-          {(photoData || cameraUnavailable) && <button
+          <button
             type="button"
             onClick={() => void verifyPresence()}
-            disabled={busy}
+            disabled={busy || photoBusy || !photoData}
             className={`${button} bg-emerald-700 text-white`}
           >
             <LocateFixed size={18}/>
-            {busy ? "Verifying Location..." : "Verify Location & Submit"}
-          </button>}
+            {busy ? "Capturing Location..." : "Capture Current Location & Submit"}
+          </button>
 
           <button type="button" onClick={resetVerification} className={`${button} border border-slate-300 bg-white text-slate-700`}>
             Use a Different Code
@@ -332,12 +277,16 @@ export default function AttendanceVerifyPage() {
 
         {verified && <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center">
           <CheckCircle2 className="mx-auto text-emerald-700" size={42}/>
-          <p className="mt-2 text-lg font-bold text-emerald-900">Presence Verified</p>
+          <p className="mt-2 text-lg font-bold text-emerald-900">
+            {verified.locationMode === "record_only" ? "Test Attendance Recorded" : "Presence Verified"}
+          </p>
           <p className="mt-1 text-sm text-emerald-800">
-            GPS distance: {verified.distanceM} m · Photo: {verified.photoCaptured ? "captured" : "not available"}
+            Photo: {verified.photoCaptured ? "captured" : "not available"} · Distance from hotel: {verified.distanceM} m
           </p>
           <p className="mt-3 text-sm font-semibold text-slate-700">
-            You can now return to the hotel desk. The shift can be started there.
+            {verified.locationMode === "record_only"
+              ? "Your actual current location was saved. Hotel-distance blocking was intentionally disabled for this test profile."
+              : "The manager is within the permitted hotel attendance area. Return to the hotel desk to start the shift."}
           </p>
         </div>}
 
@@ -346,7 +295,7 @@ export default function AttendanceVerifyPage() {
         </div>}
 
         <p className="mt-5 text-xs leading-5 text-slate-500">
-          Location and verification evidence are used only for attendance control and audit. Do not share attendance codes.
+          Attendance photo and GPS are stored only for attendance control and audit.
         </p>
       </div>
     </div>

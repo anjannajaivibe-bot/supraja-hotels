@@ -45,17 +45,26 @@ async function findPendingChallenge(code: string) {
   return row;
 }
 
-async function subjectName(challenge: Challenge) {
+async function subjectDetails(challenge: Challenge) {
   const table = challenge.subject_type === "employee" ? "hotel_employees" : "hotel_staff_members";
   const id = challenge.subject_type === "employee" ? challenge.employee_id : challenge.staff_member_id;
-  if (!id) return "Staff member";
+  if (!id) return { name: "Staff member", locationMode: "hotel_geofence" as const };
+
+  const select = challenge.subject_type === "employee"
+    ? "name,attendance_location_mode"
+    : "name";
   const response = await supabaseRequest(
-    `?select=name&id=eq.${encodeURIComponent(id)}&limit=1`,
+    `?select=${select}&id=eq.${encodeURIComponent(id)}&limit=1`,
     {},
     table,
   );
-  if (!response.ok) return "Staff member";
-  return ((await response.json()) as Array<{ name: string }>)[0]?.name ?? "Staff member";
+  if (!response.ok) return { name: "Staff member", locationMode: "hotel_geofence" as const };
+
+  const row = ((await response.json()) as Array<{ name: string; attendance_location_mode?: "hotel_geofence" | "record_only" }>)[0];
+  return {
+    name: row?.name ?? "Staff member",
+    locationMode: row?.attendance_location_mode ?? "hotel_geofence",
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -88,7 +97,8 @@ export async function POST(request: NextRequest) {
 
   const hotel = await getHotelAttendanceConfig(challenge.hotel_id);
   if (!hotel) return NextResponse.json({ error: "Unable to load hotel verification settings." }, { status: 500 });
-  const name = await subjectName(challenge);
+  const subject = await subjectDetails(challenge);
+  const name = subject.name;
 
   if (body.step === "lookup") {
     return NextResponse.json({
@@ -98,6 +108,7 @@ export async function POST(request: NextRequest) {
         hotelName: hotel.name,
         action: challenge.action,
         expiresAt: challenge.expires_at,
+        locationMode: subject.locationMode,
       },
     });
   }
@@ -117,8 +128,13 @@ export async function POST(request: NextRequest) {
   if (hotel.attendance_latitude == null || hotel.attendance_longitude == null) {
     return NextResponse.json({ error: "Hotel attendance location is not configured." }, { status: 409 });
   }
-  if (accuracy > 180) {
-    return NextResponse.json({ error: "GPS accuracy is too weak. Move near a window or entrance and try again." }, { status: 422 });
+  const maxAccuracy = subject.locationMode === "record_only" ? 500 : 180;
+  if (accuracy > maxAccuracy) {
+    return NextResponse.json({
+      error: subject.locationMode === "record_only"
+        ? "GPS accuracy is too weak to record your current location. Move near a window and try again."
+        : "GPS accuracy is too weak. Move near a window or entrance and try again.",
+    }, { status: 422 });
   }
 
   const distance = distanceMetres(
@@ -129,9 +145,11 @@ export async function POST(request: NextRequest) {
   );
   const accuracyAllowance = Math.min(accuracy, 75);
   const allowedDistance = hotel.attendance_radius_m + accuracyAllowance;
-  if (distance > allowedDistance) {
+  const withinHotelGeofence = distance <= allowedDistance;
+
+  if (subject.locationMode === "hotel_geofence" && !withinHotelGeofence) {
     return NextResponse.json({
-      error: `You appear to be about ${Math.round(distance)} m from ${hotel.name}. Move inside/near the hotel and try again.`,
+      error: `You appear to be about ${Math.round(distance)} m from ${hotel.name}. Manager attendance can only be verified at the hotel.`,
       distanceM: Math.round(distance),
       allowedDistanceM: Math.round(allowedDistance),
     }, { status: 422 });
@@ -141,6 +159,9 @@ export async function POST(request: NextRequest) {
   let photoCaptured = false;
   let reviewRequired = false;
   const notes: string[] = [];
+  if (subject.locationMode === "record_only") {
+    notes.push("Current GPS location recorded; hotel geofence was not enforced for this test profile.");
+  }
   const photoData = body.photoData?.trim() || "";
 
   if (photoData) {
@@ -235,6 +256,8 @@ export async function POST(request: NextRequest) {
       gpsAccuracyM: Math.round(accuracy),
       photoCaptured,
       reviewRequired,
+      locationMode: subject.locationMode,
+      withinHotelGeofence,
     },
   });
 }
