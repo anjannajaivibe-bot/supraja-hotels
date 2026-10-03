@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Camera, CheckCircle2, LocateFixed, RefreshCw, ShieldCheck } from "lucide-react";
 
 type Lookup = {
@@ -75,8 +75,14 @@ export default function AttendanceVerifyPage() {
   const [photoData, setPhotoData] = useState<string | null>(null);
   const [verified, setVerified] = useState<Verified | null>(null);
 
-  async function lookupCode(event: FormEvent) {
-    event.preventDefault();
+  async function lookupAttendanceCode(value: string) {
+    const clean = value.replace(/\D/g, "").slice(0, 6);
+    if (!/^\d{6}$/.test(clean)) {
+      setMessage("Enter a valid 6-digit attendance code.");
+      return;
+    }
+
+    setCode(clean);
     setBusy(true);
     setMessage("");
     setVerified(null);
@@ -85,7 +91,7 @@ export default function AttendanceVerifyPage() {
     const response = await fetch("/api/attendance-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "lookup", code }),
+      body: JSON.stringify({ step: "lookup", code: clean }),
     });
     const data = await response.json();
 
@@ -100,6 +106,18 @@ export default function AttendanceVerifyPage() {
     setMessage("Code accepted. Take a fresh photo using your phone camera.");
     setBusy(false);
   }
+
+  async function lookupCode(event: FormEvent) {
+    event.preventDefault();
+    await lookupAttendanceCode(code);
+  }
+
+  useEffect(() => {
+    const scannedCode = new URLSearchParams(window.location.search).get("code")?.replace(/\D/g, "").slice(0, 6) ?? "";
+    if (/^\d{6}$/.test(scannedCode)) {
+      void lookupAttendanceCode(scannedCode);
+    }
+  }, []);
 
   async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -286,7 +304,7 @@ export default function AttendanceVerifyPage() {
           <p className="mt-3 text-sm font-semibold text-slate-700">
             {verified.locationMode === "record_only"
               ? "Your actual current location was saved. Hotel-distance blocking was intentionally disabled for this test profile."
-              : "The manager is within the permitted hotel attendance area. Return to the hotel desk to start the shift."}
+              : "The manager is within the permitted hotel attendance area. The reception shift will start automatically on the hotel desktop."}
           </p>
         </div>}
 
