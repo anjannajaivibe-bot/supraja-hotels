@@ -81,13 +81,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Hotel attendance location is not configured. Contact Master Admin." }, { status: 409 });
   }
 
-  const response = await supabaseRequest(
+  const employeeResponse = await supabaseRequest(
     `?select=id,name,is_active&id=eq.${encodeURIComponent(body.subjectId)}&limit=1`,
     {},
     "hotel_employees",
   );
-  if (!response.ok) return NextResponse.json({ error: "Unable to verify employee." }, { status: 500 });
-  const employee = ((await response.json()) as Array<{ id: string; name: string; is_active: boolean }>)[0];
+  if (!employeeResponse.ok) return NextResponse.json({ error: "Unable to verify employee." }, { status: 500 });
+  const employee = ((await employeeResponse.json()) as Array<{ id: string; name: string; is_active: boolean }>)[0];
   if (!employee || !employee.is_active) return NextResponse.json({ error: "Employee is unavailable." }, { status: 409 });
   const subjectName = employee.name;
 
