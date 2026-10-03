@@ -6,6 +6,26 @@ import { supabaseRequest } from "@/lib/supabase-rest";
 
 type ShiftType = "morning" | "night";
 
+function indiaDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function parseOpeningCash(value:number|string|null|undefined){
+  if(value===undefined||value===null||String(value).trim()===""){
+    return {error:"Enter opening cash. Enter 0 if there is no cash."};
+  }
+  const amount=Number(value);
+  if(!Number.isFinite(amount)||amount<0){
+    return {error:"Opening cash must be 0 or more."};
+  }
+  return {amount:Math.round(amount*100)/100};
+}
+
 function shiftSchedule(shiftType: ShiftType) {
   const now = new Date();
   const ist = new Date(now.getTime() + 330 * 60 * 1000);
@@ -38,11 +58,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request:NextRequest){
  const session=getAdminSession(request);if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});if(session.role!=="hotel_admin"||!session.hotelId)return NextResponse.json({error:"Only hotel logins can start or end a shift."},{status:403});
- const body=(await request.json().catch(()=>({}))) as {action?:string;note?:string;employeeId?:string;pin?:string;shiftType?:ShiftType;lateReason?:string;verificationId?:string};
+ const body=(await request.json().catch(()=>({}))) as {action?:string;note?:string;employeeId?:string;pin?:string;shiftType?:ShiftType;lateReason?:string;verificationId?:string;openingCashAmount?:number|string|null};
 
  if(body.action==="start"){
   if(!body.employeeId||!body.pin||!body.shiftType)return NextResponse.json({error:"Select employee, shift and enter employee PIN."},{status:400});
   if(!["morning","night"].includes(body.shiftType))return NextResponse.json({error:"Invalid shift type."},{status:400});
+  const openingCashParsed=parseOpeningCash(body.openingCashAmount);
+  if(openingCashParsed.error)return NextResponse.json({error:openingCashParsed.error},{status:400});
+  const openingCashAmount=openingCashParsed.amount!;
   const ar=await supabaseRequest(`?select=id&admin_username=eq.${encodeURIComponent(session.username)}&status=eq.active&limit=1`,{},"hotel_shifts"),active=ar.ok?await ar.json() as {id:string}[]:[];if(active.length)return NextResponse.json({error:"This hotel already has an active shift."},{status:409});
   const er=await supabaseRequest(`?select=id,name,pin_hash,is_active&id=eq.${encodeURIComponent(body.employeeId)}&limit=1`,{},"hotel_employees");if(!er.ok)return NextResponse.json({error:"Unable to verify employee."},{status:500});const employee=(await er.json() as Array<{id:string;name:string;pin_hash:string;is_active:boolean}>)[0];if(!employee||!employee.is_active)return NextResponse.json({error:"Employee is unavailable."},{status:409});if(!verifyStoredPassword(body.pin.trim(),employee.pin_hash))return NextResponse.json({error:"Incorrect employee PIN."},{status:401});
 
@@ -55,10 +78,44 @@ export async function POST(request:NextRequest){
   if(!verification.ok)return NextResponse.json({error:verification.error,verificationRequired:"required" in verification?verification.required:true},{status:409});
 
   const payload={hotel_id:session.hotelId,admin_username:session.username,display_name:employee.name,employee_id:employee.id,start_note:body.note?.trim()||null,shift_type:body.shiftType,scheduled_start_at:schedule.scheduledStart.toISOString(),scheduled_end_at:schedule.scheduledEnd.toISOString(),is_late:schedule.lateMinutes>0,late_minutes:schedule.lateMinutes,late_reason:schedule.lateMinutes>0?body.lateReason?.trim()||null:null,attendance_verification_id:verification.verificationId};
-  const response=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(payload)},"hotel_shifts");if(!response.ok)return NextResponse.json({error:"Unable to start shift."},{status:500});const rows=await response.json() as {id:string}[];
+  const response=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(payload)},"hotel_shifts");
+  if(!response.ok)return NextResponse.json({error:"Unable to start shift."},{status:500});
+  const rows=await response.json() as {id:string}[];
+  const shiftId=rows[0]?.id;
+  if(!shiftId)return NextResponse.json({error:"Unable to start shift."},{status:500});
+
+  const now=new Date().toISOString();
+  const openingCashEntry={
+    hotel_id:session.hotelId,
+    checklist_date:indiaDate(),
+    checklist_type:"shift_start",
+    scope_key:`shift:${shiftId}`,
+    item_key:"cash_opening_verified",
+    item_label:"Opening cash balance verified",
+    is_completed:true,
+    completed_at:now,
+    completed_by_employee_id:employee.id,
+    completed_by_employee_name:employee.name,
+    shift_id:shiftId,
+    notes:null,
+    opening_cash_amount:openingCashAmount,
+    cash_handover_amount:null,
+    recorded_by:session.username,
+    updated_at:now,
+  };
+  const cashResponse=await supabaseRequest(
+    "?on_conflict=hotel_id,scope_key,checklist_type,item_key",
+    {method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify(openingCashEntry)},
+    "hotel_checklist_entries",
+  );
+  if(!cashResponse.ok){
+    await supabaseRequest(`?id=eq.${encodeURIComponent(shiftId)}`,{method:"DELETE"},"hotel_shifts");
+    return NextResponse.json({error:"Opening cash could not be saved, so the shift was not started. Please try again."},{status:500});
+  }
+
   await consumeAttendanceVerification(verification.verificationId);
-  await writeAuditLog(session,"shift_started","hotel_shift",rows[0]?.id??null,session.hotelId,{employeeId:employee.id,employeeName:employee.name,shiftType:body.shiftType,scheduledStartAt:schedule.scheduledStart.toISOString(),lateMinutes:schedule.lateMinutes,lateReason:schedule.lateMinutes>0?body.lateReason?.trim():null,attendanceVerificationId:verification.verificationId,attendanceReviewRequired:verification.reviewRequired});
-  return NextResponse.json({success:true,shift:rows[0],isLate:schedule.lateMinutes>0,lateMinutes:schedule.lateMinutes});
+  await writeAuditLog(session,"shift_started","hotel_shift",shiftId,session.hotelId,{employeeId:employee.id,employeeName:employee.name,shiftType:body.shiftType,scheduledStartAt:schedule.scheduledStart.toISOString(),lateMinutes:schedule.lateMinutes,lateReason:schedule.lateMinutes>0?body.lateReason?.trim():null,openingCashAmount,attendanceVerificationId:verification.verificationId,attendanceReviewRequired:verification.reviewRequired});
+  return NextResponse.json({success:true,shift:rows[0],openingCashAmount,isLate:schedule.lateMinutes>0,lateMinutes:schedule.lateMinutes});
  }
 
  if(body.action==="end"){
