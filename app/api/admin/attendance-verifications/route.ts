@@ -68,14 +68,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = (await request.json().catch(() => ({}))) as Body;
-  if (!body.subjectType || !body.subjectId || !body.action) {
-    return NextResponse.json({ error: "Employee/staff and verification action are required." }, { status: 400 });
-  }
-  if (
-    (body.subjectType === "employee" && body.action !== "reception_start") ||
-    (body.subjectType === "staff" && body.action !== "cleaning_start")
-  ) {
-    return NextResponse.json({ error: "Invalid attendance verification type." }, { status: 400 });
+  if (body.subjectType !== "employee" || !body.subjectId || body.action !== "reception_start") {
+    return NextResponse.json({ error: "Presence verification is available only for reception/manager shift start." }, { status: 400 });
   }
 
   const hotel = await getHotelAttendanceConfig(session.hotelId);
@@ -87,30 +81,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Hotel attendance location is not configured. Contact Master Admin." }, { status: 409 });
   }
 
-  let subjectName = "";
-  if (body.subjectType === "employee") {
-    const response = await supabaseRequest(
-      `?select=id,name,is_active&id=eq.${encodeURIComponent(body.subjectId)}&limit=1`,
-      {},
-      "hotel_employees",
-    );
-    if (!response.ok) return NextResponse.json({ error: "Unable to verify employee." }, { status: 500 });
-    const employee = ((await response.json()) as Array<{ id: string; name: string; is_active: boolean }>)[0];
-    if (!employee || !employee.is_active) return NextResponse.json({ error: "Employee is unavailable." }, { status: 409 });
-    subjectName = employee.name;
-  } else {
-    const response = await supabaseRequest(
-      `?select=id,name,is_active,hotel_id&id=eq.${encodeURIComponent(body.subjectId)}&hotel_id=eq.${encodeURIComponent(session.hotelId)}&limit=1`,
-      {},
-      "hotel_staff_members",
-    );
-    if (!response.ok) return NextResponse.json({ error: "Unable to verify staff member." }, { status: 500 });
-    const staff = ((await response.json()) as Array<{ id: string; name: string; is_active: boolean; hotel_id: string }>)[0];
-    if (!staff || !staff.is_active) return NextResponse.json({ error: "Staff member is unavailable." }, { status: 409 });
-    subjectName = staff.name;
-  }
+  const employeeResponse = await supabaseRequest(
+    `?select=id,name,is_active&id=eq.${encodeURIComponent(body.subjectId)}&limit=1`,
+    {},
+    "hotel_employees",
+  );
+  if (!employeeResponse.ok) return NextResponse.json({ error: "Unable to verify employee." }, { status: 500 });
+  const employee = ((await employeeResponse.json()) as Array<{ id: string; name: string; is_active: boolean }>)[0];
+  if (!employee || !employee.is_active) return NextResponse.json({ error: "Employee is unavailable." }, { status: 409 });
+  const subjectName = employee.name;
 
-  const subjectColumn = body.subjectType === "employee" ? "employee_id" : "staff_member_id";
+  const subjectColumn = "employee_id";
   await supabaseRequest(
     `?hotel_id=eq.${encodeURIComponent(session.hotelId)}&${subjectColumn}=eq.${encodeURIComponent(body.subjectId)}&action=eq.${body.action}&status=eq.pending`,
     {
@@ -125,10 +106,10 @@ export async function POST(request: NextRequest) {
   const expiresAt = new Date(Date.now() + 4 * 60 * 1000).toISOString();
   const payload = {
     hotel_id: session.hotelId,
-    subject_type: body.subjectType,
-    employee_id: body.subjectType === "employee" ? body.subjectId : null,
-    staff_member_id: body.subjectType === "staff" ? body.subjectId : null,
-    action: body.action,
+    subject_type: "employee",
+    employee_id: body.subjectId,
+    staff_member_id: null,
+    action: "reception_start",
     code_hash: hashAttendanceCode(code),
     expires_at: expiresAt,
     created_by: session.username,
@@ -147,10 +128,10 @@ export async function POST(request: NextRequest) {
   const row = ((await response.json()) as Array<{ id: string; status: string; expires_at: string }>)[0];
 
   await writeAuditLog(session, "attendance_verification_created", "attendance_verification", row.id, session.hotelId, {
-    subjectType: body.subjectType,
+    subjectType: "employee",
     subjectId: body.subjectId,
     subjectName,
-    action: body.action,
+    action: "reception_start",
     expiresAt,
   });
 
