@@ -56,6 +56,8 @@ create table if not exists public.hotel_attendance_verifications (
 create index if not exists hotel_attendance_verifications_code_hash_idx on public.hotel_attendance_verifications(code_hash);
 create index if not exists hotel_attendance_verifications_hotel_created_idx on public.hotel_attendance_verifications(hotel_id,created_at desc);
 create index if not exists hotel_attendance_verifications_pending_idx on public.hotel_attendance_verifications(status,expires_at) where status='pending';
+create index if not exists hotel_attendance_verifications_employee_idx on public.hotel_attendance_verifications(employee_id) where employee_id is not null;
+create index if not exists hotel_attendance_verifications_staff_idx on public.hotel_attendance_verifications(staff_member_id) where staff_member_id is not null;
 alter table public.hotel_attendance_verifications enable row level security;
 
 alter table public.hotel_shifts add column if not exists attendance_verification_id uuid references public.hotel_attendance_verifications(id);
