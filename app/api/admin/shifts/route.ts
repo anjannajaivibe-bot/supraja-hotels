@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
+import { consumeAttendanceVerification, validateAttendanceVerification } from "@/lib/attendance-verification";
 import { hotelScope, verifyStoredPassword, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
 
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request:NextRequest){
  const session=getAdminSession(request);if(!session)return NextResponse.json({error:"Unauthorized"},{status:401});if(session.role!=="hotel_admin"||!session.hotelId)return NextResponse.json({error:"Only hotel logins can start or end a shift."},{status:403});
- const body=(await request.json().catch(()=>({}))) as {action?:string;note?:string;employeeId?:string;pin?:string;shiftType?:ShiftType;lateReason?:string};
+ const body=(await request.json().catch(()=>({}))) as {action?:string;note?:string;employeeId?:string;pin?:string;shiftType?:ShiftType;lateReason?:string;verificationId?:string};
 
  if(body.action==="start"){
   if(!body.employeeId||!body.pin||!body.shiftType)return NextResponse.json({error:"Select employee, shift and enter employee PIN."},{status:400});
@@ -50,9 +51,13 @@ export async function POST(request:NextRequest){
     return NextResponse.json({error:`You are ${schedule.lateMinutes} minute${schedule.lateMinutes===1?"":"s"} late for the ${body.shiftType} shift. Enter the reason for late arrival.`,code:"LATE_REASON_REQUIRED",lateMinutes:schedule.lateMinutes,shiftType:body.shiftType},{status:409});
   }
 
-  const payload={hotel_id:session.hotelId,admin_username:session.username,display_name:employee.name,employee_id:employee.id,start_note:body.note?.trim()||null,shift_type:body.shiftType,scheduled_start_at:schedule.scheduledStart.toISOString(),scheduled_end_at:schedule.scheduledEnd.toISOString(),is_late:schedule.lateMinutes>0,late_minutes:schedule.lateMinutes,late_reason:schedule.lateMinutes>0?body.lateReason?.trim()||null:null};
+  const verification=await validateAttendanceVerification({hotelId:session.hotelId,verificationId:body.verificationId,subjectType:"employee",subjectId:employee.id,action:"reception_start"});
+  if(!verification.ok)return NextResponse.json({error:verification.error,verificationRequired:"required" in verification?verification.required:true},{status:409});
+
+  const payload={hotel_id:session.hotelId,admin_username:session.username,display_name:employee.name,employee_id:employee.id,start_note:body.note?.trim()||null,shift_type:body.shiftType,scheduled_start_at:schedule.scheduledStart.toISOString(),scheduled_end_at:schedule.scheduledEnd.toISOString(),is_late:schedule.lateMinutes>0,late_minutes:schedule.lateMinutes,late_reason:schedule.lateMinutes>0?body.lateReason?.trim()||null:null,attendance_verification_id:verification.verificationId};
   const response=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(payload)},"hotel_shifts");if(!response.ok)return NextResponse.json({error:"Unable to start shift."},{status:500});const rows=await response.json() as {id:string}[];
-  await writeAuditLog(session,"shift_started","hotel_shift",rows[0]?.id??null,session.hotelId,{employeeId:employee.id,employeeName:employee.name,shiftType:body.shiftType,scheduledStartAt:schedule.scheduledStart.toISOString(),lateMinutes:schedule.lateMinutes,lateReason:schedule.lateMinutes>0?body.lateReason?.trim():null});
+  await consumeAttendanceVerification(verification.verificationId);
+  await writeAuditLog(session,"shift_started","hotel_shift",rows[0]?.id??null,session.hotelId,{employeeId:employee.id,employeeName:employee.name,shiftType:body.shiftType,scheduledStartAt:schedule.scheduledStart.toISOString(),lateMinutes:schedule.lateMinutes,lateReason:schedule.lateMinutes>0?body.lateReason?.trim():null,attendanceVerificationId:verification.verificationId,attendanceReviewRequired:verification.reviewRequired});
   return NextResponse.json({success:true,shift:rows[0],isLate:schedule.lateMinutes>0,lateMinutes:schedule.lateMinutes});
  }
 

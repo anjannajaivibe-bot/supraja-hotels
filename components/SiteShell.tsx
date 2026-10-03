@@ -11,7 +11,7 @@ import VisitorClickTracker from "@/components/VisitorClickTracker";
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/attendance-verify")) {
     return children;
   }
 
