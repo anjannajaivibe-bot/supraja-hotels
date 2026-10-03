@@ -142,7 +142,8 @@ export default function AttendanceVerifyPage() {
         ? "Location verified. This record is flagged for review because the live photo was unavailable or another check needs attention."
         : "Physical presence verified successfully.");
     } catch (error) {
-      const text = error instanceof GeolocationPositionError
+      const geoError = typeof error === "object" && error !== null && "code" in error;
+      const text = geoError
         ? "Location permission failed. Turn on phone Location/GPS, allow location for this site, and try again."
         : error instanceof Error ? error.message : "Unable to read live location.";
       setMessage(text);
