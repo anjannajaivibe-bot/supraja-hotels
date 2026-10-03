@@ -13,6 +13,8 @@ function encodeObjectPath(path: string) {
 
 export async function uploadAttendanceSelfie(path: string, bytes: Uint8Array) {
   const { url, serviceRoleKey } = getStorageConfig();
+  const body = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(body).set(bytes);
   return fetch(
     `${url}/storage/v1/object/attendance-selfies/${encodeObjectPath(path)}`,
     {
@@ -23,7 +25,7 @@ export async function uploadAttendanceSelfie(path: string, bytes: Uint8Array) {
         "Content-Type": "image/jpeg",
         "x-upsert": "false",
       },
-      body: bytes,
+      body,
       cache: "no-store",
     },
   );
