@@ -3,6 +3,7 @@ import { getAdminSession } from "@/lib/admin-auth";
 import { consumeAttendanceVerification, validateAttendanceVerification } from "@/lib/attendance-verification";
 import { hotelScope, verifyStoredPassword, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
+import { parseOpeningCash } from "@/lib/opening-cash";
 
 type ShiftType = "morning" | "night";
 
@@ -13,17 +14,6 @@ function indiaDate() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-}
-
-function parseOpeningCash(value:number|string|null|undefined){
-  if(value===undefined||value===null||String(value).trim()===""){
-    return {error:"Enter opening cash. Enter 0 if there is no cash."};
-  }
-  const amount=Number(value);
-  if(!Number.isFinite(amount)||amount<0){
-    return {error:"Opening cash must be 0 or more."};
-  }
-  return {amount:Math.round(amount*100)/100};
 }
 
 function shiftSchedule(shiftType: ShiftType) {

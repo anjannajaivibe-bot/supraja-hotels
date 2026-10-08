@@ -9,11 +9,13 @@ import {
 } from "@/lib/attendance-verification";
 import { hotelScope, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
+import { parseOpeningCash } from "@/lib/opening-cash";
 
 type Body = {
   subjectType?: AttendanceSubjectType;
   subjectId?: string;
   action?: AttendanceVerificationAction;
+  openingCashAmount?: unknown;
 };
 
 export async function GET(request: NextRequest) {
@@ -71,6 +73,8 @@ export async function POST(request: NextRequest) {
   if (body.subjectType !== "employee" || !body.subjectId || body.action !== "reception_start") {
     return NextResponse.json({ error: "Presence verification is available only for reception/manager shift start." }, { status: 400 });
   }
+  const openingCash = parseOpeningCash(body.openingCashAmount);
+  if (openingCash.error) return NextResponse.json({ error: openingCash.error }, { status: 400 });
 
   const hotel = await getHotelAttendanceConfig(session.hotelId);
   if (!hotel) return NextResponse.json({ error: "Unable to load hotel attendance settings." }, { status: 500 });

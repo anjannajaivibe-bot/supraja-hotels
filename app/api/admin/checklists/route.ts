@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { hotelScope, writeAuditLog } from "@/lib/hotel-ops";
 import { supabaseRequest } from "@/lib/supabase-rest";
+import { checklistScopeFilter } from "@/lib/checklist-scope";
+import { parseOpeningCash } from "@/lib/opening-cash";
 
 const CHECKLISTS = {
   shift_start: [
@@ -40,8 +42,9 @@ function indiaDate() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
-async function activeShift(hotelId:string, username:string) {
-  const r=await supabaseRequest(`?select=id,employee_id,display_name&hotel_id=eq.${encodeURIComponent(hotelId)}&admin_username=eq.${encodeURIComponent(username)}&status=eq.active&order=started_at.desc&limit=1`,{},"hotel_shifts");
+async function activeShift(hotelId:string, username?:string) {
+  const userFilter=username?`&admin_username=eq.${encodeURIComponent(username)}`:"";
+  const r=await supabaseRequest(`?select=id,employee_id,display_name&hotel_id=eq.${encodeURIComponent(hotelId)}${userFilter}&status=eq.active&order=started_at.desc&limit=1`,{},"hotel_shifts");
   if(!r.ok)return null;
   return ((await r.json()) as Array<{id:string;employee_id:string|null;display_name:string}>)[0]??null;
 }
@@ -59,11 +62,10 @@ export async function GET(request:NextRequest){
   const hotelId=hotelScope(session,request.nextUrl.searchParams.get("hotelId"));
   if(!hotelId)return NextResponse.json({error:"Hotel required."},{status:400});
   const date=request.nextUrl.searchParams.get("date")||indiaDate();
-  const shift=session.role==="hotel_admin"?await activeShift(hotelId,session.username):null;
-  const dailyScope=`daily:${date}`;
-  const shiftScope=shift?`shift:${shift.id}`:"";
-  const scopeFilter=shiftScope?`&scope_key=in.(${encodeURIComponent(dailyScope)},${encodeURIComponent(shiftScope)})`:`&scope_key=eq.${encodeURIComponent(dailyScope)}`;
-  const r=await supabaseRequest(`?select=*&hotel_id=eq.${encodeURIComponent(hotelId)}&checklist_date=eq.${date}${scopeFilter}`,{},"hotel_checklist_entries");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return NextResponse.json({error:"Invalid checklist date."},{status:400});
+  const shift=await activeShift(hotelId,session.role==="hotel_admin"?session.username:undefined);
+  const scopeFilter=checklistScopeFilter(date,shift?[shift.id]:[]);
+  const r=await supabaseRequest(`?select=*&hotel_id=eq.${encodeURIComponent(hotelId)}${scopeFilter}`,{},"hotel_checklist_entries");
   if(!r.ok)return NextResponse.json({error:"Unable to load checklists."},{status:500});
   return NextResponse.json({templates:CHECKLISTS,entries:await r.json(),activeShift:shift,date});
 }
@@ -78,12 +80,16 @@ export async function POST(request:NextRequest){
   const item=CHECKLISTS[type].find(([key])=>key===body.itemKey);
   if(!item)return NextResponse.json({error:"Invalid checklist item."},{status:400});
 
+  if(type==="shift_start"&&item[0]==="cash_opening_verified"&&!body.completed){
+    return NextResponse.json({error:"Opening cash is mandatory for an active shift and cannot be cleared."},{status:409});
+  }
+
   const needsOpeningCash=type==="shift_start"&&item[0]==="cash_opening_verified"&&Boolean(body.completed);
   const needsCashHandover=type==="shift_end"&&item[0]==="cash_reconciled"&&Boolean(body.completed);
   let openingCashAmount:number|null=null,cashHandoverAmount:number|null=null;
 
   if(needsOpeningCash){
-    const parsed=parseMoney(body.openingCashAmount,"opening cash balance");
+    const parsed=parseOpeningCash(body.openingCashAmount);
     if(parsed.error)return NextResponse.json({error:parsed.error},{status:400});
     openingCashAmount=parsed.amount!;
   }

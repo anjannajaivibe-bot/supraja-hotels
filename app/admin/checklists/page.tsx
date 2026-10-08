@@ -133,12 +133,12 @@ export default function Checklists() {
                           {done && isCashHandover && <p className="mt-1 text-sm font-bold text-emerald-800">Cash handover: ₹{Number(e?.cash_handover_amount ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</p>}
                         </div>
                       </div>
-                      {s.role === "hotel_admin" && <button disabled={busy || !shift} onClick={() => {
+                      {s.role === "hotel_admin" && (done && isOpeningCash ? <span className="text-xs font-semibold text-blue-800">Opening cash recorded</span> : <button disabled={busy || !shift} onClick={() => {
                         if (done) void toggle(sec.type, key, false);
                         else if (isOpeningCash) setOpeningCashOpen(true);
                         else if (isCashHandover) setCashOpen(true);
                         else void toggle(sec.type, key, true);
-                      }} className={`${btn} ${done ? "border border-slate-300 bg-white" : "bg-blue-800 text-white"}`}>{done ? "Reopen" : "Mark Done"}</button>}
+                      }} className={`${btn} ${done ? "border border-slate-300 bg-white" : "bg-blue-800 text-white"}`}>{done ? "Reopen" : "Mark Done"}</button>)}
                     </div>
 
                     {s.role === "hotel_admin" && isOpeningCash && !done && openingCashOpen && (

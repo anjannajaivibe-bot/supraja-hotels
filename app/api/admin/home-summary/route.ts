@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { supabaseRequest } from "@/lib/supabase-rest";
+import { checklistScopeFilter } from "@/lib/checklist-scope";
 
 function indiaDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
 function mondayIst(){const now=new Date(),ist=new Date(now.getTime()+330*60000),day=ist.getUTCDay(),diff=day===0?-6:1-day;ist.setUTCDate(ist.getUTCDate()+diff);return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,"0")}-${String(ist.getUTCDate()).padStart(2,"0")}`}
@@ -31,12 +32,14 @@ export async function GET(request:NextRequest){
  ]);
  if(![shiftRes,staffRes,attendanceRes,complaintRes,maintenanceRes,laundryBatchRes,inventoryCheckRes].every(r=>r.ok))return NextResponse.json({error:"Unable to load today's operational summary."},{status:500});
 
- let checklistRes=await supabaseRequest(`?select=hotel_id,checklist_type,item_key,is_completed,opening_cash_amount,shift_id,scope_key&hotel_id=in.(${inFilter})&checklist_date=eq.${date}`,{},"hotel_checklist_entries");
+ const shifts=await shiftRes.json() as Shift[];
+ const checklistFilter=checklistScopeFilter(date,shifts.map(s=>s.id));
+ let checklistRes=await supabaseRequest(`?select=hotel_id,checklist_type,item_key,is_completed,opening_cash_amount,shift_id,scope_key&hotel_id=in.(${inFilter})${checklistFilter}`,{},"hotel_checklist_entries");
  let openingCashSupported=true;
- if(!checklistRes.ok){openingCashSupported=false;checklistRes=await supabaseRequest(`?select=hotel_id,checklist_type,item_key,is_completed,shift_id,scope_key&hotel_id=in.(${inFilter})&checklist_date=eq.${date}`,{},"hotel_checklist_entries")}
+ if(!checklistRes.ok){openingCashSupported=false;checklistRes=await supabaseRequest(`?select=hotel_id,checklist_type,item_key,is_completed,shift_id,scope_key&hotel_id=in.(${inFilter})${checklistFilter}`,{},"hotel_checklist_entries")}
  if(!checklistRes.ok)return NextResponse.json({error:"Unable to load today's checklist summary."},{status:500});
 
- const shifts=await shiftRes.json() as Shift[],staff=await staffRes.json() as Staff[],attendance=await attendanceRes.json() as Attendance[],checklists=await checklistRes.json() as Checklist[],complaints=await complaintRes.json() as Issue[],maintenance=await maintenanceRes.json() as Issue[],laundryBatches=await laundryBatchRes.json() as LaundryBatch[],inventoryChecks=await inventoryCheckRes.json() as InventoryCheck[];
+ const staff=await staffRes.json() as Staff[],attendance=await attendanceRes.json() as Attendance[],checklists=await checklistRes.json() as Checklist[],complaints=await complaintRes.json() as Issue[],maintenance=await maintenanceRes.json() as Issue[],laundryBatches=await laundryBatchRes.json() as LaundryBatch[],inventoryChecks=await inventoryCheckRes.json() as InventoryCheck[];
  let laundryItems:LaundryItem[]=[];if(laundryBatches.length){const batchIds=laundryBatches.map(b=>encodeURIComponent(b.id)).join(","),r=await supabaseRequest(`?select=batch_id,quantity_sent,quantity_received,rewash_qty,missing_qty,damaged_qty&batch_id=in.(${batchIds})`,{},"hotel_laundry_items");if(r.ok)laundryItems=await r.json()}
  let inventoryCheckItems:InventoryCheckItem[]=[];if(inventoryChecks.length){const checkIds=inventoryChecks.map(c=>encodeURIComponent(c.id)).join(","),r=await supabaseRequest(`?select=check_id,expected_qty,physical_qty,condition&check_id=in.(${checkIds})`,{},"hotel_inventory_check_items");if(r.ok)inventoryCheckItems=await r.json()}
 
