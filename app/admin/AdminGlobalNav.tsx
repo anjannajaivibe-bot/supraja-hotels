@@ -10,6 +10,7 @@ import {
   DoorOpen,
   Download,
   Home,
+  ChartNoAxesCombined,
   ListChecks,
   LogOut,
   MousePointerClick,
@@ -33,6 +34,7 @@ const baseItems = [
   { href: "/admin/rooms", label: "Rooms", icon: BedDouble },
   { href: "/admin/day-use", label: "Day Use Guests", icon: Clock3 },
   { href: "/admin/laundry", label: "Laundry", icon: Shirt },
+  { href: "/admin/financials", label: "Monthly P&L", icon: ChartNoAxesCombined },
   { href: "/admin/inventory", label: "Inventory", icon: PackageSearch },
   { href: "/admin/exceptions", label: "Exceptions", icon: ShieldAlert },
 ];
