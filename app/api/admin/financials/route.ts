@@ -43,7 +43,7 @@ export async function GET(request:NextRequest){
  const ids=allowed.map(h=>encodeURIComponent(h.id)).join(",");
  const periodsRes=await supabaseRequest(`?select=hotel_id,status,closed_at&hotel_id=in.(${ids})&month=eq.${monthDate(month)}`,{},"hotel_financial_periods");
  const periods=periodsRes.ok?await periodsRes.json() as Array<{hotel_id:string;status:string;closed_at:string|null}>:[];
- const summary=session.role==="master"?allowed.map(h=>{const a=entries.filter(e=>e.hotel_id===h.id&&e.status==="approved"),revenue=a.filter(e=>e.entry_type==="revenue").reduce((s,e)=>s+Number(e.amount),0),expenses=a.filter(e=>e.entry_type==="expense").reduce((s,e)=>s+Number(e.amount),0);return{hotelId:h.id,hotelName:h.name,revenue,expenses,profit:revenue-expenses,margin:revenue>0?(revenue-expenses)/revenue*100:null,status:periods.find(p=>p.hotel_id===h.id)?.status||"open"}}):[];
+ const summary=session.role==="master"?allowed.map(h=>{const a=entries.filter(e=>e.hotel_id===h.id&&e.status!=="rejected"),revenue=a.filter(e=>e.entry_type==="revenue").reduce((s,e)=>s+Number(e.amount),0),expenses=a.filter(e=>e.entry_type==="expense").reduce((s,e)=>s+Number(e.amount),0);return{hotelId:h.id,hotelName:h.name,revenue,expenses,profit:revenue-expenses,margin:revenue>0?(revenue-expenses)/revenue*100:null,status:periods.find(p=>p.hotel_id===h.id)?.status||"open"}}):[];
  const staffRes=await supabaseRequest(`?select=id,hotel_id,name,staff_type&hotel_id=in.(${ids})&is_active=eq.true&order=name.asc`,{},"hotel_staff_members");
  const staff=staffRes.ok?await staffRes.json():[];
  return NextResponse.json({hotels:allowed,entries,summary,staff,periods,month,categories});
@@ -67,7 +67,7 @@ export async function POST(request:NextRequest){
   return NextResponse.json({success:true});
  }
  if(period?.status==="closed")return NextResponse.json({error:"This month is closed. Request Master Admin to reopen it."},{status:409});
- if(action==="create"){
+ if(action==="create"||action==="edit"){
  const type=String(body.entryType||"");const category=String(body.category||"").trim(),description=String(body.description||"").trim(),entryDate=String(body.entryDate||"");
  const amount=Number(body.amount);
  if(session.role!=="master"&&type!=="expense")return NextResponse.json({error:"Hotel users can enter expenses only."},{status:403});
@@ -78,28 +78,29 @@ export async function POST(request:NextRequest){
  if(category==="Miscellaneous"&&description.length<10)return NextResponse.json({error:"Provide at least 10 characters explaining the Miscellaneous expense."},{status:400});
  if(type==="revenue"&&!category.endsWith("Revenue"))return NextResponse.json({error:"Select a revenue category."},{status:400});
  if(type==="expense"&&category.endsWith("Revenue"))return NextResponse.json({error:"Select an expense category."},{status:400});
- const record={hotel_id:hotelId,staff_name:staffName||null,accounting_month:monthDate(month),entry_date:entryDate,entry_type:type,category,description:description||null,amount:amount.toFixed(2),payment_status:body.paymentStatus==="unpaid"?"unpaid":"paid",payment_method:String(body.paymentMethod||"").slice(0,80)||null,vendor:String(body.vendor||"").slice(0,160)||null,invoice_number:String(body.invoiceNumber||"").slice(0,100)||null,source_type:"manual",status:session.role==="master"?"approved":"pending",entered_by:actor,approved_by:session.role==="master"?actor:null,approved_at:session.role==="master"?new Date().toISOString():null};
+ const record={hotel_id:hotelId,staff_name:staffName||null,accounting_month:monthDate(month),entry_date:entryDate,entry_type:type,category,description:description||null,amount:amount.toFixed(2),payment_status:body.paymentStatus==="unpaid"?"unpaid":"paid",payment_method:String(body.paymentMethod||"").slice(0,80)||null,vendor:String(body.vendor||"").slice(0,160)||null,invoice_number:String(body.invoiceNumber||"").slice(0,100)||null,source_type:"manual",status:"approved",entered_by:actor,approved_by:null,approved_at:null};
+ if(action==="edit"){
+  const id=String(body.entryId||"");
+  const existingRes=await supabaseRequest(`?select=*&id=eq.${encodeURIComponent(id)}&hotel_id=eq.${encodeURIComponent(hotelId)}&accounting_month=eq.${monthDate(month)}&limit=1`,{},"hotel_financial_entries");
+  if(!existingRes.ok)return NextResponse.json({error:"Unable to verify existing entry."},{status:500});
+  const original=first(await existingRes.json() as Array<Entry&{source_type:string;status:string}>);
+  if(!original)return NextResponse.json({error:"Expense entry not found."},{status:404});
+  if(original.source_type!=="manual"||original.status==="rejected")return NextResponse.json({error:"This entry cannot be edited."},{status:403});
+  if(session.role!=="master"&&original.entry_type!=="expense")return NextResponse.json({error:"Hotel users cannot edit revenue."},{status:403});
+  if(original.entry_type!==type)return NextResponse.json({error:"Entry type cannot be changed."},{status:400});
+  const patch={category,staff_name:staffName||null,entry_date:entryDate,description:description||null,amount:amount.toFixed(2),payment_status:record.payment_status,payment_method:record.payment_method,vendor:record.vendor,invoice_number:record.invoice_number,status:"approved",updated_at:new Date().toISOString()};
+  const edited=await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&hotel_id=eq.${encodeURIComponent(hotelId)}&accounting_month=eq.${monthDate(month)}`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(patch)},"hotel_financial_entries");
+  if(!edited.ok)return NextResponse.json({error:"Unable to update expense."},{status:500});
+  const updated=first(await edited.json() as Entry[]);
+  if(!updated)return NextResponse.json({error:"Unable to verify expense update."},{status:500});
+  await audit(hotelId,id,"edited",actor,original,updated);
+  return NextResponse.json({success:true,entry:updated});
+ }
  const r=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(record)},"hotel_financial_entries");
  if(!r.ok)return NextResponse.json({error:"Unable to save entry."},{status:500});
  const entry=first(await r.json() as Array<{id:string}>);
  if(entry)await audit(hotelId,entry.id,"created",actor,null,record);
  return NextResponse.json({success:true,entry});
- }
- if(action==="approve"||action==="reject"){
- if(session.role!=="master")return NextResponse.json({error:"Only Master Admin can approve expenses."},{status:403});
- const id=String(body.entryId||"");
- const existingRes=await supabaseRequest(`?select=*&id=eq.${encodeURIComponent(id)}&hotel_id=eq.${encodeURIComponent(hotelId)}&accounting_month=eq.${monthDate(month)}&limit=1`,{},"hotel_financial_entries");
- if(!existingRes.ok)return NextResponse.json({error:"Unable to verify entry."},{status:500});
- const existing=first(await existingRes.json() as Entry[]);
- if(!existing)return NextResponse.json({error:"Entry not found."},{status:404});
- const status=action==="approve"?"approved":"rejected";
- const patch={status,approved_by:actor,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()};
- const r=await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&hotel_id=eq.${encodeURIComponent(hotelId)}&status=eq.pending`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(patch)},"hotel_financial_entries");
- if(!r.ok)return NextResponse.json({error:"Unable to update entry."},{status:500});
- const changed=await r.json() as Entry[];
- if(!changed.length)return NextResponse.json({error:"Entry was already processed."},{status:409});
- await audit(hotelId,id,action,actor,existing,changed[0]);
- return NextResponse.json({success:true});
  }
  return NextResponse.json({error:"Unsupported action."},{status:400});
 }
