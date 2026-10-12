@@ -38,12 +38,15 @@ export async function GET(request:NextRequest){
  if(requested&&!allowed.length)return NextResponse.json({error:"Hotel access denied."},{status:403});
  if(!allowed.length)return NextResponse.json({hotels:[],entries:[],summary:[],month});
  try{
- const entries=await readEntries(allowed.map(h=>h.id),month);
+ const allEntries=await readEntries(allowed.map(h=>h.id),month);
+ const entries=session.role==="master"?allEntries:allEntries.filter(e=>e.entry_type==="expense");
  const ids=allowed.map(h=>encodeURIComponent(h.id)).join(",");
  const periodsRes=await supabaseRequest(`?select=hotel_id,status,closed_at&hotel_id=in.(${ids})&month=eq.${monthDate(month)}`,{},"hotel_financial_periods");
  const periods=periodsRes.ok?await periodsRes.json() as Array<{hotel_id:string;status:string;closed_at:string|null}>:[];
- const summary=allowed.map(h=>{const a=entries.filter(e=>e.hotel_id===h.id&&e.status==="approved"),revenue=a.filter(e=>e.entry_type==="revenue").reduce((s,e)=>s+Number(e.amount),0),expenses=a.filter(e=>e.entry_type==="expense").reduce((s,e)=>s+Number(e.amount),0);return{hotelId:h.id,hotelName:h.name,revenue,expenses,profit:revenue-expenses,margin:revenue>0?(revenue-expenses)/revenue*100:null,status:periods.find(p=>p.hotel_id===h.id)?.status||"open"}});
- return NextResponse.json({hotels:allowed,entries,summary,month,categories});
+ const summary=session.role==="master"?allowed.map(h=>{const a=entries.filter(e=>e.hotel_id===h.id&&e.status==="approved"),revenue=a.filter(e=>e.entry_type==="revenue").reduce((s,e)=>s+Number(e.amount),0),expenses=a.filter(e=>e.entry_type==="expense").reduce((s,e)=>s+Number(e.amount),0);return{hotelId:h.id,hotelName:h.name,revenue,expenses,profit:revenue-expenses,margin:revenue>0?(revenue-expenses)/revenue*100:null,status:periods.find(p=>p.hotel_id===h.id)?.status||"open"}}):[];
+ const staffRes=await supabaseRequest(`?select=id,hotel_id,name,staff_type&hotel_id=in.(${ids})&is_active=eq.true&order=name.asc`,{},"hotel_staff_members");
+ const staff=staffRes.ok?await staffRes.json():[];
+ return NextResponse.json({hotels:allowed,entries,summary,staff,periods,month,categories});
  }catch{return NextResponse.json({error:"Unable to load financial report."},{status:500})}
 }
 export async function POST(request:NextRequest){
@@ -67,12 +70,15 @@ export async function POST(request:NextRequest){
  if(action==="create"){
  const type=String(body.entryType||"");const category=String(body.category||"").trim(),description=String(body.description||"").trim(),entryDate=String(body.entryDate||"");
  const amount=Number(body.amount);
+ if(session.role!=="master"&&type!=="expense")return NextResponse.json({error:"Hotel users can enter expenses only."},{status:403});
+ const staffName=category==="Staff Salary"?String(body.staffName||"").trim():"";
+ if(category==="Staff Salary"&&(staffName.length<2||staffName.length>120))return NextResponse.json({error:"Enter the staff member name for salary expenses."},{status:400});
  if(!["revenue","expense"].includes(type)||!categories.includes(category)||!Number.isFinite(amount)||amount<=0||amount>100000000||!validDate(entryDate))return NextResponse.json({error:"Enter a valid category, date, amount and type."},{status:400});
  if(!entryDate.startsWith(month))return NextResponse.json({error:"Expense date must belong to the selected accounting month."},{status:400});
  if(category==="Miscellaneous"&&description.length<10)return NextResponse.json({error:"Provide at least 10 characters explaining the Miscellaneous expense."},{status:400});
  if(type==="revenue"&&!category.endsWith("Revenue"))return NextResponse.json({error:"Select a revenue category."},{status:400});
  if(type==="expense"&&category.endsWith("Revenue"))return NextResponse.json({error:"Select an expense category."},{status:400});
- const record={hotel_id:hotelId,accounting_month:monthDate(month),entry_date:entryDate,entry_type:type,category,description:description||null,amount:amount.toFixed(2),payment_status:body.paymentStatus==="unpaid"?"unpaid":"paid",payment_method:String(body.paymentMethod||"").slice(0,80)||null,vendor:String(body.vendor||"").slice(0,160)||null,invoice_number:String(body.invoiceNumber||"").slice(0,100)||null,source_type:"manual",status:session.role==="master"?"approved":"pending",entered_by:actor,approved_by:session.role==="master"?actor:null,approved_at:session.role==="master"?new Date().toISOString():null};
+ const record={hotel_id:hotelId,staff_name:staffName||null,accounting_month:monthDate(month),entry_date:entryDate,entry_type:type,category,description:description||null,amount:amount.toFixed(2),payment_status:body.paymentStatus==="unpaid"?"unpaid":"paid",payment_method:String(body.paymentMethod||"").slice(0,80)||null,vendor:String(body.vendor||"").slice(0,160)||null,invoice_number:String(body.invoiceNumber||"").slice(0,100)||null,source_type:"manual",status:session.role==="master"?"approved":"pending",entered_by:actor,approved_by:session.role==="master"?actor:null,approved_at:session.role==="master"?new Date().toISOString():null};
  const r=await supabaseRequest("?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(record)},"hotel_financial_entries");
  if(!r.ok)return NextResponse.json({error:"Unable to save entry."},{status:500});
  const entry=first(await r.json() as Array<{id:string}>);
