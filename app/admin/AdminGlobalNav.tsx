@@ -34,7 +34,6 @@ const baseItems = [
   { href: "/admin/rooms", label: "Rooms", icon: BedDouble },
   { href: "/admin/day-use", label: "Day Use Guests", icon: Clock3 },
   { href: "/admin/laundry", label: "Laundry", icon: Shirt },
-  { href: "/admin/financials", label: "Monthly P&L", icon: ChartNoAxesCombined },
   { href: "/admin/inventory", label: "Inventory", icon: PackageSearch },
   { href: "/admin/exceptions", label: "Exceptions", icon: ShieldAlert },
 ];
@@ -103,11 +102,12 @@ export default function AdminGlobalNav() {
     session.role === "master"
       ? [
           ...baseItems,
+          { href: "/admin/financials", label: "Monthly P&L", icon: ChartNoAxesCombined },
           { href: "/admin/clicks", label: "Website Activity", icon: MousePointerClick },
           { href: "/admin/attendance-export", label: "Export", icon: Download },
           { href: "/admin/users", label: "Access", icon: Users },
         ]
-      : baseItems;
+      : [...baseItems, { href: "/admin/financials", label: "Expenses", icon: ChartNoAxesCombined }];
 
   async function logout() {
     try {
