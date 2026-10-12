@@ -46,7 +46,9 @@ export async function GET(request:NextRequest){
  const summary=session.role==="master"?allowed.map(h=>{const a=entries.filter(e=>e.hotel_id===h.id&&e.status!=="rejected"),revenue=a.filter(e=>e.entry_type==="revenue").reduce((s,e)=>s+Number(e.amount),0),expenses=a.filter(e=>e.entry_type==="expense").reduce((s,e)=>s+Number(e.amount),0);return{hotelId:h.id,hotelName:h.name,revenue,expenses,profit:revenue-expenses,margin:revenue>0?(revenue-expenses)/revenue*100:null,status:periods.find(p=>p.hotel_id===h.id)?.status||"open"}}):[];
  const staffRes=await supabaseRequest(`?select=id,hotel_id,name,staff_type&hotel_id=in.(${ids})&is_active=eq.true&order=name.asc`,{},"hotel_staff_members");
  const staff=staffRes.ok?await staffRes.json():[];
- return NextResponse.json({hotels:allowed,entries,summary,staff,periods,month,categories});
+ const directoryResponse=await supabaseRequest("?select=name,designation&is_active=eq.true&order=name.asc",{},"hotel_employees");
+ const employees=directoryResponse.ok?await directoryResponse.json():[];
+ return NextResponse.json({hotels:allowed,entries,summary,staff,employees,periods,month,categories});
  }catch{return NextResponse.json({error:"Unable to load financial report."},{status:500})}
 }
 export async function POST(request:NextRequest){
