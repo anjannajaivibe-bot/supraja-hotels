@@ -89,14 +89,14 @@ function getAttribution(sessionId: string): Attribution {
   return attribution;
 }
 
-function sendAnalyticsContact(eventType: ClickEventType) {
+function sendAnalyticsContact(eventType: ClickEventType, hotelSlug?: string) {
   if (!["call_click", "whatsapp_click", "email_click", "booking_click"].includes(eventType)) return;
   const analytics = window as Window & { gtag?: (...args: unknown[]) => void };
   try {
     analytics.gtag?.("event", eventType, {
       event_category: "enquiry",
       page_path: location.pathname,
-      hotel_slug: location.pathname.match(/^\/hotels\/([^/]+)/)?.[1] ??
+      hotel_slug: hotelSlug ?? location.pathname.match(/^\/hotels\/([^/]+)/)?.[1] ??
         (location.pathname === "/saket-banquet-hall" ? "saket-banquet-hall" : "group"),
       transport_type: "beacon",
     });
@@ -105,7 +105,7 @@ function sendAnalyticsContact(eventType: ClickEventType) {
   }
 }
 
-function sendEvent(event: Omit<ClickEventInput, "visitorId" | "sessionId">) {
+function sendEvent(event: Omit<ClickEventInput, "visitorId" | "sessionId">, hotelSlug?: string) {
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return;
 
   const sessionId = getSessionId();
@@ -118,7 +118,7 @@ function sendEvent(event: Omit<ClickEventInput, "visitorId" | "sessionId">) {
     referrer: document.referrer,
     screenWidth: window.innerWidth,
   };
-  sendAnalyticsContact(event.eventType);
+  sendAnalyticsContact(event.eventType, hotelSlug);
   const body = JSON.stringify(payload);
   try {
     if (navigator.sendBeacon?.("/api/click-events", new Blob([body], { type: "application/json" }))) return;
@@ -184,8 +184,26 @@ export default function VisitorClickTracker() {
       });
     };
 
+    const trackEnquiry = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      const detail = event.detail as { hotelSlug?: unknown; hotelName?: unknown; whatsapp?: unknown } | null;
+      if (!detail || typeof detail.hotelSlug !== "string" ||
+        !["supraja-cyber-view", "supraja-residency", "supraja-lodge", "saket-banquet-hall"].includes(detail.hotelSlug) ||
+        typeof detail.hotelName !== "string" || typeof detail.whatsapp !== "string" || !/^\d{10}$/.test(detail.whatsapp)) return;
+      sendEvent({
+        eventType: "whatsapp_click",
+        pagePath: `${location.pathname}${location.search}`,
+        targetUrl: `https://wa.me/91${detail.whatsapp}`,
+        targetLabel: `Availability enquiry: ${detail.hotelName.slice(0, 100)}`,
+      }, detail.hotelSlug);
+    };
+
     document.addEventListener("click", trackClick, { capture: true });
-    return () => document.removeEventListener("click", trackClick, { capture: true });
+    document.addEventListener("supraja:whatsapp-enquiry", trackEnquiry);
+    return () => {
+      document.removeEventListener("click", trackClick, { capture: true });
+      document.removeEventListener("supraja:whatsapp-enquiry", trackEnquiry);
+    };
   }, []);
 
   return null;

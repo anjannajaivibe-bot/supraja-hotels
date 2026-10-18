@@ -44,6 +44,13 @@ export default function HotelEnquiryForm() {
         }),
       });
     }
+    document.dispatchEvent(new CustomEvent("supraja:whatsapp-enquiry", {
+      detail: {
+        hotelSlug: "slug" in selectedProperty ? selectedProperty.slug : "saket-banquet-hall",
+        hotelName: selectedProperty.name,
+        whatsapp: selectedProperty.whatsapp,
+      },
+    }));
     window.open(`https://wa.me/91${selectedProperty.whatsapp}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
