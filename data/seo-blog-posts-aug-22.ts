@@ -186,7 +186,7 @@ export const seoBlogPostsAug22: BlogPost[] = [
       { href: "https://www.irctc.co.in/", anchor: "IRCTC", context: "For official railway booking information, visit" },
       { href: "https://scr.indianrailways.gov.in/", anchor: "South Central Railway", context: "For official railway information in the region, use" },
     ],
-    cta: { title: "Check Chandanagar Rooms", text: "Contact Supraja Hotels to compare current availability at Hotel Supraja Residency and Hotel Supraja Lodge.", phone: "9052996161", whatsappText: "Hi, I am arriving via Lingampally and would like to check room availability in Chandanagar." },
+    cta: { title: "Check Chandanagar Rooms", text: "Contact Supraja Hotels to compare current availability at Hotel Supraja Residency and Hotel Supraja Lodge.", phone: "9346316161", whatsappText: "Hi, I am arriving via Lingampally and would like to check room availability in Chandanagar." },
   },
   {
     slug: "hotels-near-bhel-hyderabad",
@@ -232,6 +232,6 @@ export const seoBlogPostsAug22: BlogPost[] = [
       { href: "https://www.ltmetro.com/", anchor: "Hyderabad Metro Rail", context: "For official Metro passenger information, visit" },
       { href: "https://scr.indianrailways.gov.in/", anchor: "South Central Railway", context: "For regional railway information, check" },
     ],
-    cta: { title: "Find a Chandanagar Stay", text: "Contact Supraja Hotels for current room availability around BHEL and Chandanagar.", phone: "9052996161", whatsappText: "Hi, I need a room around BHEL and Chandanagar and would like to check availability." },
+    cta: { title: "Find a Chandanagar Stay", text: "Contact Supraja Hotels for current room availability around BHEL and Chandanagar.", phone: "9346316161", whatsappText: "Hi, I need a room around BHEL and Chandanagar and would like to check availability." },
   },
 ];

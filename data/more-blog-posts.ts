@@ -275,7 +275,7 @@ export const additionalBlogPosts: BlogPost[] = [
     cta: {
       title: "Check Chandanagar Room Options",
       text: "Call Supraja Hotels for current availability at Hotel Supraja Residency and Hotel Supraja Lodge.",
-      phone: "9052996161",
+      phone: "9346316161",
       whatsappText: "Hi, I read your Chandanagar and Miyapur hotel guide and would like to check room availability.",
     },
   },
@@ -387,7 +387,7 @@ export const additionalBlogPosts: BlogPost[] = [
     cta: {
       title: "Discuss a Corporate Stay",
       text: "Share your office location, dates, room count and billing needs with Supraja Hotels.",
-      phone: "9052996161",
+      phone: "9346316161",
       whatsappText: "Hi, I would like to discuss a corporate stay requirement with Supraja Hotels.",
     },
   },
