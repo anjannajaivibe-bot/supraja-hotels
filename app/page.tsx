@@ -2,22 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  BedDouble,
   Camera,
-  Car,
   CheckCircle2,
+  ExternalLink,
   MapPin,
   MessageCircle,
   Phone,
-  ShieldCheck,
-  Wifi,
 } from "lucide-react";
 import SmartImage from "@/components/SmartImage";
 import AmenitiesSection from "@/components/AmenitiesSection";
 import DeferredHeroVideo from "@/components/DeferredHeroVideo";
 import { hotels } from "@/data/hotels";
-
-const siteUrl = "https://www.suprajahotels.com";
 
 export const metadata: Metadata = {
   title: { absolute: "Hotels in Hyderabad | Madhapur & Chandanagar | Supraja Hotels" },
@@ -60,39 +55,6 @@ const hotelDescriptions: Record<string, string> = {
   "supraja-lodge":
     "Budget hotel in Chandanagar for short stays, work trips and family visits near Lingampally Railway Station, Gangaram, BHEL and Miyapur.",
 };
-
-const featureCards = [
-  {
-    title: "Clean & Comfortable Rooms",
-    description: "Well-maintained rooms for business trips, family visits and short stays in Hyderabad.",
-    icon: BedDouble,
-  },
-  {
-    title: "Convenient Hyderabad Locations",
-    description: "Choose Madhapur near HITEC City or Chandanagar near Lingampally, BHEL and Miyapur.",
-    icon: MapPin,
-  },
-  {
-    title: "Direct Booking Assistance",
-    description: "Call or WhatsApp the hotel directly to check available rooms, current rates and booking details.",
-    icon: Phone,
-  },
-  {
-    title: "Free WiFi",
-    description: "Stay connected for work, calls and everyday browsing throughout your visit.",
-    icon: Wifi,
-  },
-  {
-    title: "Parking Available",
-    description: "Parking is available at all three Supraja Hotels for guests travelling with their own vehicle.",
-    icon: Car,
-  },
-  {
-    title: "Business & Family Stays",
-    description: "Suitable accommodation for work trips, family visits, appointments, events and short stays.",
-    icon: ShieldCheck,
-  },
-];
 
 export default function HomePage() {
   return (
@@ -187,75 +149,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-14 lg:py-20">
-        <div className="container-custom">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_.9fr]">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="relative col-span-2 h-[340px] overflow-hidden rounded-[1.75rem] sm:h-[430px]">
-                <SmartImage src={hotels[0].images.hero} alt="Hotel rooms at Supraja Hotels Hyderabad" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
-              </div>
-              {hotels.slice(1).map((hotel) => (
-                <div key={hotel.slug} className="relative h-[190px] overflow-hidden rounded-[1.5rem] sm:h-[230px]">
-                  <SmartImage src={hotel.images.hero} alt={`${hotel.name} in ${hotel.area}, Hyderabad`} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 27vw" />
-                </div>
-              ))}
-            </div>
-            <div className="lg:pl-8">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Stay Close. Travel Less.</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">Well-Located Hotels for Your Hyderabad Stay</h2>
-              <p className="mt-4 leading-8 text-slate-600">
-                Whether you are visiting Hyderabad for work, family, an appointment or a short trip, choose a Supraja Hotel close to the places that matter to you.
-              </p>
-              <div className="mt-6 space-y-4">
-                {["Madhapur: close to HITEC City, Shilpakala Vedika, Shilparamam and major IT destinations", "Chandanagar: convenient for Lingampally, BHEL, Serilingampally, Miyapur and western Hyderabad", "Book direct: call or WhatsApp your preferred hotel for availability, rates and booking assistance"].map((item) => (
-                  <p key={item} className="flex gap-3 leading-7 text-slate-700"><CheckCircle2 className="mt-1 shrink-0 text-green-700" size={19} />{item}</p>
-                ))}
-              </div>
-              <Link href="#choose-hotel" className="mt-7 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800">Find Your Hotel <ArrowRight size={17} /></Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-950 px-4 py-9 text-white">
-        <div className="container-custom grid gap-6 md:grid-cols-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Book Direct</p>
-            <h2 className="mt-2 text-2xl font-semibold">Speak with the Hotel Team</h2>
-          </div>
-          <div className="flex items-start gap-3">
-            <Phone className="mt-1 text-amber-300" size={22} />
-            <div><p className="font-bold">Check Rooms & Rates</p><p className="mt-1 text-sm leading-6 text-slate-300">Ask about available rooms and the current rate for your stay dates.</p></div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MessageCircle className="mt-1 text-amber-300" size={22} />
-            <div><p className="font-bold">WhatsApp the Property</p><p className="mt-1 text-sm leading-6 text-slate-300">Message the hotel directly for booking details or location guidance.</p></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#f7f5f1] px-4 py-14 lg:py-20">
-        <div className="container-custom">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Comfort, Location & Convenience</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">Why Stay With Supraja Hotels</h2>
-          </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featureCards.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <div key={feature.title} className="rounded-[1.5rem] bg-white p-7 shadow-sm">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-800"><Icon size={21} /></div>
-                  <h3 className="mt-5 text-xl font-semibold text-slate-950">{feature.title}</h3>
-                  <p className="mt-3 leading-7 text-slate-600">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       <AmenitiesSection />
+
+      <section aria-labelledby="guest-reviews-heading" className="bg-[#f7f5f1] px-4 py-14 lg:py-20">
+        <div className="container-custom">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-700">Guest Reviews</p>
+            <h2 id="guest-reviews-heading" className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">Read Guest Feedback on Google</h2>
+            <p className="mt-4 leading-7 text-slate-600">Visit each hotel’s Google profile to read guest reviews before choosing your stay.</p>
+          </div>
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+            {hotels.map((hotel) => (
+              <article key={hotel.slug} className="flex flex-col items-start rounded-[1.5rem] border border-slate-200 bg-white p-6">
+                <h3 className="text-xl font-semibold text-slate-950">{hotel.name}</h3>
+                <p className="mt-2 text-sm text-slate-600">{hotel.area}</p>
+                <a href={hotel.googleBusinessUrl} target="_blank" rel="noopener noreferrer" aria-label={`View ${hotel.name} on Google (opens in a new tab)`} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-bold text-blue-800 underline underline-offset-4 hover:text-blue-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800">View on Google <ExternalLink size={16} aria-hidden="true" /></a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="bg-white px-4 py-14 lg:py-20">
         <div className="container-custom">

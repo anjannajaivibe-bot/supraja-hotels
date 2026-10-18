@@ -127,8 +127,8 @@ export default function Header() {
         <nav className="hidden items-center gap-7 lg:flex">
           <Link
             href="/"
-            className={`text-sm font-semibold transition hover:text-amber-500 ${
-              pathname === "/" ? "text-amber-600" : "text-slate-700"
+            className={`text-sm font-semibold transition hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 ${
+              pathname === "/" ? "text-amber-700" : "text-slate-700"
             }`}
           >
             Home
@@ -136,8 +136,8 @@ export default function Header() {
 
           <Link
             href="/about"
-            className={`text-sm font-semibold transition hover:text-amber-500 ${
-              pathname === "/about" ? "text-amber-600" : "text-slate-700"
+            className={`text-sm font-semibold transition hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 ${
+              pathname === "/about" ? "text-amber-700" : "text-slate-700"
             }`}
           >
             About
@@ -146,8 +146,8 @@ export default function Header() {
           <div className="group relative">
             <Link
               href="/hotels"
-              className={`flex items-center gap-1 text-sm font-semibold transition hover:text-amber-500 ${
-                isHotelsActive ? "text-amber-600" : "text-slate-700"
+              className={`flex items-center gap-1 text-sm font-semibold transition hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 ${
+                isHotelsActive ? "text-amber-700" : "text-slate-700"
               }`}
             >
               Hotels
@@ -184,10 +184,10 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-semibold transition hover:text-amber-500 ${
+              className={`text-sm font-semibold transition hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 ${
                 pathname === link.href ||
                 (link.href === "/blog" && pathname.startsWith("/blog/"))
-                  ? "text-amber-600"
+                  ? "text-amber-700"
                   : "text-slate-700"
               }`}
             >
