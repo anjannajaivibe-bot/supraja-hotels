@@ -7,11 +7,18 @@ import type { ClickEventInput, ClickEventType } from "@/lib/click-events";
 const VISITOR_KEY = "supraja_hotels_visitor_id";
 const SESSION_KEY = "supraja_hotels_session";
 const SESSION_LENGTH_MS = 30 * 60 * 1000;
+const ATTRIBUTION_KEY = "supraja_hotels_attribution";
 
 type SessionRecord = {
   id: string;
   expiresAt: number;
 };
+
+type Attribution = Pick<ClickEventInput, "utmSource" | "utmMedium" | "utmCampaign">;
+type AttributionRecord = Attribution & { sessionId: string };
+let memoryVisitorId: string | undefined;
+let memorySession: SessionRecord | undefined;
+let memoryAttribution: AttributionRecord | undefined;
 
 function randomId() {
   return globalThis.crypto?.randomUUID?.() ??
@@ -19,68 +26,111 @@ function randomId() {
 }
 
 function getVisitorId() {
-  const existing = localStorage.getItem(VISITOR_KEY);
-  if (existing) return existing;
-
-  const id = randomId();
-  localStorage.setItem(VISITOR_KEY, id);
-  return id;
+  try {
+    memoryVisitorId = localStorage.getItem(VISITOR_KEY) || memoryVisitorId || randomId();
+    localStorage.setItem(VISITOR_KEY, memoryVisitorId);
+  } catch {
+    memoryVisitorId ??= randomId();
+  }
+  return memoryVisitorId;
 }
 
 function getSessionId() {
   const now = Date.now();
-
   try {
-    const existing = JSON.parse(
-      sessionStorage.getItem(SESSION_KEY) ?? "null"
-    ) as SessionRecord | null;
-
-    if (existing?.id && existing.expiresAt > now) {
-      sessionStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify({ id: existing.id, expiresAt: now + SESSION_LENGTH_MS })
-      );
-      return existing.id;
+    const existing = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? "null") as SessionRecord | null;
+    if (typeof existing?.id === "string" && typeof existing.expiresAt === "number" && existing.expiresAt > now) {
+      memorySession = existing;
     }
   } catch {
-    sessionStorage.removeItem(SESSION_KEY);
+    // Keep enquiry tracking usable when browser storage is unavailable.
   }
+  if (!memorySession || memorySession.expiresAt <= now) {
+    memorySession = { id: randomId(), expiresAt: now + SESSION_LENGTH_MS };
+  }
+  memorySession.expiresAt = now + SESSION_LENGTH_MS;
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(memorySession));
+  } catch {
+    // The in-memory session still groups this visit's contact clicks.
+  }
+  return memorySession.id;
+}
 
-  const session = { id: randomId(), expiresAt: now + SESSION_LENGTH_MS };
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  return session.id;
+function getAttribution(sessionId: string): Attribution {
+  const params = new URLSearchParams(location.search);
+  const clean = (value: unknown) => typeof value === "string" ? value.trim().slice(0, 200) || undefined : undefined;
+  const current: Attribution = {
+    utmSource: clean(params.get("utm_source")),
+    utmMedium: clean(params.get("utm_medium")),
+    utmCampaign: clean(params.get("utm_campaign")),
+  };
+  if (current.utmSource || current.utmMedium || current.utmCampaign) {
+    memoryAttribution = { sessionId, ...current };
+  } else {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(ATTRIBUTION_KEY) ?? "null") as AttributionRecord | null;
+      if (stored?.sessionId === sessionId) memoryAttribution = stored;
+    } catch {
+      // Use the current visit's in-memory campaign when storage is blocked.
+    }
+  }
+  if (memoryAttribution?.sessionId !== sessionId) return {};
+  const attribution: Attribution = {
+    utmSource: clean(memoryAttribution.utmSource),
+    utmMedium: clean(memoryAttribution.utmMedium),
+    utmCampaign: clean(memoryAttribution.utmCampaign),
+  };
+  try {
+    sessionStorage.setItem(ATTRIBUTION_KEY, JSON.stringify({ sessionId, ...attribution }));
+  } catch {
+    // Storage restrictions must never interfere with contacting a hotel.
+  }
+  return attribution;
+}
+
+function sendAnalyticsContact(eventType: ClickEventType) {
+  if (!["call_click", "whatsapp_click", "email_click", "booking_click"].includes(eventType)) return;
+  const analytics = window as Window & { gtag?: (...args: unknown[]) => void };
+  try {
+    analytics.gtag?.("event", eventType, {
+      event_category: "enquiry",
+      page_path: location.pathname,
+      hotel_slug: location.pathname.match(/^\/hotels\/([^/]+)/)?.[1] ??
+        (location.pathname === "/saket-banquet-hall" ? "saket-banquet-hall" : "group"),
+      transport_type: "beacon",
+    });
+  } catch {
+    // Contact links work independently of analytics availability.
+  }
 }
 
 function sendEvent(event: Omit<ClickEventInput, "visitorId" | "sessionId">) {
-  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-    return;
-  }
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return;
 
+  const sessionId = getSessionId();
   const payload: ClickEventInput = {
     ...event,
+    ...getAttribution(sessionId),
     visitorId: getVisitorId(),
-    sessionId: getSessionId(),
+    sessionId,
     pageTitle: document.title,
     referrer: document.referrer,
     screenWidth: window.innerWidth,
   };
-
+  sendAnalyticsContact(event.eventType);
   const body = JSON.stringify(payload);
-
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(
-      "/api/click-events",
-      new Blob([body], { type: "application/json" })
-    );
-    return;
+  try {
+    if (navigator.sendBeacon?.("/api/click-events", new Blob([body], { type: "application/json" }))) return;
+  } catch {
+    // Fall back if the browser rejects a beacon during navigation.
   }
-
   void fetch("/api/click-events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body,
     keepalive: true,
-  });
+  }).catch(() => undefined);
 }
 
 function classifyLink(anchor: HTMLAnchorElement): ClickEventType {
@@ -105,14 +155,9 @@ export default function VisitorClickTracker() {
   useEffect(() => {
     if (pathname.startsWith("/admin")) return;
 
-    const params = new URLSearchParams(query);
-
     sendEvent({
       eventType: "page_view",
       pagePath: query ? `${pathname}?${query}` : pathname,
-      utmSource: params.get("utm_source") ?? undefined,
-      utmMedium: params.get("utm_medium") ?? undefined,
-      utmCampaign: params.get("utm_campaign") ?? undefined,
     });
   }, [pathname, query]);
 

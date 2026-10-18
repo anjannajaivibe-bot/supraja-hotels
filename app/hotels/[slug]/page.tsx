@@ -15,6 +15,7 @@ import {
 import { amenities } from "@/data/amenities";
 import { hotels } from "@/data/hotels";
 import HotelGallery from "@/components/HotelGallery";
+import DeferredHeroVideo from "@/components/DeferredHeroVideo";
 import HotelMap from "@/components/HotelMap";
 import HotelSchema from "@/components/schema/HotelSchema";
 import BreadcrumbSchema from "@/components/schema/BreadcrumbSchema";
@@ -96,6 +97,10 @@ const searchCopy: Record<
 
 type Props = { params: Promise<{ slug: string }> };
 
+export function generateStaticParams() {
+  return hotels.map((hotel) => ({ slug: hotel.slug }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const hotel = hotels.find((item) => item.slug === slug);
@@ -160,9 +165,7 @@ export default async function HotelPage({ params }: Props) {
         <section className="relative isolate flex min-h-[580px] items-end overflow-hidden bg-slate-950 text-white md:min-h-[640px] md:items-center lg:min-h-[680px]">
           <SmartImage src={hotel.images.hero} alt={hotel.seo.featuredImageAlt} fill isHero className="object-cover" sizes="100vw" />
           {hotelHeroVideos[hotel.slug] ? (
-            <video autoPlay muted loop playsInline preload="metadata" poster={hotel.images.hero} aria-hidden="true" className="absolute inset-0 h-full w-full object-cover">
-              <source src={hotelHeroVideos[hotel.slug]} type="video/webm" />
-            </video>
+            <DeferredHeroVideo src={hotelHeroVideos[hotel.slug]} />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/62 to-slate-950/12" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/78 via-transparent to-slate-950/12" />

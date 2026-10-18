@@ -61,12 +61,8 @@ export default function HomePage() {
     <main className="bg-white pb-20 text-slate-900 md:pb-0">
       <section
         className="relative isolate flex min-h-[610px] items-center overflow-hidden bg-slate-950 text-white md:min-h-[660px] lg:min-h-[690px]"
-        style={{
-          backgroundImage: "url('/media/home-hero/supraja-hotels-home-hero-poster.webp')",
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }}
       >
+        <SmartImage src="/media/home-hero/supraja-hotels-home-hero-poster.webp" alt="" fill isHero className="object-cover object-center" sizes="100vw" />
         <DeferredHeroVideo />
         <div className="absolute inset-0 z-10 bg-gradient-to-r from-slate-950/90 via-slate-950/48 to-transparent" aria-hidden="true" />
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/82 via-slate-950/10 to-slate-950/8" aria-hidden="true" />

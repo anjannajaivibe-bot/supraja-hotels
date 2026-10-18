@@ -15,8 +15,8 @@ export default function SmartImage({
     <Image
       {...props}
       alt={alt}
-      priority={isHero}
-      loading={isHero ? "eager" : "lazy"}
+      preload={isHero}
+      loading={isHero ? undefined : "lazy"}
       quality={quality ?? (isHero ? 70 : 60)}
       placeholder="empty"
       sizes={
