@@ -35,8 +35,19 @@ export default function PrivacyPolicyPage() {
         </p>
 
         <p>
-          Personal information will not be sold, rented or shared with
-          third parties except where required by law.
+          We also use Microsoft Clarity on the public hotel website to
+          understand page interactions through aggregated analytics, heatmaps,
+          and privacy-masked session recordings. Clarity may process website
+          interaction information on our behalf. Guest enquiry form entries and
+          sensitive input fields are masked in recordings. Hotel administration
+          and staff attendance pages are excluded from this recording setup.
+        </p>
+
+        <p>
+          We do not sell or rent personal information. Information may be shared
+          with service providers, including website analytics providers, only
+          as necessary to operate and improve our services, or where required
+          by law.
         </p>
 
         <p>
